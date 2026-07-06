@@ -1,0 +1,6 @@
+{
+  "name": "أقم صلاتك",
+  "description": "Answer the Call. Preserve the Prayer. A premium, comprehensive Islamic assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

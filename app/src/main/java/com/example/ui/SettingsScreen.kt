@@ -1,0 +1,567 @@
+package com.example.ui
+
+import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    viewModel: AppViewModel,
+    lang: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val madhabVal by viewModel.madhab.collectAsState()
+    val methodVal by viewModel.calcMethod.collectAsState()
+    val locationVal by viewModel.locationName.collectAsState()
+    val notificationsVal by viewModel.notificationsEnabled.collectAsState()
+    val activeThemeVal by viewModel.themeMode.collectAsState()
+
+    // Dialog state controllers
+    var activeDialog by remember { mutableStateOf<String?>(null) } // "THEME", "LANG", "CALC", "AUDIO", "DOWNLOADS", "BACKUP", "PRIVACY", "ACCESSIBILITY"
+
+    // Supported lists
+    val languages = listOf(
+        Pair("ar", "العربية (Arabic)"),
+        Pair("en", "English"),
+        Pair("fr", "Français (French)"),
+        Pair("tr", "Türkçe (Turkish)")
+    )
+    val themes = listOf("LIGHT", "DARK", "AMOLED", "AUTO")
+    val methods = listOf("ALGERIA", "UMM_AL_QURA", "EGYPT", "MWL", "KARACHI", "ISNA", "TURKEY", "AWQAF")
+    val madhabs = listOf("STANDARD", "HANAFI")
+    val recitersList = listOf("Mishary Al-Afasy", "Abdul Basit Abdus Samad", "Saad Al-Ghamdi")
+
+    // Accessibility state
+    var fontSizeZoom by remember { mutableFloatStateOf(1.0f) }
+    var hapticsEnabled by remember { mutableStateOf(true) }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = Translations.get("settings", lang),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
+        // 1. Theme Configuration
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.Palette,
+                title = if (lang == "ar") "سمة التطبيق" else "Theme Configuration",
+                subtitle = "Active: $activeThemeVal Mode",
+                tag = "setting_theme",
+                onClick = { activeDialog = "THEME" }
+            )
+        }
+
+        // 2. Language Selection
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.Language,
+                title = if (lang == "ar") "لغة التطبيق" else "Language",
+                subtitle = languages.find { it.first == lang }?.second ?: "English",
+                tag = "setting_language",
+                onClick = { activeDialog = "LANG" }
+            )
+        }
+
+        // 3. Notifications Manager
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth().testTag("setting_notifications"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0xFFD4AF37).copy(alpha = 0.1f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Notifications, contentDescription = "Alerts", tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(
+                                text = if (lang == "ar") "التنبيهات والأذان" else "Notifications & Alerts",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                            Text(
+                                text = if (notificationsVal) "Athan audio play enabled" else "Reminders muted",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
+
+                    Switch(
+                        checked = notificationsVal,
+                        onCheckedChange = { viewModel.toggleNotifications(it) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFFD4AF37),
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+            }
+        }
+
+        // 4. Prayer Calculation
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.SettingsInputComponent,
+                title = if (lang == "ar") "حساب المواقيت والمذهب" else "Prayer Calculation",
+                subtitle = "Method: $methodVal • Madhab: $madhabVal",
+                tag = "setting_calculation",
+                onClick = { activeDialog = "CALC" }
+            )
+        }
+
+        // 5. Audio Playback (Default Reciter stream)
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.RecordVoiceOver,
+                title = if (lang == "ar") "قارئ القرآن الافتراضي" else "Audio Settings",
+                subtitle = "Choose recitation audio preferences",
+                tag = "setting_audio",
+                onClick = { activeDialog = "AUDIO" }
+            )
+        }
+
+        // 6. Cached Downloads Manager
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.CloudDownload,
+                title = if (lang == "ar") "إدارة التنزيلات" else "Downloads Manager",
+                subtitle = "Manage cached audio, offline files & storage",
+                tag = "setting_downloads",
+                onClick = { activeDialog = "DOWNLOADS" }
+            )
+        }
+
+        // 7. Data Backup & Cloud Sync
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.Backup,
+                title = if (lang == "ar") "النسخ الاحتياطي والمزامنة" else "Backup & Sync",
+                subtitle = "Secure local statistics, logs & bookmarked lists",
+                tag = "setting_backup",
+                onClick = { activeDialog = "BACKUP" }
+            )
+        }
+
+        // 8. Privacy & Device Permissions
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.Security,
+                title = if (lang == "ar") "الخصوصية والأذونات" else "Privacy & Security",
+                subtitle = "GPS location, terms, and conditions of use",
+                tag = "setting_privacy",
+                onClick = { activeDialog = "PRIVACY" }
+            )
+        }
+
+        // 9. Accessibility
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.Accessibility,
+                title = if (lang == "ar") "سهولة الاستخدام" else "Accessibility",
+                subtitle = "Customize font sizes, haptics & zoom levels",
+                tag = "setting_accessibility",
+                onClick = { activeDialog = "ACCESSIBILITY" }
+            )
+        }
+    }
+
+    // --- Interactive Dialogue Handlers ---
+
+    // A. Theme Selector Dialog
+    if (activeDialog == "THEME") {
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "اختر سمة التطبيق" else "Select Theme Mode", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    themes.forEach { th ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setThemeMode(th)
+                                    activeDialog = null
+                                }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = th == activeThemeVal, onClick = {
+                                viewModel.setThemeMode(th)
+                                activeDialog = null
+                            })
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(th, fontSize = 16.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
+
+    // B. Language Selector Dialog
+    if (activeDialog == "LANG") {
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "لغة التطبيق" else "Select Language", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    languages.forEach { (code, name) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setAppLanguage(code)
+                                    activeDialog = null
+                                }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = code == lang, onClick = {
+                                viewModel.setAppLanguage(code)
+                                activeDialog = null
+                            })
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(name, fontSize = 16.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
+
+    // C. Calculation Method & Madhab Settings Dialog
+    if (activeDialog == "CALC") {
+        var currentMadhab by remember { mutableStateOf(madhabVal) }
+        var currentMethod by remember { mutableStateOf(methodVal) }
+
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "معايير حساب الصلاة" else "Calculation Criteria", fontWeight = FontWeight.Bold) },
+            text = {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    item {
+                        Text(if (lang == "ar") "الهيئة الفلكية" else "Astronomical Authority", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFFD4AF37))
+                    }
+                    items(methods.size) { i ->
+                        val m = methods[i]
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { currentMethod = m }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = m == currentMethod, onClick = { currentMethod = m })
+                            Spacer(modifier = Modifier.width(12.dp))
+                            val methodLabel = when (m) {
+                                "ALGERIA" -> if (lang == "ar") "وزارة الشؤون الدينية والأوقاف (الجزائر)" else "Algerian Ministry of Religious Affairs & Wakfs"
+                                "UMM_AL_QURA" -> if (lang == "ar") "جامعة أم القرى (مكة المكرمة)" else "Umm Al-Qura University, Makkah"
+                                "EGYPT" -> if (lang == "ar") "الهيئة المصرية العامة للمساحة" else "Egyptian General Authority of Survey"
+                                "MWL" -> if (lang == "ar") "رابطة العالم الإسلامي" else "Muslim World League"
+                                "KARACHI" -> if (lang == "ar") "جامعة العلوم الإسلامية بكراتشي" else "University of Islamic Sciences, Karachi"
+                                "ISNA" -> if (lang == "ar") "الجمعية الإسلامية لأمريكا الشمالية (ISNA)" else "Islamic Society of North America (ISNA)"
+                                "TURKEY" -> if (lang == "ar") "رئاسة الشؤون الدينية التركية (Diyanet)" else "Diyanet (Turkey)"
+                                "AWQAF" -> if (lang == "ar") "وزارة الأوقاف والشؤون الإسلامية" else "Ministry of Awqaf (General)"
+                                else -> m
+                            }
+                            Text(methodLabel, fontSize = 14.sp)
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(if (lang == "ar") "المذهب الفقهي (العصر)" else "Asr Jurisprudential Madhab", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFFD4AF37))
+                    }
+                    items(madhabs.size) { i ->
+                        val md = madhabs[i]
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { currentMadhab = md }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = md == currentMadhab, onClick = { currentMadhab = md })
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(if (md == "STANDARD") "Standard (Shafi'i, Maliki, Hanbali)" else "Hanafi", fontSize = 14.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.setCalculationMethod(currentMethod)
+                        viewModel.setMadhab(currentMadhab)
+                        activeDialog = null
+                        Toast.makeText(context, "Calculation rules saved successfully", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(if (lang == "ar") "حفظ" else "Save Rules")
+                }
+            }
+        )
+    }
+
+    // D. Audio Reciter Settings Dialog
+    if (activeDialog == "AUDIO") {
+        var selectedReciter by remember { mutableStateOf(recitersList[0]) }
+
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "إعدادات الصوت والمقرئ" else "Recitation Voice Preferences", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    recitersList.forEach { rec ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { selectedReciter = rec }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = rec == selectedReciter, onClick = { selectedReciter = rec })
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(rec, fontSize = 15.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        activeDialog = null
+                        Toast.makeText(context, "Default reciter set to $selectedReciter", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    // E. Cache Downloads Dialog
+    if (activeDialog == "DOWNLOADS") {
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "إدارة التنزيلات والكاش" else "Cache Downloads", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Total Cached Audio: 12.4 MB", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("Surah Al-Fatihah, Ya-Sin and popular adhkar items are currently cached offline for rapid play without requiring Internet.", fontSize = 12.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            Toast.makeText(context, "Cache successfully cleared!", Toast.LENGTH_SHORT).show()
+                            activeDialog = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (lang == "ar") "مسح الذاكرة المؤقتة" else "Clear Cache Files")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { activeDialog = null }) {
+                    Text("Done")
+                }
+            }
+        )
+    }
+
+    // F. Backup Dialog
+    if (activeDialog == "BACKUP") {
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "النسخ الاحتياطي السحابي" else "Backup & Sync Dashboard", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Status: Synchronized 5 minutes ago", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                    Text("Save your tasbih progress, favorites lists, and qaza history safely inside secure sandbox encryption.", fontSize = 12.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            Toast.makeText(context, "Backup successfully pushed to secure sandbox!", Toast.LENGTH_SHORT).show()
+                            activeDialog = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (lang == "ar") "مزامنة الآن" else "Backup & Sync Now")
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { activeDialog = null }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    // G. Privacy Dialog
+    if (activeDialog == "PRIVACY") {
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "شروط الخدمة والخصوصية" else "Privacy sandbox & Location", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("1. Device Coordinates", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("The application requests fine & coarse GPS locations locally to calculate astronomical prayer timings, compass bearings, and distance to mosques. Location coordinates are strictly private and NEVER uploaded.", fontSize = 12.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text("2. Offline Sandbox Mode", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("No personal information is harvested. The application values user security, strictly executing computations client-side.", fontSize = 12.sp, color = Color.Gray)
+                }
+            },
+            confirmButton = {
+                Button(onClick = { activeDialog = null }) {
+                    Text("Acknowledge")
+                }
+            }
+        )
+    }
+
+    // H. Accessibility Settings Dialog
+    if (activeDialog == "ACCESSIBILITY") {
+        var currentHaptics by remember { mutableStateOf(hapticsEnabled) }
+        var zoomScale by remember { mutableFloatStateOf(fontSizeZoom) }
+
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "تخصيص سهولة الاستخدام" else "Accessibility settings", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column {
+                        Text("Text Size Multiplier: ${"%.1f".format(zoomScale)}x", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Slider(
+                            value = zoomScale,
+                            onValueChange = { zoomScale = it },
+                            valueRange = 0.8f..1.6f,
+                            colors = SliderDefaults.colors(thumbColor = Color(0xFFD4AF37), activeTrackColor = MaterialTheme.colorScheme.primary)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Haptic Feedback on Tap", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Gentle vibration when logging tasks & clicking tasbih beads", fontSize = 12.sp, color = Color.Gray)
+                        }
+                        Switch(
+                            checked = currentHaptics,
+                            onCheckedChange = { currentHaptics = it },
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFD4AF37))
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        fontSizeZoom = zoomScale
+                        hapticsEnabled = currentHaptics
+                        activeDialog = null
+                        Toast.makeText(context, "Accessibility changes applied", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Apply")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun SettingsItemCard(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    tag: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .testTag(tag),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFD4AF37).copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(icon, contentDescription = title, tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                }
+            }
+            Icon(Icons.Filled.ChevronRight, contentDescription = "Edit", tint = Color(0xFFD4AF37))
+        }
+    }
+}

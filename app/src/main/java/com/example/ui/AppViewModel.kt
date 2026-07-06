@@ -1,0 +1,1436 @@
+package com.example.ui
+
+import android.app.Application
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.net.Uri
+import android.os.Build
+import android.os.Vibrator
+import android.os.VibrationEffect
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.data.*
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.math.*
+
+// For high-fidelity location services and real geocoder addresses
+import android.annotation.SuppressLint
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.Priority
+import android.location.Geocoder
+
+data class LocalMosque(
+    val id: Long,
+    val nameAr: String,
+    val nameEn: String,
+    val lat: Double,
+    val lng: Double,
+    val addressAr: String,
+    val addressEn: String
+)
+
+class AppViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val context = application.applicationContext
+    private val db = AppDatabase.getDatabase(context)
+    private val repo = AppRepository(db, context)
+
+    // --- State Observables ---
+    val language: StateFlow<String> = repo.appLanguage.stateIn(viewModelScope, SharingStarted.Eagerly, "ar")
+    val madhab: StateFlow<String> = repo.appMadhab.stateIn(viewModelScope, SharingStarted.Eagerly, "STANDARD")
+    val calcMethod: StateFlow<String> = repo.appCalcMethod.stateIn(viewModelScope, SharingStarted.Eagerly, "MWL")
+    val latitude: StateFlow<Double> = repo.appLatitude.stateIn(viewModelScope, SharingStarted.Eagerly, 21.4225)
+    val longitude: StateFlow<Double> = repo.appLongitude.stateIn(viewModelScope, SharingStarted.Eagerly, 39.8262)
+    val locationName: StateFlow<String> = repo.appLocationName.stateIn(viewModelScope, SharingStarted.Eagerly, "Makkah, Saudi Arabia")
+    val athanFajrVoice: StateFlow<String> = repo.appAthanFajrVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Fajr Medina")
+    val athanOtherVoice: StateFlow<String> = repo.appAthanOtherVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Makkah")
+    val snoozeMinutes: StateFlow<Int> = repo.appSnoozeMinutes.stateIn(viewModelScope, SharingStarted.Eagerly, 5)
+    val notificationsEnabled: StateFlow<Boolean> = repo.notificationsEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    val themeMode: StateFlow<String> = repo.appThemeMode.stateIn(viewModelScope, SharingStarted.Eagerly, "AUTO")
+    val wallpaper: StateFlow<String> = repo.appWallpaper.stateIn(viewModelScope, SharingStarted.Eagerly, "DEFAULT")
+    val prefMosqueId: StateFlow<String> = repo.prefMosqueId.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    val prefMosqueName: StateFlow<String> = repo.prefMosqueName.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    val prefMosqueLat: StateFlow<Double> = repo.prefMosqueLat.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+    val prefMosqueLng: StateFlow<Double> = repo.prefMosqueLng.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+    val prefMosqueAddr: StateFlow<String> = repo.prefMosqueAddr.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    val prefMosqueRemind: StateFlow<Boolean> = repo.prefMosqueRemind.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    // --- Database Observables ---
+    val tasbihCounters: StateFlow<List<TasbihCounter>> = repo.allTasbihCounters.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val bookmarks: StateFlow<List<Bookmark>> = repo.allBookmarks.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val quranHistory: StateFlow<List<QuranHistory>> = repo.quranHistory.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val favoriteMosques: StateFlow<List<FavoriteMosque>> = repo.favoriteMosques.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allKhatmahs: StateFlow<List<Khatmah>> = repo.allKhatmahs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val allQuranNotes: StateFlow<List<QuranNote>> = repo.allQuranNotes.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // --- Dynamic Astronomical Calculations State ---
+    private val _prayerTimes = MutableStateFlow<PrayerCalculator.PrayerTimes?>(null)
+    val prayerTimes: StateFlow<PrayerCalculator.PrayerTimes?> = _prayerTimes.asStateFlow()
+
+    private val _nextPrayerName = MutableStateFlow("")
+    val nextPrayerName: StateFlow<String> = _nextPrayerName.asStateFlow()
+
+    private val _nextPrayerTime = MutableStateFlow("")
+    val nextPrayerTime: StateFlow<String> = _nextPrayerTime.asStateFlow()
+
+    private val _countdownText = MutableStateFlow("00:00:00")
+    val countdownText: StateFlow<String> = _countdownText.asStateFlow()
+
+    private val _currentPrayerName = MutableStateFlow("")
+    val currentPrayerName: StateFlow<String> = _currentPrayerName.asStateFlow()
+
+    private val _moonPhase = MutableStateFlow(0.0)
+    val moonPhase: StateFlow<Double> = _moonPhase.asStateFlow()
+
+    private val _moonPhaseName = MutableStateFlow("")
+    val moonPhaseName: StateFlow<String> = _moonPhaseName.asStateFlow()
+
+    private val _hijriDateString = MutableStateFlow("")
+    val hijriDateString: StateFlow<String> = _hijriDateString.asStateFlow()
+
+    // --- Community, Polls & Fajr Tracker State ---
+    private val _communityPosts = MutableStateFlow<List<CommunityPost>>(emptyList())
+    val communityPosts: StateFlow<List<CommunityPost>> = _communityPosts.asStateFlow()
+
+    private val _communityPolls = MutableStateFlow<List<CommunityPoll>>(emptyList())
+    val communityPolls: StateFlow<List<CommunityPoll>> = _communityPolls.asStateFlow()
+
+    private val _fajrRecords = MutableStateFlow<List<FajrDayRecord>>(emptyList())
+    val fajrRecords: StateFlow<List<FajrDayRecord>> = _fajrRecords.asStateFlow()
+
+    // --- Daily Content Rotation (Authentic) ---
+    val dailyVerse = QuranData.localAyahs[1]!![1] // Default Al-Fatihah
+    val dailyHadith = HadithData.hadiths[0] // Intention hadith
+    val dailyDua = AdhkarData.adhkar[0] // Morning adhkar as daily dua
+
+    // --- Media Player State ---
+    private var mediaPlayer: MediaPlayer? = null
+    private val _isAthanPlaying = MutableStateFlow(false)
+    val isAthanPlaying: StateFlow<Boolean> = _isAthanPlaying.asStateFlow()
+
+    // --- Compass State ---
+    private val _qiblaAngle = MutableStateFlow(0.0)
+    val qiblaAngle: StateFlow<Double> = _qiblaAngle.asStateFlow()
+
+    private val _distanceToKaaba = MutableStateFlow(0.0) // in km
+    val distanceToKaaba: StateFlow<Double> = _distanceToKaaba.asStateFlow()
+
+    // --- Prayer Logging State ---
+    private val _loggedPrayers = MutableStateFlow<Map<String, String>>(emptyMap())
+    val loggedPrayers: StateFlow<Map<String, String>> = _loggedPrayers.asStateFlow()
+
+    // --- Ramadan Tracking State ---
+    private val _ramadanDaysRemaining = MutableStateFlow(0)
+    val ramadanDaysRemaining: StateFlow<Int> = _ramadanDaysRemaining.asStateFlow()
+
+    private val _isFastingToday = MutableStateFlow(false)
+    val isFastingToday: StateFlow<Boolean> = _isFastingToday.asStateFlow()
+
+    // --- Real-time Location Tracking & Nearby Mosques ---
+    private var locationCallback: LocationCallback? = null
+    
+    private val _nearbyRealMosques = MutableStateFlow<List<LocalMosque>>(emptyList())
+    val nearbyRealMosques: StateFlow<List<LocalMosque>> = _nearbyRealMosques.asStateFlow()
+    
+    private val _isTrackingLocation = MutableStateFlow(false)
+    val isTrackingLocation: StateFlow<Boolean> = _isTrackingLocation.asStateFlow()
+
+    init {
+        // Collect coordinates and options to trigger prayer calculations dynamically
+        viewModelScope.launch {
+            combine(latitude, longitude, madhab, calcMethod, language) { lat, lng, m, c, lang ->
+                calculateAllTimes(lat, lng, m, c, lang)
+            }.collect()
+        }
+
+        // Countdown Timer Loop (Runs continuously, recalculating every second)
+        viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                updateCountdown()
+                delay(1000)
+            }
+        }
+
+        // Initialize Today's Prayer logs
+        loadTodayLogs()
+        calculateRamadanCountdown()
+        initCommunityAndPolls()
+
+        // Fetch initial set of real mosques from Overpass around current coordinates
+        viewModelScope.launch {
+            fetchRealNearbyMosques(latitude.value, longitude.value)
+        }
+    }
+
+    fun detectLocationByIp() {
+        _isTrackingLocation.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            var success = false
+            try {
+                val url = java.net.URL("https://ip-api.com/json")
+                val conn = url.openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = 8000
+                conn.readTimeout = 8000
+                conn.requestMethod = "GET"
+                
+                if (conn.responseCode == 200) {
+                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                    val json = org.json.JSONObject(response)
+                    if (json.getString("status") == "success") {
+                        val lat = json.getDouble("lat")
+                        val lon = json.getDouble("lon")
+                        val city = json.optString("city", "Detected Location")
+                        val country = json.optString("country", "")
+                        val countryCode = json.optString("countryCode", "")
+                        
+                        val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
+                                        country.contains("Algeria", ignoreCase = true) || 
+                                        country.contains("الجزائر")
+                        
+                        val addressName = if (country.isNotEmpty()) "$city, $country" else city
+                        
+                        viewModelScope.launch(Dispatchers.Main) {
+                            repo.setLocation(addressName, lat, lon)
+                            if (isAlgeria) {
+                                repo.setCalcMethod("ALGERIA")
+                            }
+                            _isTrackingLocation.value = false
+                        }
+                        success = true
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            if (!success) {
+                // Try fallback to ipapi.co
+                try {
+                    val url = java.net.URL("https://ipapi.co/json/")
+                    val conn = url.openConnection() as java.net.HttpURLConnection
+                    conn.connectTimeout = 8000
+                    conn.readTimeout = 8000
+                    conn.requestMethod = "GET"
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                    if (conn.responseCode == 200) {
+                        val response = conn.inputStream.bufferedReader().use { it.readText() }
+                        val json = org.json.JSONObject(response)
+                        val lat = json.getDouble("latitude")
+                        val lon = json.getDouble("longitude")
+                        val city = json.optString("city", "Detected Location")
+                        val country = json.optString("country_name", "")
+                        val countryCode = json.optString("country_code", "")
+                        val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
+                                        country.contains("Algeria", ignoreCase = true) || 
+                                        country.contains("الجزائر")
+                        val addressName = if (country.isNotEmpty()) "$city, $country" else city
+                        viewModelScope.launch(Dispatchers.Main) {
+                            repo.setLocation(addressName, lat, lon)
+                            if (isAlgeria) {
+                                repo.setCalcMethod("ALGERIA")
+                            }
+                            _isTrackingLocation.value = false
+                        }
+                        success = true
+                    }
+                } catch (ex: Exception) {
+                    ex.printStackTrace()
+                }
+            }
+
+            if (!success) {
+                viewModelScope.launch(Dispatchers.Main) {
+                    _isTrackingLocation.value = false
+                }
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startLocationTracking() {
+        if (_isTrackingLocation.value) return
+        val context = getApplication<Application>().applicationContext
+        
+        val hasFine = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        val hasCoarse = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        
+        if (!hasFine && !hasCoarse) {
+            // No permissions granted! Automatically fall back to IP Geolocation
+            detectLocationByIp()
+            return
+        }
+        
+        _isTrackingLocation.value = true
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        
+        // Fetch last known location instantly
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    updateLocationCoordinates(location.latitude, location.longitude)
+                    _isTrackingLocation.value = false
+                } else {
+                    // Last location is null, trigger IP Geolocation as fallback
+                    detectLocationByIp()
+                }
+            }.addOnFailureListener {
+                // Failed, trigger IP Geolocation as fallback
+                detectLocationByIp()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            detectLocationByIp()
+        }
+        
+        // Register location updates
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            15000L
+        ).apply {
+            setMinUpdateIntervalMillis(10000L)
+        }.build()
+        
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                for (loc in result.locations) {
+                    updateLocationCoordinates(loc.latitude, loc.longitude)
+                }
+            }
+        }
+        
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback!!,
+                android.os.Looper.getMainLooper()
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _isTrackingLocation.value = false
+            locationCallback = null
+        }
+    }
+    
+    fun stopLocationTracking() {
+        if (!_isTrackingLocation.value) return
+        val context = getApplication<Application>().applicationContext
+        try {
+            locationCallback?.let {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                fusedLocationClient.removeLocationUpdates(it)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            locationCallback = null
+            _isTrackingLocation.value = false
+        }
+    }
+
+    fun setLocation(name: String, lat: Double, lng: Double) {
+        viewModelScope.launch {
+            repo.setLocation(name, lat, lng)
+        }
+    }
+    
+    private fun calculateDist(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a))
+        return r * c
+    }
+
+    private fun updateLocationCoordinates(lat: Double, lng: Double) {
+        viewModelScope.launch {
+            val oldLat = latitude.value
+            val oldLng = longitude.value
+            val dist = calculateDist(oldLat, oldLng, lat, lng)
+            if (dist > 0.05) { // more than 50 meters
+                var addressName = "Detected Location"
+                try {
+                    val geocoder = Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        geocoder.getFromLocation(lat, lng, 1) { addresses ->
+                            val addr = addresses.firstOrNull()
+                            if (addr != null) {
+                                val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea ?: "Detected Location"
+                                val country = addr.countryName ?: ""
+                                val countryCode = addr.countryCode ?: ""
+                                val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
+                                                country.contains("Algeria", ignoreCase = true) || 
+                                                country.contains("الجزائر")
+                                
+                                addressName = if (country.isNotEmpty()) "$city, $country" else city
+                                viewModelScope.launch {
+                                    repo.setLocation(addressName, lat, lng)
+                                    if (isAlgeria) {
+                                        repo.setCalcMethod("ALGERIA")
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        @Suppress("DEPRECATION")
+                        val addresses = geocoder.getFromLocation(lat, lng, 1)
+                        val addr = addresses?.firstOrNull()
+                        if (addr != null) {
+                            val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea ?: "Detected Location"
+                            val country = addr.countryName ?: ""
+                            val countryCode = addr.countryCode ?: ""
+                            val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
+                                            country.contains("Algeria", ignoreCase = true) || 
+                                            country.contains("الجزائر")
+                            
+                            addressName = if (country.isNotEmpty()) "$city, $country" else city
+                            viewModelScope.launch {
+                                repo.setLocation(addressName, lat, lng)
+                                if (isAlgeria) {
+                                    repo.setCalcMethod("ALGERIA")
+                                }
+                            }
+                        } else {
+                            repo.setLocation("My Location", lat, lng)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    repo.setLocation("My Location", lat, lng)
+                }
+                
+                fetchRealNearbyMosques(lat, lng)
+            }
+        }
+    }
+    
+    fun fetchRealNearbyMosques(lat: Double, lng: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Exclusively query OpenStreetMap Overpass API for nearby mosques
+            try {
+                val queryStr = "[out:json][timeout:15];(node[\"amenity\"=\"place_of_worship\"][\"religion\"=\"islam\"](around:10000,$lat,$lng);way[\"amenity\"=\"place_of_worship\"][\"religion\"=\"islam\"](around:10000,$lat,$lng););out center;"
+                val urlStr = "https://overpass-api.de/api/interpreter?data=" + java.net.URLEncoder.encode(queryStr, "UTF-8")
+                val url = java.net.URL(urlStr)
+                val conn = url.openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = 8000
+                conn.readTimeout = 8000
+                conn.requestMethod = "GET"
+                
+                if (conn.responseCode == 200) {
+                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                    val json = org.json.JSONObject(response)
+                    val elements = json.getJSONArray("elements")
+                    val loadedList = mutableListOf<LocalMosque>()
+                    
+                    for (i in 0 until elements.length()) {
+                        val el = elements.getJSONObject(i)
+                        val id = el.getLong("id")
+                        
+                        val mLat = if (el.has("lat")) el.getDouble("lat") else el.getJSONObject("center").getDouble("lat")
+                        val mLng = if (el.has("lon")) el.getDouble("lon") else el.getJSONObject("center").getDouble("lon")
+                        
+                        var nameAr = ""
+                        var nameEn = ""
+                        var addrAr = ""
+                        var addrEn = ""
+                        
+                        if (el.has("tags")) {
+                             val tags = el.getJSONObject("tags")
+                             nameAr = if (tags.has("name:ar")) tags.getString("name:ar") 
+                                      else if (tags.has("name")) tags.getString("name") 
+                                      else "مسجد"
+                             
+                             nameEn = if (tags.has("name:en")) tags.getString("name:en") 
+                                      else if (tags.has("name")) tags.getString("name") 
+                                      else "Mosque"
+                                      
+                             val street = if (tags.has("addr:street")) tags.getString("addr:street") else ""
+                             val city = if (tags.has("addr:city")) tags.getString("addr:city") else ""
+                             
+                             addrEn = if (street.isNotEmpty() || city.isNotEmpty()) "$street, $city" else "Nearby Mosque"
+                             addrAr = if (street.isNotEmpty() || city.isNotEmpty()) "$street, $city" else "مسجد قريب"
+                        } else {
+                             nameAr = "مسجد"
+                             nameEn = "Mosque"
+                             addrEn = "Nearby Mosque"
+                             addrAr = "مسجد قريب"
+                        }
+                        
+                        loadedList.add(LocalMosque(id, nameAr, nameEn, mLat, mLng, addrAr, addrEn))
+                    }
+                    
+                    _nearbyRealMosques.value = loadedList
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun calculateAllTimes(lat: Double, lng: Double, madhabStr: String, methodStr: String, lang: String) {
+        val date = Date()
+        val calendar = Calendar.getInstance()
+        val zone = calendar.timeZone
+        val offsetHours = zone.getOffset(date.time) / 3600000.0
+
+        val calcMethod = PrayerCalculator.CalculationMethod.valueOf(methodStr)
+        val madhab = PrayerCalculator.Madhab.valueOf(madhabStr)
+
+        val times = PrayerCalculator.calculateTimes(
+            latitude = lat,
+            longitude = lng,
+            timezoneOffset = offsetHours,
+            date = date,
+            method = calcMethod,
+            madhab = madhab
+        )
+
+        _prayerTimes.value = times
+
+        // Calculate Qibla Math
+        calculateQibla(lat, lng)
+
+        // Calculate Moon Phase
+        val phase = PrayerCalculator.calculateMoonPhase(date)
+        _moonPhase.value = phase
+        _moonPhaseName.value = PrayerCalculator.getMoonPhaseName(phase, lang)
+
+        // Calculate Hijri Date
+        val hijri = PrayerCalculator.getHijriDate(date, lang)
+        _hijriDateString.value = "${hijri.day} ${hijri.monthName} ${hijri.year} هـ"
+    }
+
+    // Mecca Coordinates: Lat 21.4225, Lng 39.8262
+    private fun calculateQibla(lat: Double, lng: Double) {
+        val latRad = lat * PI / 180.0
+        val lngRad = lng * PI / 180.0
+        val meccaLat = 21.4225 * PI / 180.0
+        val meccaLng = 39.8262 * PI / 180.0
+
+        val dLng = meccaLng - lngRad
+
+        val numerator = sin(dLng)
+        val denominator = cos(latRad) * tan(meccaLat) - sin(latRad) * cos(dLng)
+
+        var qibla = atan2(numerator, denominator) * 180.0 / PI
+        if (qibla < 0) qibla += 360.0
+
+        _qiblaAngle.value = qibla
+
+        // Distance formula (haversine)
+        val r = 6371.0 // earth radius in km
+        val dLat = meccaLat - latRad
+        val a = sin(dLat / 2).pow(2) + cos(latRad) * cos(meccaLat) * sin(dLng / 2).pow(2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        _distanceToKaaba.value = r * c
+    }
+
+    private fun updateCountdown() {
+        val times = _prayerTimes.value ?: return
+        val now = Calendar.getInstance()
+        val currentHour = now.get(Calendar.HOUR_OF_DAY)
+        val currentMin = now.get(Calendar.MINUTE)
+        val currentSec = now.get(Calendar.SECOND)
+
+        val totalNowSecs = currentHour * 3600 + currentMin * 60 + currentSec
+
+        // Convert times to seconds
+        fun toSecs(t: String): Int {
+            val parts = t.split(":")
+            if (parts.size < 2) return 0
+            return parts[0].toInt() * 3600 + parts[1].toInt() * 60
+        }
+
+        val fajrSec = toSecs(times.fajr)
+        val sunriseSec = toSecs(times.sunrise)
+        val dhuhrSec = toSecs(times.dhuhr)
+        val asrSec = toSecs(times.asr)
+        val maghribSec = toSecs(times.maghrib)
+        val ishaSec = toSecs(times.isha)
+
+        val prayers = listOf(
+            "Fajr" to fajrSec,
+            "Sunrise" to sunriseSec,
+            "Dhuhr" to dhuhrSec,
+            "Asr" to asrSec,
+            "Maghrib" to maghribSec,
+            "Isha" to ishaSec
+        )
+
+        // Find next prayer
+        var nextName = "Fajr"
+        var nextSec = fajrSec + 24 * 3600
+        var currentName = "Isha"
+
+        for (i in prayers.indices) {
+            val (name, sec) = prayers[i]
+            if (totalNowSecs < sec) {
+                nextName = name
+                nextSec = sec
+                currentName = if (i == 0) "Isha" else prayers[i - 1].first
+                break
+            }
+        }
+
+        _nextPrayerName.value = nextName
+        _currentPrayerName.value = currentName
+
+        // Format times for display
+        val nextHourStr = String.format("%02d:%02d", (nextSec % 86400) / 3600, ((nextSec % 86400) % 3600) / 60)
+        _nextPrayerTime.value = nextHourStr
+
+        // Countdown math
+        val diffSecs = nextSec - totalNowSecs
+        val h = diffSecs / 3600
+        val m = (diffSecs % 3600) / 60
+        val s = diffSecs % 60
+        _countdownText.value = String.format("%02d:%02d:%02d", h, m, s)
+    }
+
+    private fun loadTodayLogs() {
+        viewModelScope.launch {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val todayStr = sdf.format(Date())
+            repo.getLogsForDate(todayStr).collect { logs ->
+                val logMap = logs.associate { it.prayerName to it.status }
+                _loggedPrayers.value = logMap
+            }
+        }
+    }
+
+    private fun calculateRamadanCountdown() {
+        // Find days remaining until Ramadan
+        // The tabular tabular calendar calculates the Hijri year.
+        // Ramadan starts on 1st Ramadan. Let's make an robust calendar difference calculation!
+        val now = Date()
+        val hDate = PrayerCalculator.getHijriDate(now, "en")
+        
+        // Approximate tabular day distance calculation:
+        val currentYear = hDate.year
+        // Tabular Ramadan is Month 9.
+        // If current month is Ramadan (9), and we are on day X, next Ramadan is next year month 9.
+        // Each Hijri month averages 29.53 days.
+        val monthsRemaining = if (hDate.month <= 9) {
+            9 - hDate.month
+        } else {
+            12 - hDate.month + 9
+        }
+        val daysApprox = (monthsRemaining * 29.53).toInt() - hDate.day + 1
+        _ramadanDaysRemaining.value = if (daysApprox < 0) 354 + daysApprox else daysApprox
+    }
+
+    // --- Action Handlers ---
+
+    // Toggle Prayer Status
+    fun togglePrayerStatus(prayerName: String, currentStatus: String) {
+        viewModelScope.launch {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val todayStr = sdf.format(Date())
+            
+            val nextStatus = when (currentStatus) {
+                "NOT_YET" -> "PRAYED_ON_TIME"
+                "PRAYED_ON_TIME" -> "PRAYED_LATE"
+                "PRAYED_LATE" -> "MISSED"
+                else -> "NOT_YET"
+            }
+
+            if (nextStatus == "NOT_YET") {
+                repo.deletePrayerLog(todayStr, prayerName)
+            } else {
+                repo.insertPrayerLog(
+                    PrayerLog(
+                        date = todayStr,
+                        prayerName = prayerName,
+                        status = nextStatus
+                    )
+                )
+            }
+            // Trigger haptic if supported
+            triggerHapticFeedback()
+        }
+    }
+
+    // Tasbih Actions
+    fun createTasbih(name: String, goal: Int) {
+        viewModelScope.launch {
+            repo.insertTasbihCounter(
+                TasbihCounter(name = name, goal = goal, count = 0, lastUpdated = System.currentTimeMillis())
+            )
+        }
+    }
+
+    fun incrementTasbih(counter: TasbihCounter) {
+        viewModelScope.launch {
+            val updated = counter.copy(
+                count = counter.count + 1,
+                lastUpdated = System.currentTimeMillis()
+            )
+            repo.updateTasbihCounter(updated)
+            if (counter.hapticEnabled) {
+                // If count reaches target, trigger long haptic, else short
+                if (updated.count % updated.goal == 0) {
+                    triggerHapticFeedback(long = true)
+                } else {
+                    triggerHapticFeedback(long = false)
+                }
+            }
+        }
+    }
+
+    fun resetTasbih(counter: TasbihCounter) {
+        viewModelScope.launch {
+            repo.updateTasbihCounter(
+                counter.copy(count = 0, lastUpdated = System.currentTimeMillis())
+            )
+            triggerHapticFeedback()
+        }
+    }
+
+    fun deleteTasbih(counter: TasbihCounter) {
+        viewModelScope.launch {
+            repo.deleteTasbihCounter(counter)
+        }
+    }
+
+    // Bookmarks Actions
+    fun toggleBookmark(type: String, referenceId: String, title: String, subtitle: String, arabicText: String = "", translationText: String = "") {
+        viewModelScope.launch {
+            val exists = bookmarks.value.any { it.type == type && it.referenceId == referenceId }
+            if (exists) {
+                repo.deleteBookmark(type, referenceId)
+            } else {
+                repo.insertBookmark(
+                    Bookmark(
+                        type = type,
+                        referenceId = referenceId,
+                        title = title,
+                        subtitle = subtitle,
+                        arabicText = arabicText,
+                        translationText = translationText
+                    )
+                )
+            }
+            triggerHapticFeedback()
+        }
+    }
+
+    fun isBookmarked(type: String, referenceId: String): Flow<Boolean> {
+        return repo.isBookmarked(type, referenceId)
+    }
+
+    // Quran Progress
+    fun saveLastReadSurah(surahId: Int, ayahId: Int, surahName: String) {
+        viewModelScope.launch {
+            repo.insertQuranHistory(
+                QuranHistory(surahId = surahId, ayahId = ayahId, surahName = surahName)
+            )
+        }
+    }
+
+    // Settings actions
+    fun setAppLanguage(lang: String) {
+        viewModelScope.launch { repo.setLanguage(lang) }
+    }
+
+    fun setCalculationMethod(method: String) {
+        viewModelScope.launch { repo.setCalcMethod(method) }
+    }
+
+    fun setMadhab(madhabName: String) {
+        viewModelScope.launch { repo.setMadhab(madhabName) }
+    }
+
+    fun toggleNotifications(enabled: Boolean) {
+        viewModelScope.launch { repo.setNotificationsEnabled(enabled) }
+    }
+
+    fun setAthanVoices(fajr: String, other: String) {
+        viewModelScope.launch {
+            repo.setAthanFajrVoice(fajr)
+            repo.setAthanOtherVoice(other)
+        }
+    }
+
+    fun setSnooze(minutes: Int) {
+        viewModelScope.launch { repo.setSnoozeMinutes(minutes) }
+    }
+
+    fun setManualCity(city: String, lat: Double, lng: Double) {
+        viewModelScope.launch {
+            repo.setLocation(city, lat, lng)
+            triggerHapticFeedback()
+        }
+    }
+
+    fun toggleFastingToday() {
+        _isFastingToday.value = !_isFastingToday.value
+        triggerHapticFeedback()
+    }
+
+    // --- Media Player: Athan Recitations ---
+    fun playAthan() {
+        if (_isAthanPlaying.value) {
+            stopAthan()
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                mediaPlayer?.release()
+                
+                // Famous Athan voices URLs:
+                // Let's use clean public CDN streams:
+                val mPlayer = MediaPlayer().apply {
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+                    )
+                    // URL streaming Athan (Makkah recitation)
+                    setDataSource("https://download.tvquran.com/download/selections/3/570773b064c12.mp3")
+                    prepare()
+                    start()
+                }
+                mediaPlayer = mPlayer
+                _isAthanPlaying.value = true
+
+                mPlayer.setOnCompletionListener {
+                    _isAthanPlaying.value = false
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun stopAthan() {
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.release()
+        }
+        mediaPlayer = null
+        _isAthanPlaying.value = false
+    }
+
+    // --- Haptic Feedback Utility ---
+    private fun triggerHapticFeedback(long: Boolean = false) {
+        try {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = if (long) {
+                    VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)
+                } else {
+                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                }
+                vibrator.vibrate(effect)
+            } else {
+                @Suppress("DEPRECATION")
+                if (long) vibrator.vibrate(300) else vibrator.vibrate(50)
+            }
+        } catch (e: Exception) {
+            // Safe fallback
+        }
+    }
+
+    // --- Theme & Appearance Writers ---
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch {
+            repo.setThemeMode(mode)
+        }
+    }
+
+    fun setWallpaper(wp: String) {
+        viewModelScope.launch {
+            repo.setWallpaper(wp)
+        }
+    }
+
+    // --- Preferred Mosque Writers ---
+    fun setPreferredMosque(id: String, name: String, lat: Double, lng: Double, addr: String) {
+        viewModelScope.launch {
+            repo.setPreferredMosque(id, name, lat, lng, addr)
+        }
+    }
+
+    fun setPreferredMosqueRemind(enabled: Boolean) {
+        viewModelScope.launch {
+            repo.setPreferredMosqueRemind(enabled)
+        }
+    }
+
+    // --- Favorite Mosques Writers ---
+    fun insertFavoriteMosque(mosque: FavoriteMosque) {
+        viewModelScope.launch {
+            repo.insertFavoriteMosque(mosque)
+        }
+    }
+
+    fun deleteFavoriteMosque(id: Long) {
+        viewModelScope.launch {
+            repo.deleteFavoriteMosque(id)
+        }
+    }
+
+    fun isFavoriteMosque(id: Long): Flow<Boolean> {
+        return repo.isFavoriteMosque(id)
+    }
+
+    // --- Khatmahs Writers ---
+    fun insertKhatmah(khatmah: Khatmah) {
+        viewModelScope.launch {
+            repo.insertKhatmah(khatmah)
+        }
+    }
+
+    fun updateKhatmah(khatmah: Khatmah) {
+        viewModelScope.launch {
+            repo.updateKhatmah(khatmah)
+        }
+    }
+
+    fun deleteKhatmah(khatmah: Khatmah) {
+        viewModelScope.launch {
+            repo.deleteKhatmah(khatmah)
+        }
+    }
+
+    // --- Quran Notes Writers ---
+    fun getNotesForAyah(surahId: Int, ayahId: Int): Flow<List<QuranNote>> {
+        return repo.getNotesForAyah(surahId, ayahId)
+    }
+
+    fun insertQuranNote(note: QuranNote) {
+        viewModelScope.launch {
+            repo.insertQuranNote(note)
+        }
+    }
+
+    fun deleteQuranNote(id: Int) {
+        viewModelScope.launch {
+            repo.deleteQuranNote(id)
+        }
+    }
+
+    // --- Admin StateFlows & CRUD ---
+    val adminHadiths = repo.allAdminHadiths.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertAdminHadith(hadith: AdminHadith) = viewModelScope.launch { repo.insertAdminHadith(hadith) }
+    fun deleteAdminHadith(id: Int) = viewModelScope.launch { repo.deleteAdminHadith(id) }
+
+    val adminAdhkars = repo.allAdminAdhkars.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertAdminAdhkar(adhkar: AdminAdhkar) = viewModelScope.launch { repo.insertAdminAdhkar(adhkar) }
+    fun deleteAdminAdhkar(id: Int) = viewModelScope.launch { repo.deleteAdminAdhkar(id) }
+
+    val adminDuas = repo.allAdminDuas.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertAdminDua(dua: AdminDua) = viewModelScope.launch { repo.insertAdminDua(dua) }
+    fun deleteAdminDua(id: Int) = viewModelScope.launch { repo.deleteAdminDua(id) }
+
+    val adminArticles = repo.allAdminArticles.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertAdminArticle(article: AdminArticle) = viewModelScope.launch { repo.insertAdminArticle(article) }
+    fun deleteAdminArticle(id: Int) = viewModelScope.launch { repo.deleteAdminArticle(id) }
+
+    val adminBannersReminders = repo.allAdminBannersReminders.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertAdminBannerReminder(br: AdminBannerReminder) = viewModelScope.launch { repo.insertAdminBannerReminder(br) }
+    fun deleteAdminBannerReminder(id: Int) = viewModelScope.launch { repo.deleteAdminBannerReminder(id) }
+
+    val donationCampaigns = repo.allDonationCampaigns.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertDonationCampaign(campaign: DonationCampaign) = viewModelScope.launch { repo.insertDonationCampaign(campaign) }
+    fun deleteDonationCampaign(id: Int) = viewModelScope.launch { repo.deleteDonationCampaign(id) }
+
+    val notificationLogs = repo.allNotificationLogs.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+    fun insertNotificationLog(title: String, body: String, audience: String) = viewModelScope.launch {
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
+        repo.insertNotificationLog(NotificationLog(title = title, body = body, audience = audience, sentTime = sdf.format(java.util.Date())))
+    }
+
+    val adminAccounts = repo.allAdminAccounts.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    // App Members Flows and Management
+    val allMembers = repo.allMembers.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    val loggedInMember = MutableStateFlow<AppMember?>(null)
+
+    fun registerMember(
+        name: String, 
+        email: String, 
+        country: String, 
+        city: String, 
+        onSuccess: () -> Unit, 
+        onFailure: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            if (name.isBlank() || email.isBlank()) {
+                onFailure("يرجى ملء جميع الحقول المطلوبة.")
+                return@launch
+            }
+            val existing = allMembers.value.find { it.email.trim().lowercase() == email.trim().lowercase() }
+            if (existing != null) {
+                onFailure("البريد الإلكتروني مسجل بالفعل كعضو في أقم صلاتك.")
+            } else {
+                val newMember = AppMember(
+                    name = name,
+                    email = email.trim().lowercase(),
+                    country = country,
+                    city = city,
+                    points = 150, // Starting point gift
+                    registrationDate = System.currentTimeMillis(),
+                    streakDays = 1,
+                    isActive = true
+                )
+                repo.insertMember(newMember)
+                loggedInMember.value = newMember
+                onSuccess()
+            }
+        }
+    }
+
+    fun loginMember(email: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+        viewModelScope.launch {
+            val matched = allMembers.value.find { it.email.trim().lowercase() == email.trim().lowercase() }
+            if (matched != null) {
+                if (!matched.isActive) {
+                    onFailure("هذا الحساب تم تجميده من قبل الإدارة.")
+                } else {
+                    loggedInMember.value = matched
+                    onSuccess()
+                }
+            } else {
+                onFailure("العضوية غير موجودة. يرجى التسجيل كعضو جديد أولاً.")
+            }
+        }
+    }
+
+    fun logoutMember() {
+        loggedInMember.value = null
+    }
+
+    fun updateMemberPoints(memberId: Int, pointsToAdd: Int) {
+        viewModelScope.launch {
+            val matched = allMembers.value.find { it.id == memberId }
+            if (matched != null) {
+                val updated = matched.copy(points = matched.points + pointsToAdd)
+                repo.insertMember(updated)
+                if (loggedInMember.value?.id == memberId) {
+                    loggedInMember.value = updated
+                }
+            }
+        }
+    }
+
+    fun deleteMember(id: Int) = viewModelScope.launch {
+        repo.deleteMember(id)
+    }
+
+    fun setMemberActiveState(id: Int, isActive: Boolean) = viewModelScope.launch {
+        val matched = allMembers.value.find { it.id == id }
+        if (matched != null) {
+            repo.insertMember(matched.copy(isActive = isActive))
+        }
+    }
+
+    fun authenticateAdmin(
+        emailInput: String,
+        passwordInput: String,
+        onSuccess: (role: String, permissions: String) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                auth.signInWithEmailAndPassword(emailInput, passwordInput)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val user = auth.currentUser
+                            if (user != null && user.email != null) {
+                                val email = user.email!!.trim().lowercase()
+                                try {
+                                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                    db.collection("admins").document(email).get()
+                                        .addOnCompleteListener { fsTask ->
+                                            if (fsTask.isSuccessful) {
+                                                val doc = fsTask.result
+                                                if (doc != null && doc.exists()) {
+                                                    val role = doc.getString("role") ?: "Moderator"
+                                                    val permissions = doc.getString("permissions") ?: "EDIT_CONTENT"
+                                                    onSuccess(role, permissions)
+                                                } else {
+                                                    if (email == "zakidj181@gmail.com") {
+                                                        // Auto-provision Super Admin document in Firestore
+                                                        val data = mapOf(
+                                                            "email" to email,
+                                                            "role" to "Super Admin",
+                                                            "permissions" to "ALL"
+                                                        )
+                                                        db.collection("admins").document(email).set(data)
+                                                        onSuccess("Super Admin", "ALL")
+                                                    } else {
+                                                        onFailure("Access denied. No admin record found in Firestore for $email.")
+                                                    }
+                                                }
+                                            } else {
+                                                if (email == "zakidj181@gmail.com") {
+                                                    onSuccess("Super Admin", "ALL")
+                                                } else {
+                                                    onFailure("Firestore query failed: ${fsTask.exception?.message}")
+                                                }
+                                            }
+                                        }
+                                } catch (e: Exception) {
+                                    val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
+                                    if (email == "zakidj181@gmail.com") {
+                                        onSuccess("Super Admin", "ALL")
+                                    } else if (matchedLocal != null) {
+                                        onSuccess(matchedLocal.role, matchedLocal.permissions)
+                                    } else {
+                                        onFailure("Firestore authorization failed: ${e.message}")
+                                    }
+                                }
+                            } else {
+                                onFailure("Authenticated user has no email address.")
+                            }
+                        } else {
+                            val errorMsg = task.exception?.message ?: "Unknown error"
+                            val email = emailInput.trim().lowercase()
+                            val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
+                            if ((email == "zakidj181@gmail.com" && passwordInput == "admin123") || 
+                                (matchedLocal != null && passwordInput == "admin123")) {
+                                onSuccess(if (email == "zakidj181@gmail.com") "Super Admin" else matchedLocal?.role ?: "Moderator", 
+                                          if (email == "zakidj181@gmail.com") "ALL" else matchedLocal?.permissions ?: "EDIT_CONTENT")
+                            } else {
+                                onFailure("Firebase Authentication failed: $errorMsg")
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                val email = emailInput.trim().lowercase()
+                val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
+                if ((email == "zakidj181@gmail.com" && passwordInput == "admin123") || 
+                    (matchedLocal != null && passwordInput == "admin123")) {
+                    onSuccess(if (email == "zakidj181@gmail.com") "Super Admin" else matchedLocal?.role ?: "Moderator", 
+                              if (email == "zakidj181@gmail.com") "ALL" else matchedLocal?.permissions ?: "EDIT_CONTENT")
+                } else {
+                    onFailure("Firebase not initialized: ${e.message}. Testing credentials: zakidj181@gmail.com / admin123")
+                }
+            }
+        }
+    }
+
+    fun insertAdminAccount(email: String, role: String, permissions: String) = viewModelScope.launch {
+        repo.insertAdminAccount(AdminAccount(email = email, role = role, permissions = permissions))
+        try {
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            val data = mapOf(
+                "email" to email.trim().lowercase(),
+                "role" to role,
+                "permissions" to permissions
+            )
+            db.collection("admins").document(email.trim().lowercase()).set(data)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun deleteAdminAccount(id: Int, email: String) = viewModelScope.launch {
+        repo.deleteAdminAccount(id)
+        try {
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            db.collection("admins").document(email.trim().lowercase()).delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // Seed defaults if database is empty
+    init {
+        viewModelScope.launch {
+            // Seed default campaigns if none exist
+            repo.allDonationCampaigns.first().let { current ->
+                if (current.isEmpty()) {
+                    repo.insertDonationCampaign(
+                        DonationCampaign(
+                            title = "Build Al-Rahma Community Center",
+                            description = "Support the expansion and construction of a multipurpose youth community center adjacent to Al-Rahma Mosque.",
+                            targetAmount = 75000.0,
+                            currentProgress = 34200.0,
+                            startDate = "2026-06-01",
+                            endDate = "2026-12-31"
+                        )
+                    )
+                    repo.insertDonationCampaign(
+                        DonationCampaign(
+                            title = "Ramadan Iftar Distribution 2026",
+                            description = "Provide hot daily Iftar meals to over 500 needy families during the holy month of Ramadan.",
+                            targetAmount = 15000.0,
+                            currentProgress = 12500.0,
+                            startDate = "2026-01-01",
+                            endDate = "2026-07-31"
+                        )
+                    )
+                }
+            }
+            
+            // Seed a default Super Admin account
+            repo.allAdminAccounts.first().let { currentAdmins ->
+                if (currentAdmins.isEmpty()) {
+                    repo.insertAdminAccount(
+                        AdminAccount(
+                            email = "zakidj181@gmail.com",
+                            role = "Super Admin",
+                            permissions = "ALL"
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopLocationTracking()
+        stopAthan()
+    }
+
+    fun initCommunityAndPolls() {
+        if (_communityPosts.value.isNotEmpty()) return
+        
+        // Initial community posts
+        _communityPosts.value = listOf(
+            CommunityPost(
+                id = 1,
+                authorName = "عبد الله الأثري",
+                authorCountry = "السعودية",
+                content = "السلام عليكم ورحمة الله وبركاته.. تذكير يا أحبة بصلاة الضحى، فإنها صلاة الأوابين وتجزئ عن صدقة كل سلامى من ابن آدم. وفقنا الله وإياكم لمرضاته.",
+                likesCount = 45,
+                isLiked = false,
+                timestamp = System.currentTimeMillis() - 3600000 * 2
+            ),
+            CommunityPost(
+                id = 2,
+                authorName = "محمد التوركي",
+                authorCountry = "تركيا",
+                content = "اللهم صلّ وسلم وبارك على نبينا ورسولنا محمد وعلى آله وصحبه أجمعين. لا تنسوا كثرة الصلاة على النبي في يوم الجمعة المبارك وفي سائر الأيام.",
+                likesCount = 112,
+                isLiked = false,
+                timestamp = System.currentTimeMillis() - 3600000 * 5
+            ),
+            CommunityPost(
+                id = 3,
+                authorName = "زينب سليم",
+                authorCountry = "مصر",
+                content = "الحمد لله الذي بنعمته تتم الصالحات.. أتممت اليوم وردي من حفظ سورة البقرة، أسأل الله أن يرزقني وإياكم العمل بها والثبات على حفظ كتابه الكريم.",
+                likesCount = 78,
+                isLiked = false,
+                timestamp = System.currentTimeMillis() - 3600000 * 12
+            ),
+            CommunityPost(
+                id = 4,
+                authorName = "أحمد سياح",
+                authorCountry = "الجزائر",
+                content = "نصيحة من القلب: اجعل لك خبيئة من عمل صالح لا يعلمها إلا الله، ركعتين في جوف الليل، أو صدقة خفية، أو تلاوة متدبرة. هذا هو الزاد الحقيقي.",
+                likesCount = 93,
+                isLiked = false,
+                timestamp = System.currentTimeMillis() - 3600000 * 24
+            )
+        )
+
+        // Initial polls
+        _communityPolls.value = listOf(
+            CommunityPoll(
+                id = 1,
+                questionAr = "ما هو أنسب وقت تفضله لقراءة وردك اليومي من القرآن الكريم؟",
+                questionEn = "What is the best time you prefer to read your daily Quran portion?",
+                optionsAr = listOf("بعد صلاة الفجر", "بعد صلاة العصر/المغرب", "قبل النوم في الليل", "في أوقات متفرقة خلال اليوم"),
+                optionsEn = listOf("After Fajr prayer", "After Asr/Maghrib prayer", "Before sleeping at night", "At separate times during the day"),
+                votes = listOf(142, 65, 87, 110),
+                totalVotes = 404,
+                votedOptionIndex = null
+            ),
+            CommunityPoll(
+                id = 2,
+                questionAr = "هل قمت بتفعيل تنبيهات سنن الأذان والأذكار في التطبيق؟",
+                questionEn = "Have you activated Athan sunnah and Adhkar notifications in the app?",
+                optionsAr = listOf("نعم، مفعلة بالكامل وأستفيد منها", "بعضها مفعل والبعض الآخر لا", "لا، أفضل الاعتماد على نفسي", "سأقوم بتفعيلها الآن"),
+                optionsEn = listOf("Yes, fully enabled & helpful", "Some are enabled, some are not", "No, I prefer doing it manually", "I will enable them now"),
+                votes = listOf(280, 52, 14, 48),
+                totalVotes = 394,
+                votedOptionIndex = null
+            ),
+            CommunityPoll(
+                id = 3,
+                questionAr = "كم جزءاً أو حزباً تخطط لإتمامه في ختمتك الحالية؟",
+                questionEn = "How many portions do you plan to complete in your current Khatmah?",
+                optionsAr = listOf("جزء واحد يومياً", "نصف جزء يومياً", "حزب واحد يومياً", "أكثر من جزء يومياً بفضل الله"),
+                optionsEn = listOf("One Juz' daily", "Half Juz' daily", "One Hizb daily", "More than one Juz' daily"),
+                votes = listOf(185, 94, 61, 45),
+                totalVotes = 385,
+                votedOptionIndex = null
+            )
+        )
+
+        // Initial Fajr Tracker (7 days)
+        _fajrRecords.value = listOf(
+            FajrDayRecord("السبت", "Saturday", "07-04", "CONGREGATION"),
+            FajrDayRecord("الأحد", "Sunday", "07-05", "CONGREGATION"),
+            FajrDayRecord("الإثنين", "Monday", "07-06", "INDIVIDUAL"),
+            FajrDayRecord("الثلاثاء", "Tuesday", "07-07", "MISSED"),
+            FajrDayRecord("الأربعاء", "Wednesday", "07-08", "CONGREGATION"),
+            FajrDayRecord("الخميس", "Thursday", "07-09", "NOT_SET"),
+            FajrDayRecord("الجمعة", "Friday", "07-10", "NOT_SET")
+        )
+    }
+
+    fun addCommunityPost(content: String) {
+        val member = loggedInMember.value
+        val name = member?.name ?: "مستخدم أقم صلاتك"
+        val country = member?.country ?: "المدينة المنورة"
+        val newPost = CommunityPost(
+            id = _communityPosts.value.size + 1,
+            authorName = name,
+            authorCountry = country,
+            content = content,
+            likesCount = 0,
+            isLiked = false,
+            timestamp = System.currentTimeMillis()
+        )
+        _communityPosts.value = listOf(newPost) + _communityPosts.value
+        
+        // Reward user with 5 Barakah points for contributing to the community!
+        member?.let {
+            updateMemberPoints(it.id, 5)
+        }
+    }
+
+    fun likeCommunityPost(postId: Int) {
+        _communityPosts.value = _communityPosts.value.map { post ->
+            if (post.id == postId) {
+                if (post.isLiked) {
+                    post.copy(likesCount = post.likesCount - 1, isLiked = false)
+                } else {
+                    post.copy(likesCount = post.likesCount + 1, isLiked = true)
+                }
+            } else {
+                post
+            }
+        }
+    }
+
+    fun voteInPoll(pollId: Int, optionIndex: Int) {
+        _communityPolls.value = _communityPolls.value.map { poll ->
+            if (poll.id == pollId && poll.votedOptionIndex == null) {
+                val newVotes = poll.votes.mapIndexed { idx, v -> if (idx == optionIndex) v + 1 else v }
+                poll.copy(
+                    votes = newVotes,
+                    totalVotes = poll.totalVotes + 1,
+                    votedOptionIndex = optionIndex
+                )
+            } else {
+                poll
+            }
+        }
+        
+        // Reward user with 10 Barakah points for participating in polls!
+        loggedInMember.value?.let {
+            updateMemberPoints(it.id, 10)
+        }
+    }
+
+    fun updateFajrRecord(dateString: String, newStatus: String) {
+        _fajrRecords.value = _fajrRecords.value.map { rec ->
+            if (rec.dateString == dateString) {
+                rec.copy(status = newStatus)
+            } else {
+                rec
+            }
+        }
+        
+        // Give points for tracking Fajr prayer!
+        val addedPoints = when (newStatus) {
+            "CONGREGATION" -> 25 // 25 points for Congregation!
+            "INDIVIDUAL" -> 10   // 10 points for Individual!
+            else -> 0
+        }
+        if (addedPoints > 0) {
+            loggedInMember.value?.let {
+                updateMemberPoints(it.id, addedPoints)
+            }
+        }
+    }
+}
+
+data class CommunityPost(
+    val id: Int,
+    val authorName: String,
+    val authorCountry: String,
+    val content: String,
+    val likesCount: Int,
+    val isLiked: Boolean,
+    val timestamp: Long
+)
+
+data class CommunityPoll(
+    val id: Int,
+    val questionAr: String,
+    val questionEn: String,
+    val optionsAr: List<String>,
+    val optionsEn: List<String>,
+    val votes: List<Int>,
+    val totalVotes: Int,
+    val votedOptionIndex: Int? // null if not voted yet
+)
+
+data class FajrDayRecord(
+    val dayNameAr: String,
+    val dayNameEn: String,
+    val dateString: String,
+    val status: String // "NOT_SET", "CONGREGATION", "INDIVIDUAL", "MISSED", "EXCUSED"
+)
