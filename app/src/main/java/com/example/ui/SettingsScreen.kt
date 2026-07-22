@@ -83,16 +83,7 @@ fun SettingsScreen(
             )
         }
 
-        // 2. Language Selection
-        item {
-            SettingsItemCard(
-                icon = Icons.Filled.Language,
-                title = if (lang == "ar") "لغة التطبيق" else "Language",
-                subtitle = languages.find { it.first == lang }?.second ?: "English",
-                tag = "setting_language",
-                onClick = { activeDialog = "LANG" }
-            )
-        }
+
 
         // 3. Notifications Manager
         item {
@@ -244,37 +235,7 @@ fun SettingsScreen(
         )
     }
 
-    // B. Language Selector Dialog
-    if (activeDialog == "LANG") {
-        AlertDialog(
-            onDismissRequest = { activeDialog = null },
-            title = { Text(if (lang == "ar") "لغة التطبيق" else "Select Language", fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    languages.forEach { (code, name) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setAppLanguage(code)
-                                    activeDialog = null
-                                }
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = code == lang, onClick = {
-                                viewModel.setAppLanguage(code)
-                                activeDialog = null
-                            })
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(name, fontSize = 16.sp)
-                        }
-                    }
-                }
-            },
-            confirmButton = {}
-        )
-    }
+
 
     // C. Calculation Method & Madhab Settings Dialog
     if (activeDialog == "CALC") {

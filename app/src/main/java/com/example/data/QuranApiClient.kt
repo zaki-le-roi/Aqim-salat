@@ -17,9 +17,9 @@ object QuranApiClient {
         val audioUrl: String
     )
 
-    // Fetches the given Surah's Arabic text and English translation together.
+    // Fetches the given Surah's Arabic text and Arabic Tafsir together.
     suspend fun fetchSurah(surahId: Int): List<ApiAyah> = withContext(Dispatchers.IO) {
-        val urlString = "https://api.alquran.cloud/v1/surah/$surahId/editions/quran-simple,en.sahih"
+        val urlString = "https://api.alquran.cloud/v1/surah/$surahId/editions/quran-simple,ar.muyassar"
         val url = URL(urlString)
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"

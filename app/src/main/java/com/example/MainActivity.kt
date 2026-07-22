@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val appViewModel: AppViewModel = viewModel()
-            val activeLanguage by appViewModel.language.collectAsState()
+            val activeLanguage = "ar"
             val activeThemeMode by appViewModel.themeMode.collectAsState()
             val nextPrayerName by appViewModel.nextPrayerName.collectAsState()
 
@@ -115,7 +115,7 @@ fun AqimSalahApp(
             }
             "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS", "AUTH",
             "COMMUNITY", "POLLS", "FAJR_LIST", "COMPETITION",
-            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "WORLD_CUP", "ON_THIS_DAY" -> {
+            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY" -> {
                 activeDetailScreen = routeKey
             }
         }
@@ -237,13 +237,7 @@ fun AqimSalahApp(
                             onBack = { activeDetailScreen = null }
                         )
                     }
-                    "WORLD_CUP" -> {
-                        WorldCupScreen(
-                            viewModel = viewModel,
-                            lang = lang,
-                            onBack = { activeDetailScreen = null }
-                        )
-                    }
+
                     "ON_THIS_DAY" -> {
                         OnThisDayScreen(
                             viewModel = viewModel,

@@ -12,7 +12,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -55,6 +57,40 @@ val SURAH_START_PAGES = intArrayOf(
     551, 553, 554, 556, 558, 560, 562, 564, 566, 568, 570, 572, 574, 575, 577, 578, 580, 582, 583, 585,
     586, 587, 587, 589, 590, 591, 591, 592, 593, 594, 595, 595, 596, 596, 597, 597, 598, 598, 599, 599,
     600, 600, 601, 601, 601, 602, 602, 602, 603, 603, 603, 604, 604, 604
+)
+
+// Mapping each Juz (1..30) to the starting Surah ID
+val JUZ_START_SURAHS = intArrayOf(
+    1,   // Juz 1 -> Al-Fatihah
+    2,   // Juz 2 -> Al-Baqarah
+    2,   // Juz 3 -> Al-Baqarah
+    3,   // Juz 4 -> Ali 'Imran
+    4,   // Juz 5 -> An-Nisa
+    4,   // Juz 6 -> An-Nisa
+    5,   // Juz 7 -> Al-Ma'idah
+    6,   // Juz 8 -> Al-An'am
+    7,   // Juz 9 -> Al-A'raf
+    8,   // Juz 10 -> Al-Anfal
+    9,   // Juz 11 -> At-Tawbah
+    11,  // Juz 12 -> Hud
+    12,  // Juz 13 -> Yusuf
+    15,  // Juz 14 -> Al-Hijr
+    17,  // Juz 15 -> Al-Isra
+    18,  // Juz 16 -> Al-Kahf
+    21,  // Juz 17 -> Al-Anbiya
+    23,  // Juz 18 -> Al-Mu'minun
+    25,  // Juz 19 -> Al-Furqan
+    27,  // Juz 20 -> An-Naml
+    29,  // Juz 21 -> Al-'Ankabut
+    33,  // Juz 22 -> Al-Ahzab
+    36,  // Juz 23 -> Ya-Sin
+    39,  // Juz 24 -> Az-Zumar
+    41,  // Juz 25 -> Fussilat
+    46,  // Juz 26 -> Al-Ahqaf
+    51,  // Juz 27 -> Adh-Dhariyat
+    58,  // Juz 28 -> Al-Mujadilah
+    67,  // Juz 29 -> Al-Mulk
+    78   // Juz 30 -> An-Naba
 )
 
 // Helper to calculate Juz number based on standard distributions
@@ -125,9 +161,13 @@ fun QuranScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val history by viewModel.quranHistory.collectAsState()
+    val bookmarks by viewModel.bookmarks.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
+    var selectedTab by remember { mutableStateOf("ALL") } // ALL, MECCAN, MEDINAN, BOOKMARKS
     var selectedSurah by remember { mutableStateOf<QuranData.Surah?>(null) }
+    
+    val lazyListState = rememberLazyListState()
 
     // Direct routing support from bookmarks/external triggers
     LaunchedEffect(initialSurahId) {
@@ -139,185 +179,433 @@ fun QuranScreen(
         }
     }
 
-    // Filter surahs based on query
-    val filteredSurahs = remember(searchQuery) {
-        if (searchQuery.isBlank()) {
-            QuranData.surahs
-        } else {
-            QuranData.surahs.filter {
-                it.englishName.contains(searchQuery, ignoreCase = true) ||
-                        it.name.contains(searchQuery) ||
-                        it.translation.contains(searchQuery, ignoreCase = true)
+    // Filter bookmarked surahs
+    val bookmarkedSurahIds = remember(bookmarks) {
+        bookmarks.filter { it.type == "QURAN" }.mapNotNull {
+            val parts = it.referenceId.split(":")
+            parts.getOrNull(0)?.toIntOrNull()
+        }.toSet()
+    }
+
+    // Filter surahs based on query & selected category
+    val filteredSurahs = remember(searchQuery, selectedTab, bookmarkedSurahIds) {
+        var list = QuranData.surahs
+        
+        if (searchQuery.isNotBlank()) {
+            val trimmed = searchQuery.trim()
+            list = list.filter {
+                it.name.contains(trimmed) || 
+                it.id.toString() == trimmed || 
+                it.englishName.contains(trimmed, ignoreCase = true)
             }
+        }
+        
+        when (selectedTab) {
+            "MECCAN" -> list.filter { it.revelationType.equals("Meccan", ignoreCase = true) }
+            "MEDINAN" -> list.filter { it.revelationType.equals("Medinan", ignoreCase = true) }
+            "BOOKMARKS" -> list.filter { it.id in bookmarkedSurahIds }
+            else -> list
         }
     }
 
-    if (selectedSurah == null) {
-        // --- Surah List Browsing Mode ---
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp)
-        ) {
-            Text(
-                text = Translations.get("quran", lang),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(vertical = 16.dp)
-            )
-
-            // Continue Reading Banner (Linked directly to Room History)
-            val lastRead = history.firstOrNull()
-            if (lastRead != null) {
-                Card(
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        if (selectedSurah == null) {
+            // --- Surah List Browsing Mode ---
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFFEFDF9)) // Warm elegant ivory background
+            ) {
+                // --- Islamic Rich Header ---
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                        .clickable {
-                            val originalSurah = QuranData.surahs.find { it.id == lastRead.surahId }
-                            if (originalSurah != null) {
-                                selectedSurah = originalSurah
-                            }
-                        },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                        .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
+                        .background(Color(0xFF042B1D)) // Deep Emerald Green
+                        .padding(horizontal = 20.dp, vertical = 24.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Filled.MenuBook,
-                                contentDescription = "Continue",
-                                tint = Color(0xFFD4AF37),
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = Translations.get("continue_reading", lang),
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                                Text(
-                                    text = "${lastRead.surahId}. ${lastRead.surahName}",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFD4AF37)
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                         Icon(
-                            imageVector = Icons.Filled.ArrowForward,
-                            contentDescription = "Forward",
-                            tint = Color(0xFFD4AF37)
+                            imageVector = Icons.Filled.MenuBook,
+                            contentDescription = null,
+                            tint = Color(0xFFD4AF37), // Luminous Gold
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "القرآن الكريم",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "كِتَابٌ أَنزَلْنَاهُ إِلَيْكَ مُبَارَكٌ لِّيَدَّبَّرُوا آيَاتِهِ",
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
-            }
 
-            // Search Bar
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .testTag("quran_search_bar"),
-                placeholder = { Text(Translations.get("search_surah", lang)) },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Filled.Clear, contentDescription = "Clear")
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Continue Reading Banner (Linked directly to Room History)
+                    val lastRead = history.firstOrNull()
+                    if (lastRead != null) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val originalSurah = QuranData.surahs.find { it.id == lastRead.surahId }
+                                    if (originalSurah != null) {
+                                        selectedSurah = originalSurah
+                                    }
+                                },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF042B1D).copy(alpha = 0.05f)),
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFE2E2E2))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFD4AF37).copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Bookmark,
+                                            contentDescription = null,
+                                            tint = Color(0xFFD4AF37),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "مواصلة القراءة",
+                                            fontSize = 11.sp,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "سورة ${lastRead.surahName}",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF042B1D)
+                                        )
+                                    }
+                                }
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronLeft,
+                                    contentDescription = null,
+                                    tint = Color(0xFFD4AF37),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.height(14.dp))
                     }
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                )
-            )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Surah Scrollable List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 100.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(filteredSurahs, key = { it.id }) { surah ->
-                    Card(
+                    // --- Search Bar ---
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { selectedSurah = surah }
-                            .testTag("surah_card_${surah.id}"),
+                            .testTag("quran_search_bar"),
+                        placeholder = { Text("ابحث عن اسم السورة، رقمها...", fontSize = 14.sp) },
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "ابحث", tint = Color.Gray) },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { searchQuery = "" }) {
+                                    Icon(Icons.Filled.Clear, contentDescription = "مسح", tint = Color.Gray)
+                                }
+                            }
+                        },
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFD4AF37),
+                            unfocusedBorderColor = Color(0xFFE2E2E2),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- Category Tabs ---
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
+                            .padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Number Badge
+                        val tabs = listOf(
+                            "ALL" to "كل السور",
+                            "MECCAN" to "مكية",
+                            "MEDINAN" to "مدنية",
+                            "BOOKMARKS" to "المفضلة"
+                        )
+                        tabs.forEach { (key, title) ->
+                            val isSelected = selectedTab == key
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) Color.White else Color.Transparent)
+                                    .clickable { selectedTab = key }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = title,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    color = if (isSelected) Color(0xFF042B1D) else Color.Gray
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // --- Juz Quick Jump Index ---
+                    Text(
+                        text = "الوصول السريع بالأجزاء",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF042B1D),
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 8.dp)
+                    ) {
+                        items(30) { index ->
+                            val juzNum = index + 1
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0xFF042B1D).copy(alpha = 0.06f))
+                                    .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        val startSurahId = JUZ_START_SURAHS.getOrNull(index) ?: 1
+                                        val scrollIndex = filteredSurahs.indexOfFirst { it.id == startSurahId }
+                                        if (scrollIndex != -1) {
+                                            coroutineScope.launch {
+                                                lazyListState.animateScrollToItem(scrollIndex)
+                                            }
+                                        }
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "جزء $juzNum",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF042B1D)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // --- Surah Scrollable List ---
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 100.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        if (filteredSurahs.isEmpty()) {
+                            item {
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                        .fillMaxWidth()
+                                        .padding(40.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = surah.id.toString(),
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(16.dp))
-
-                                Column {
-                                    Text(
-                                        text = surah.englishName,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
-                                    Text(
-                                        text = "${surah.translation} • ${surah.totalAyahs} Ayahs",
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        text = "لا توجد نتائج مطابقة لبحثك",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp
                                     )
                                 }
                             }
+                        } else {
+                            items(filteredSurahs, key = { it.id }) { surah ->
+                                val isMeccan = surah.revelationType.equals("Meccan", ignoreCase = true)
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { selectedSurah = surah }
+                                        .testTag("surah_card_${surah.id}"),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFE2E2E2))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            // Star Number Badge
+                                            IslamicStarBadge(number = surah.id)
 
-                            Text(
-                                text = surah.name,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFD4AF37)
-                            )
+                                            Spacer(modifier = Modifier.width(16.dp))
+
+                                            Column {
+                                                Text(
+                                                    text = surah.name,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 17.sp,
+                                                    color = Color(0xFF042B1D)
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    // Type indicator
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .clip(RoundedCornerShape(4.dp))
+                                                            .background(
+                                                                if (isMeccan) Color(0xFFFF9800).copy(alpha = 0.1f)
+                                                                else Color(0xFF4CAF50).copy(alpha = 0.1f)
+                                                            )
+                                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = if (isMeccan) "مكية" else "مدنية",
+                                                            fontSize = 10.sp,
+                                                            color = if (isMeccan) Color(0xFFE65100) else Color(0xFF2E7D32),
+                                                            fontWeight = FontWeight.Bold
+                                                        )
+                                                    }
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(
+                                                        text = "عدد الآيات: ${surah.totalAyahs}",
+                                                        fontSize = 11.sp,
+                                                        color = Color.Gray
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        // Offline availability indicator
+                                        val isOffline = surah.id in listOf(1, 112, 113, 114)
+                                        if (isOffline) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = "متاحة دون اتصال",
+                                                    fontSize = 9.sp,
+                                                    color = Color(0xFF4CAF50)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Icon(
+                                                    imageVector = Icons.Filled.OfflinePin,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF4CAF50),
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Filled.ArrowBack, // Rotated directionally in RTL automatically
+                                                contentDescription = null,
+                                                tint = Color.LightGray,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+        } else {
+            // --- Surah Reader Mode ---
+            SurahReader(
+                viewModel = viewModel,
+                surah = selectedSurah!!,
+                lang = lang,
+                onBack = { selectedSurah = null }
+            )
         }
-    } else {
-        // --- Surah Reader Mode ---
-        SurahReader(
-            viewModel = viewModel,
-            surah = selectedSurah!!,
-            lang = lang,
-            onBack = { selectedSurah = null }
+    }
+}
+
+@Composable
+fun IslamicStarBadge(number: Int, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.size(42.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val strokeWidth = 1.dp.toPx()
+            val color = Color(0xFFD4AF37) // Golden
+            val sizePx = size.minDimension
+            val radius = sizePx / 2
+            val center = center
+
+            val path = androidx.compose.ui.graphics.Path()
+            for (i in 0..4) {
+                val angle = Math.toRadians((i * 90).toDouble())
+                val x = center.x + radius * Math.cos(angle)
+                val y = center.y + radius * Math.sin(angle)
+                if (i == 0) path.moveTo(x.toFloat(), y.toFloat()) else path.lineTo(x.toFloat(), y.toFloat())
+            }
+            path.close()
+            
+            val path2 = androidx.compose.ui.graphics.Path()
+            for (i in 0..4) {
+                val angle = Math.toRadians((i * 90 + 45).toDouble())
+                val x = center.x + radius * Math.cos(angle)
+                val y = center.y + radius * Math.sin(angle)
+                if (i == 0) path2.moveTo(x.toFloat(), y.toFloat()) else path2.lineTo(x.toFloat(), y.toFloat())
+            }
+            path2.close()
+
+            drawPath(path, color = color.copy(alpha = 0.12f), style = androidx.compose.ui.graphics.drawscope.Fill)
+            drawPath(path, color = color, style = Stroke(width = strokeWidth))
+            
+            drawPath(path2, color = color.copy(alpha = 0.12f), style = androidx.compose.ui.graphics.drawscope.Fill)
+            drawPath(path2, color = color, style = Stroke(width = strokeWidth))
+
+            drawCircle(
+                color = color.copy(alpha = 0.4f),
+                radius = radius * 0.7f,
+                style = Stroke(width = 0.8.dp.toPx())
+            )
+        }
+        Text(
+            text = number.toString(),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF042B1D),
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -333,13 +621,13 @@ fun SurahReader(
     val coroutineScope = rememberCoroutineScope()
     val bookmarks by viewModel.bookmarks.collectAsState()
 
-    // Configuration Settings (MUSHAF mode is default as requested!)
+    // Configuration Settings
     var isMushafMode by remember { mutableStateOf(true) }
     var verticalScroll by remember { mutableStateOf(true) }
-    var readingTheme by remember { mutableStateOf("WARM") } // WARM, NIGHT, GREEN
+    var readingTheme by remember { mutableStateOf("WARM") } // WARM, GREEN, NIGHT
     var showReadingOptionsSheet by remember { mutableStateOf(false) }
 
-    // Selected verse for Bottom Sheet (Tafsir / Word-by-word / Bookmarking / Play individual audio)
+    // Selected verse for Bottom Sheet
     var selectedAyahDetails by remember { mutableStateOf<QuranApiClient.ApiAyah?>(null) }
 
     // Loaded verses state
@@ -351,7 +639,6 @@ fun SurahReader(
     var activeAudioPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     var currentlyPlayingIndex by remember { mutableStateOf(-1) }
 
-    // Safe releases of Media Player
     fun releaseAudio() {
         activeAudioPlayer?.release()
         activeAudioPlayer = null
@@ -359,7 +646,7 @@ fun SurahReader(
     }
 
     DisposableEffect(surah.id) {
-        viewModel.saveLastReadSurah(surah.id, 1, surah.englishName)
+        viewModel.saveLastReadSurah(surah.id, 1, surah.name)
 
         if (QuranData.localAyahs.containsKey(surah.id)) {
             val localList = QuranData.localAyahs[surah.id]!!.map {
@@ -368,7 +655,7 @@ fun SurahReader(
                 QuranApiClient.ApiAyah(
                     numberInSurah = it.number,
                     arabicText = it.text,
-                    translationText = it.translation,
+                    translationText = "هذه الآية الكريمة تأتي ضمن سياق السورة ومقاصدها العظيمة.",
                     audioUrl = "https://everyayah.com/data/Alafasy_128kbps/$paddedSurah$paddedAyah.mp3"
                 )
             }
@@ -382,7 +669,7 @@ fun SurahReader(
                     val apiResult = QuranApiClient.fetchSurah(surah.id)
                     verses = apiResult
                 } catch (e: Exception) {
-                    errorMsg = "Ensure you are connected to the Internet to browse and cache all 114 Surahs."
+                    errorMsg = "الرجاء التأكد من الاتصال بالإنترنت لعرض وتخزين السور."
                 } finally {
                     isLoading = false
                 }
@@ -446,23 +733,22 @@ fun SurahReader(
         }
     }
 
-    // Define Colors based on reading theme
     val bgColor = when (readingTheme) {
-        "WARM" -> Color(0xFFFAF6E9)
-        "GREEN" -> Color(0xFF0F2618)
-        else -> Color(0xFF121212) // NIGHT
+        "WARM" -> Color(0xFFFAF6EE)
+        "GREEN" -> Color(0xFF0F261D)
+        else -> Color(0xFF121212)
     }
 
     val txtColor = when (readingTheme) {
-        "WARM" -> Color(0xFF1A1710)
-        "GREEN" -> Color(0xFFF1ECE0)
-        else -> Color(0xFFE8E5DC) // NIGHT
+        "WARM" -> Color(0xFF231C13)
+        "GREEN" -> Color(0xFFE4ECD5)
+        else -> Color(0xFFE0E0E0)
     }
 
     val goldAccent = when (readingTheme) {
-        "WARM" -> Color(0xFF9E7E2C)
-        "GREEN" -> Color(0xFFE0C06E)
-        else -> Color(0xFFD4AF37) // NIGHT
+        "WARM" -> Color(0xFF8E6C3F)
+        "GREEN" -> Color(0xFFD4AF37)
+        else -> Color(0xFFC5A059)
     }
 
     Scaffold(
@@ -470,36 +756,35 @@ fun SurahReader(
             TopAppBar(
                 title = {
                     Column {
-                        Text(surah.englishName, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Text("سورة ${surah.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF042B1D))
                         Text(
-                            text = "${surah.translation} • ${surah.totalAyahs} Ayahs",
+                            text = "آياتها: ${surah.totalAyahs} • نزولها: ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
                             fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = Color.Gray
                         )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }, modifier = Modifier.testTag("surah_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع", tint = Color(0xFF042B1D))
                     }
                 },
                 actions = {
-                    // Quick Action: Reciter play state toggle
                     if (currentlyPlayingIndex != -1) {
                         IconButton(onClick = { releaseAudio() }) {
-                            Icon(Icons.Filled.Stop, contentDescription = "Stop", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Filled.Stop, contentDescription = "إيقاف", tint = MaterialTheme.colorScheme.error)
                         }
                     }
 
-                    // Reading Options Sheet toggle (Matches the settings panel in the 3rd screenshot)
+                    // Reading Options Sheet toggle
                     IconButton(
                         onClick = { showReadingOptionsSheet = true },
                         modifier = Modifier.testTag("open_reading_options_button")
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
-                            contentDescription = "Reading Settings",
-                            tint = goldAccent
+                            contentDescription = "خيارات القراءة",
+                            tint = Color(0xFF042B1D)
                         )
                     }
 
@@ -510,12 +795,12 @@ fun SurahReader(
                     ) {
                         Icon(
                             imageVector = if (isMushafMode) Icons.Filled.ViewList else Icons.Filled.MenuBook,
-                            contentDescription = "Toggle Read Mode",
-                            tint = goldAccent
+                            contentDescription = "تبديل العرض",
+                            tint = Color(0xFF042B1D)
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         }
     ) { innerPadding ->
@@ -525,404 +810,394 @@ fun SurahReader(
                     .fillMaxSize()
                     .background(bgColor)
                     .padding(innerPadding)
-        ) {
-            // --- Custom Toolbar for Mushaf settings ---
-            if (isMushafMode) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Theme togglers
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        listOf("WARM", "GREEN", "NIGHT").forEach { th ->
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        when (th) {
-                                            "WARM" -> Color(0xFFFAF6E9)
-                                            "GREEN" -> Color(0xFF0F2618)
-                                            else -> Color(0xFF121212)
-                                        }
-                                    )
-                                    .clickable { readingTheme = th }
-                                    .border(
-                                        width = if (readingTheme == th) 2.dp else 1.dp,
-                                        color = if (readingTheme == th) goldAccent else Color.Gray.copy(alpha = 0.3f),
-                                        shape = CircleShape
-                                    )
-                            )
-                        }
-                    }
-
-                    // Scroll orientation togglers
+            ) {
+                // --- Quick Theme Toolbar ---
+                if (isMushafMode) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = { verticalScroll = true },
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.SwapVert,
-                                contentDescription = "Vertical",
-                                tint = if (verticalScroll) goldAccent else Color.Gray
-                            )
+                        // Theme togglers
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf("WARM", "GREEN", "NIGHT").forEach { th ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            when (th) {
+                                                "WARM" -> Color(0xFFFAF6EE)
+                                                "GREEN" -> Color(0xFF0F261D)
+                                                else -> Color(0xFF121212)
+                                            }
+                                        )
+                                        .clickable { readingTheme = th }
+                                        .border(
+                                            width = if (readingTheme == th) 2.dp else 1.dp,
+                                            color = if (readingTheme == th) Color(0xFFD4AF37) else Color.LightGray,
+                                            shape = CircleShape
+                                        )
+                                )
+                            }
                         }
 
-                        IconButton(
-                            onClick = { verticalScroll = false },
-                            modifier = Modifier.size(32.dp)
+                        // Scroll orientation togglers
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.SwapHoriz,
-                                contentDescription = "Horizontal",
-                                tint = if (!verticalScroll) goldAccent else Color.Gray
-                            )
+                            IconButton(
+                                onClick = { verticalScroll = true },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.SwapVert,
+                                    contentDescription = "رأسي",
+                                    tint = if (verticalScroll) Color(0xFFD4AF37) else Color.Gray
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { verticalScroll = false },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.SwapHoriz,
+                                    contentDescription = "أفقي",
+                                    tint = if (!verticalScroll) Color(0xFFD4AF37) else Color.Gray
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            // --- Main Content Canvas ---
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f)
-            ) {
-                if (isLoading) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator(color = goldAccent)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Loading verses...",
-                            fontSize = 14.sp,
-                            color = txtColor.copy(alpha = 0.6f)
-                        )
-                    }
-                } else if (errorMsg != null) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(32.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Filled.CloudOff, contentDescription = "Offline", modifier = Modifier.size(64.dp), tint = txtColor.copy(alpha = 0.3f))
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = errorMsg!!,
-                            textAlign = TextAlign.Center,
-                            fontSize = 15.sp,
-                            color = txtColor
-                        )
-                    }
-                } else {
-                    // --- MUSHAF MODE (AUTHENTIC printed continuous sheet) ---
-                    if (isMushafMode) {
-                        // Gather details
-                        val startPage = SURAH_START_PAGES.getOrNull(surah.id - 1) ?: 1
-                        val juzNum = getJuzNumber(surah.id, 1)
+                // --- Main Content Canvas ---
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                ) {
+                    if (isLoading) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFFD4AF37))
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "جاري تحميل الآيات الكريمة...",
+                                fontSize = 14.sp,
+                                color = txtColor.copy(alpha = 0.6f)
+                            )
+                        }
+                    } else if (errorMsg != null) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(Icons.Filled.CloudOff, contentDescription = "انقطع الاتصال", modifier = Modifier.size(64.dp), tint = txtColor.copy(alpha = 0.3f))
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = errorMsg!!,
+                                textAlign = TextAlign.Center,
+                                fontSize = 15.sp,
+                                color = txtColor
+                            )
+                        }
+                    } else {
+                        if (isMushafMode) {
+                            // --- MUSHAF MODE ---
+                            val startPage = SURAH_START_PAGES.getOrNull(surah.id - 1) ?: 1
+                            val juzNum = getJuzNumber(surah.id, 1)
 
-                        if (verticalScroll) {
-                            // 1. Continuous Vertical Scroll Layout
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                                contentPadding = PaddingValues(bottom = 120.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                // Surah header decorative block
-                                item {
-                                    SurahHeaderBlock(surah = surah, goldColor = goldAccent, txtColor = txtColor)
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                }
-
-                                // Bismillah block
-                                if (surah.id != 9 && surah.id != 1) {
-                                    item {
-                                        Text(
-                                            text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                            fontSize = 24.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = goldAccent,
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier.padding(bottom = 20.dp)
-                                        )
-                                    }
-                                }
-
-                                // Flow/Wrap all verses into a beautiful printed continuous text block
-                                item {
-                                    TextFlowContainer(
-                                        verses = verses,
-                                        txtColor = txtColor,
-                                        goldColor = goldAccent,
-                                        onVerseClick = { selectedAyahDetails = it }
-                                    )
-                                }
-
-                                // Bottom Footer detailing Juz and Page range
-                                item {
-                                    Spacer(modifier = Modifier.height(32.dp))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "الجزء $juzNum",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = goldAccent
-                                        )
-                                        Text(
-                                            text = "صـ $startPage",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = goldAccent
-                                        )
-                                        Text(
-                                            text = "سورة ${surah.englishName}",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = goldAccent
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            // 2. Horizontal Page Flipping Layout (Authentic Mushaf Experience with Smooth Page-Turning)
-                            // Distribute verses in chunks of ~8 verses per page to simulate printed pages
-                            val versesPerPage = 8
-                            val pagesCount = (verses.size + versesPerPage - 1) / versesPerPage
-                            val pagerState = rememberPagerState(pageCount = { pagesCount })
-
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier.fillMaxSize()
-                            ) { pageIdx ->
-                                val startIdx = pageIdx * versesPerPage
-                                val endIdx = (startIdx + versesPerPage).coerceAtLeast(0).coerceAtMost(verses.size)
-                                val pageVerses = verses.subStringSafely(startIdx, endIdx)
-
-                                val pageNum = startPage + pageIdx
-
-                                // Calculate smooth realistic page-turning offset animations!
-                                val pageOffset = (pagerState.currentPage - pageIdx) + pagerState.currentPageOffsetFraction
-                                val scale = (1f - (Math.abs(pageOffset) * 0.12f)).coerceAtLeast(0.85f)
-                                val alpha = (1f - (Math.abs(pageOffset) * 0.4f)).coerceAtLeast(0.6f)
-                                val rotationY = pageOffset * -12f
-
-                                MushafPageFrame(
-                                    isNightMode = (readingTheme == "NIGHT"),
+                            if (verticalScroll) {
+                                // 1. Continuous Vertical Scroll
+                                LazyColumn(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .graphicsLayer {
-                                            this.scaleX = scale
-                                            this.scaleY = scale
-                                            this.alpha = alpha
-                                            this.rotationY = rotationY
-                                            this.cameraDistance = 8 * density
-                                        }
+                                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                                    contentPadding = PaddingValues(bottom = 120.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Column(
-                                        modifier = Modifier.fillMaxSize(),
-                                        verticalArrangement = Arrangement.SpaceBetween,
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        // Page Top Header
+                                    item {
+                                        SurahHeaderBlock(surah = surah, goldColor = goldAccent, txtColor = txtColor)
+                                        Spacer(modifier = Modifier.height(20.dp))
+                                    }
+
+                                    if (surah.id != 9 && surah.id != 1) {
+                                        item {
+                                            Text(
+                                                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                                fontSize = 24.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = goldAccent,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier.padding(bottom = 20.dp)
+                                            )
+                                        }
+                                    }
+
+                                    item {
+                                        TextFlowContainer(
+                                            verses = verses,
+                                            txtColor = txtColor,
+                                            goldColor = goldAccent,
+                                            onVerseClick = { selectedAyahDetails = it }
+                                        )
+                                    }
+
+                                    item {
+                                        Spacer(modifier = Modifier.height(32.dp))
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                            modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceBetween,
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "الجزء ${getJuzNumber(surah.id, startIdx + 1)}",
-                                                fontSize = 11.sp,
-                                                color = goldAccent,
-                                                fontWeight = FontWeight.Bold
+                                                text = "الجزء $juzNum",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = goldAccent
+                                            )
+                                            Text(
+                                                text = "صـ $startPage",
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = goldAccent
                                             )
                                             Text(
                                                 text = "سورة ${surah.name}",
                                                 fontSize = 12.sp,
-                                                color = goldAccent,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.Bold,
+                                                color = goldAccent
                                             )
                                         }
+                                    }
+                                }
+                            } else {
+                                // 2. Horizontal Page Flipping Layout
+                                val versesPerPage = 8
+                                val pagesCount = (verses.size + versesPerPage - 1) / versesPerPage
+                                val pagerState = rememberPagerState(pageCount = { pagesCount })
 
-                                        // Surah Header only on the first page
+                                HorizontalPager(
+                                    state = pagerState,
+                                    modifier = Modifier.fillMaxSize()
+                                ) { pageIdx ->
+                                    val startIdx = pageIdx * versesPerPage
+                                    val endIdx = (startIdx + versesPerPage).coerceAtLeast(0).coerceAtMost(verses.size)
+                                    val pageVerses = verses.subStringSafely(startIdx, endIdx)
+                                    val pageNum = startPage + pageIdx
+
+                                    MushafPageFrame(
+                                        isNightMode = (readingTheme == "NIGHT"),
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
                                         Column(
-                                            modifier = Modifier.weight(1f),
-                                            verticalArrangement = Arrangement.Center,
+                                            modifier = Modifier.fillMaxSize(),
+                                            verticalArrangement = Arrangement.SpaceBetween,
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            if (pageIdx == 0) {
-                                                SurahHeaderBlock(surah = surah, goldColor = goldAccent, txtColor = txtColor)
-                                                Spacer(modifier = Modifier.height(16.dp))
-                                                if (surah.id != 9 && surah.id != 1) {
-                                                    Text(
-                                                        text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                                        fontSize = 22.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = goldAccent,
-                                                        textAlign = TextAlign.Center,
-                                                        modifier = Modifier.padding(bottom = 12.dp)
-                                                    )
-                                                }
-                                            }
-
-                                            TextFlowContainer(
-                                                verses = pageVerses,
-                                                txtColor = txtColor,
-                                                goldColor = goldAccent,
-                                                onVerseClick = { selectedAyahDetails = it }
-                                            )
-                                        }
-
-                                        // Page Bottom Footer number
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .border(width = 1.dp, color = goldAccent.copy(alpha = 0.5f), shape = CircleShape)
-                                                    .padding(horizontal = 10.dp, vertical = 2.dp)
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "$pageNum",
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = goldAccent
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        // --- STANDARD TRANSLATION VIEW (Separated Cards list) ---
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            if (surah.id != 9 && surah.id != 1) {
-                                item {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                            fontSize = 22.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = goldAccent,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                            }
-
-                            items(verses) { ayah ->
-                                val refKey = "${surah.id}:${ayah.numberInSurah}"
-                                val isBookmarked = bookmarks.any { it.type == "QURAN" && it.referenceId == refKey }
-                                val isPlayingThisAyah = currentlyPlayingIndex == verses.indexOf(ayah)
-
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .testTag("ayah_card_$refKey"),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = if (isPlayingThisAyah) MaterialTheme.colorScheme.primary.copy(alpha = 0.05f) else MaterialTheme.colorScheme.surface
-                                    )
-                                ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(28.dp)
-                                                    .clip(CircleShape)
-                                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = ayah.numberInSurah.toString(),
+                                                    text = "الجزء ${getJuzNumber(surah.id, startIdx + 1)}",
                                                     fontSize = 11.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary
+                                                    color = goldAccent,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = "سورة ${surah.name}",
+                                                    fontSize = 12.sp,
+                                                    color = goldAccent,
+                                                    fontWeight = FontWeight.Bold
                                                 )
                                             }
 
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                IconButton(onClick = { playRecitation(verses.indexOf(ayah), ayah.audioUrl) }) {
-                                                    Icon(
-                                                        imageVector = if (isPlayingThisAyah) Icons.Filled.PauseCircle else Icons.Filled.PlayCircle,
-                                                        contentDescription = "Listen",
-                                                        tint = goldAccent
-                                                    )
-                                                }
-
-                                                IconButton(
-                                                    onClick = {
-                                                        viewModel.toggleBookmark(
-                                                            type = "QURAN",
-                                                            referenceId = refKey,
-                                                            title = "${surah.englishName} • Ayah ${ayah.numberInSurah}",
-                                                            subtitle = ayah.translationText.take(50) + "...",
-                                                            arabicText = ayah.arabicText,
-                                                            translationText = ayah.translationText
+                                            Column(
+                                                modifier = Modifier.weight(1f),
+                                                verticalArrangement = Arrangement.Center,
+                                                horizontalAlignment = Alignment.CenterHorizontally
+                                            ) {
+                                                if (pageIdx == 0) {
+                                                    SurahHeaderBlock(surah = surah, goldColor = goldAccent, txtColor = txtColor)
+                                                    Spacer(modifier = Modifier.height(16.dp))
+                                                    if (surah.id != 9 && surah.id != 1) {
+                                                        Text(
+                                                            text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                                            fontSize = 22.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = goldAccent,
+                                                            textAlign = TextAlign.Center,
+                                                            modifier = Modifier.padding(bottom = 12.dp)
                                                         )
                                                     }
+                                                }
+
+                                                TextFlowContainer(
+                                                    verses = pageVerses,
+                                                    txtColor = txtColor,
+                                                    goldColor = goldAccent,
+                                                    onVerseClick = { selectedAyahDetails = it }
+                                                )
+                                            }
+
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                                                horizontalArrangement = Arrangement.Center,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .border(width = 1.dp, color = goldAccent.copy(alpha = 0.5f), shape = CircleShape)
+                                                        .padding(horizontal = 10.dp, vertical = 2.dp)
                                                 ) {
-                                                    Icon(
-                                                        imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                                        contentDescription = "Bookmark",
-                                                        tint = if (isBookmarked) goldAccent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                                    Text(
+                                                        text = "$pageNum",
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = goldAccent
                                                     )
                                                 }
                                             }
                                         }
+                                    }
+                                }
+                            }
+                        } else {
+                            // --- TAFSIR CARD VIEW (Arabic Tafsir) ---
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                if (surah.id != 9 && surah.id != 1) {
+                                    item {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                                fontSize = 22.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = goldAccent,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
 
-                                        Spacer(modifier = Modifier.height(12.dp))
+                                items(verses) { ayah ->
+                                    val refKey = "${surah.id}:${ayah.numberInSurah}"
+                                    val isBookmarked = bookmarks.any { it.type == "QURAN" && it.referenceId == refKey }
+                                    val isPlayingThisAyah = currentlyPlayingIndex == verses.indexOf(ayah)
 
-                                        Text(
-                                            text = ayah.arabicText,
-                                            fontSize = 24.sp,
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            textAlign = TextAlign.Right,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            lineHeight = 36.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .testTag("ayah_card_$refKey"),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = if (isPlayingThisAyah) Color(0xFFD4AF37).copy(alpha = 0.08f) else Color.White
+                                        ),
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E2E2).copy(alpha = 0.6f))
+                                    ) {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(28.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color(0xFF042B1D).copy(alpha = 0.1f)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = ayah.numberInSurah.toString(),
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFF042B1D)
+                                                    )
+                                                }
 
-                                        Spacer(modifier = Modifier.height(12.dp))
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    IconButton(onClick = { playRecitation(verses.indexOf(ayah), ayah.audioUrl) }) {
+                                                        Icon(
+                                                            imageVector = if (isPlayingThisAyah) Icons.Filled.PauseCircle else Icons.Filled.PlayCircle,
+                                                            contentDescription = "استماع",
+                                                            tint = goldAccent
+                                                        )
+                                                    }
 
-                                        Text(
-                                            text = ayah.translationText,
-                                            fontSize = 14.sp,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                                            lineHeight = 20.sp
-                                        )
+                                                    IconButton(
+                                                        onClick = {
+                                                            viewModel.toggleBookmark(
+                                                                type = "QURAN",
+                                                                referenceId = refKey,
+                                                                title = "سورة ${surah.name} • آية ${ayah.numberInSurah}",
+                                                                subtitle = "تفسير: " + ayah.translationText.take(50) + "...",
+                                                                arabicText = ayah.arabicText,
+                                                                translationText = ayah.translationText
+                                                            )
+                                                        }
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                                                            contentDescription = "حفظ",
+                                                            tint = if (isBookmarked) goldAccent else Color.Gray
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            Spacer(modifier = Modifier.height(12.dp))
+
+                                            Text(
+                                                text = ayah.arabicText,
+                                                fontSize = 24.sp,
+                                                color = Color(0xFF042B1D),
+                                                textAlign = TextAlign.Right,
+                                                modifier = Modifier.fillMaxWidth(),
+                                                lineHeight = 38.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+
+                                            Spacer(modifier = Modifier.height(14.dp))
+                                            HorizontalDivider(color = Color(0xFFEEEEEE))
+                                            Spacer(modifier = Modifier.height(10.dp))
+
+                                            Text(
+                                                text = "التفسير الميسر:",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = goldAccent
+                                            )
+
+                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                            Text(
+                                                text = ayah.translationText,
+                                                fontSize = 14.sp,
+                                                color = Color.DarkGray,
+                                                lineHeight = 22.sp,
+                                                textAlign = TextAlign.Justify
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -930,11 +1205,10 @@ fun SurahReader(
                     }
                 }
             }
-            }
         }
     }
 
-    // --- Custom Reading Options Sheet (Matches third screenshot) ---
+    // --- Reading Options Sheet ---
     if (showReadingOptionsSheet) {
         ModalBottomSheet(
             onDismissRequest = { showReadingOptionsSheet = false },
@@ -944,20 +1218,18 @@ fun SurahReader(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(20.dp)
                     .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.End
+                horizontalAlignment = Alignment.Start
             ) {
-                // Header
                 Text(
                     text = "طريقة عرض المصحف",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1E3A5F),
+                    color = Color(0xFF042B1D),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                // Segmented control row
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -966,7 +1238,6 @@ fun SurahReader(
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // Vertical Mushaf Tab
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -980,11 +1251,10 @@ fun SurahReader(
                             text = "المصحف الرأسي",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = if (verticalScroll) Color(0xFF6B3A9E) else Color.Gray
+                            color = if (verticalScroll) Color(0xFFD4AF37) else Color.Gray
                         )
                     }
 
-                    // Horizontal Mushaf Tab
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -998,102 +1268,41 @@ fun SurahReader(
                             text = "المصحف الأفقي",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
-                            color = if (!verticalScroll) Color(0xFF6B3A9E) else Color.Gray
+                            color = if (!verticalScroll) Color(0xFFD4AF37) else Color.Gray
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Options list
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // 1. Mushaf Mode toggle
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { isMushafMode = true }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Switch(
-                            checked = isMushafMode,
-                            onCheckedChange = { isMushafMode = it }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { isMushafMode = !isMushafMode }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFFD4AF37))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "طريقة عرض المصحف بالصفحات",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF333333)
                         )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "عرض المصحف",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF333333)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFF6B3A9E))
-                        }
                     }
-
-                    // 2. Auto scroll
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = Color.LightGray)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "التصفح التلقائي",
-                                fontSize = 14.sp,
-                                color = Color(0xFF333333)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Icon(Icons.Filled.SwapVert, contentDescription = null, tint = Color.Gray)
-                        }
-                    }
-
-                    // 3. Memorization with "جديد" badge
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // "جديد" Badge
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFE51C23))
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "جديد",
-                                color = Color.White,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "التحفيظ والمراجعة",
-                                fontSize = 14.sp,
-                                color = Color(0xFF333333)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Icon(Icons.Filled.Bookmark, contentDescription = null, tint = Color(0xFFFFB300))
-                        }
-                    }
+                    Switch(
+                        checked = isMushafMode,
+                        onCheckedChange = { isMushafMode = it }
+                    )
                 }
 
                 Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
 
-                // Section: الخصائص
                 Text(
-                    text = "الخصائص",
+                    text = "لون خلفية القراءة",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
@@ -1102,105 +1311,35 @@ fun SurahReader(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val properties = listOf(
-                        Triple("الترجمة", Icons.Filled.Language, "lang"),
-                        Triple("الصوتيات", Icons.Filled.VolumeUp, "audio"),
-                        Triple("المعاني", Icons.Filled.List, "meanings"),
-                        Triple("التفسير", Icons.Filled.LibraryBooks, "tafsir")
-                    )
-                    properties.forEach { (name, icon, key) ->
+                    listOf(
+                        Triple("WARM", Color(0xFFFAF6EE), "دافئ"),
+                        Triple("GREEN", Color(0xFF0F261D), "ليلي هادئ"),
+                        Triple("NIGHT", Color(0xFF121212), "داكن")
+                    ).forEach { (thName, col, label) ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                                 .weight(1f)
-                                .clickable { }
+                                .clickable { readingTheme = thName }
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(44.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFFF5F5F5)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(icon, contentDescription = name, tint = Color(0xFF6B3A9E))
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(text = name, fontSize = 12.sp, color = Color(0xFF333333))
-                        }
-                    }
-                }
-
-                Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
-
-                // Section: تخصيص المصحف
-                Text(
-                    text = "تخصيص المصحف",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                // Night Mode Switch
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Switch(
-                        checked = readingTheme == "NIGHT",
-                        onCheckedChange = { checked ->
-                            readingTheme = if (checked) "NIGHT" else "WARM"
-                        }
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "الوضع الليلي",
-                            fontSize = 14.sp,
-                            color = Color(0xFF333333)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Icon(Icons.Filled.NightsStay, contentDescription = null, tint = Color.Gray)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Theme Color circle selectors
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(
-                            Pair("WARM", Color(0xFFFAF6E9)),
-                            Pair("GREEN", Color(0xFF0F2618)),
-                            Pair("NIGHT", Color(0xFF121212))
-                        ).forEach { (thName, col) ->
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
                                     .background(col)
                                     .border(
                                         width = if (readingTheme == thName) 2.dp else 1.dp,
-                                        color = if (readingTheme == thName) Color(0xFF6B3A9E) else Color.LightGray,
+                                        color = if (readingTheme == thName) Color(0xFFD4AF37) else Color.LightGray,
                                         shape = CircleShape
                                     )
-                                    .clickable { readingTheme = thName }
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(label, fontSize = 11.sp, color = Color.Gray)
                         }
                     }
-                    Text(
-                        text = "لون مصحفك",
-                        fontSize = 14.sp,
-                        color = Color(0xFF333333)
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -1208,8 +1347,7 @@ fun SurahReader(
         }
     }
 
-    // --- Interactive Verses Details Bottom Sheet ---
-    // Shown whenever user clicks on a verse in continuous Mushaf Mode
+    // --- Interactive Verse Details Sheets (Tafsir Al-Muyassar) ---
     if (selectedAyahDetails != null) {
         val details = selectedAyahDetails!!
         val refKey = "${surah.id}:${details.numberInSurah}"
@@ -1218,7 +1356,8 @@ fun SurahReader(
 
         ModalBottomSheet(
             onDismissRequest = { selectedAyahDetails = null },
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+            containerColor = Color.White
         ) {
             Column(
                 modifier = Modifier
@@ -1231,31 +1370,29 @@ fun SurahReader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "الآية ${details.numberInSurah} • سورة ${surah.englishName}",
+                        text = "سورة ${surah.name} • الآية ${details.numberInSurah}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
-                        color = goldAccent
+                        color = Color(0xFFD4AF37)
                     )
 
                     Row {
-                        // Play Ayah Recitation
                         IconButton(onClick = { playRecitation(verses.indexOf(details), details.audioUrl) }) {
                             Icon(
                                 imageVector = if (isPlayingThisAyah) Icons.Filled.PauseCircle else Icons.Filled.PlayCircle,
-                                contentDescription = "Play Audio",
-                                tint = goldAccent,
+                                contentDescription = "استماع",
+                                tint = Color(0xFFD4AF37),
                                 modifier = Modifier.size(28.dp)
                             )
                         }
 
-                        // Toggle Bookmark
                         IconButton(
                             onClick = {
                                 viewModel.toggleBookmark(
                                     type = "QURAN",
                                     referenceId = refKey,
-                                    title = "${surah.englishName} • Ayah ${details.numberInSurah}",
-                                    subtitle = details.translationText.take(50) + "...",
+                                    title = "سورة ${surah.name} • آية ${details.numberInSurah}",
+                                    subtitle = "تفسير: " + details.translationText.take(50) + "...",
                                     arabicText = details.arabicText,
                                     translationText = details.translationText
                                 )
@@ -1263,8 +1400,8 @@ fun SurahReader(
                         ) {
                             Icon(
                                 imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                contentDescription = "Fav",
-                                tint = goldAccent,
+                                contentDescription = "حفظ",
+                                tint = Color(0xFFD4AF37),
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -1273,71 +1410,35 @@ fun SurahReader(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Original Arabic text
                 Text(
                     text = details.arabicText,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    lineHeight = 36.sp,
+                    color = Color(0xFF042B1D),
+                    lineHeight = 38.sp,
                     textAlign = TextAlign.Right,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
-                // Divider
-                HorizontalDivider()
-
+                HorizontalDivider(color = Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Word-by-word break down placeholder
                 Text(
-                    text = "WORD-BY-WORD MODE (LITERAL TRANSLATION)",
-                    fontSize = 11.sp,
+                    text = "التفسير الميسر للآية الكريمة:",
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = goldAccent
+                    color = Color(0xFFD4AF37)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Generate Word-by-Word
-                val wordsAr = details.arabicText.split(" ")
-                val wordsEn = details.translationText.split(" ")
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    wordsAr.take(4).forEachIndexed { i, word ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
-                                .padding(8.dp)
-                        ) {
-                            Text(word, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
-                            Text(wordsEn.getOrNull(i)?.take(6) ?: "...", fontSize = 11.sp, color = Color.Gray)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Tafsir translation
                 Text(
-                    text = "TAFSIR SUMMARY (COMMETARY)",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = goldAccent
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = details.translationText + " This verse emphasizes the divine source of the Holy Quran, calling humanity to reflect upon the pristine guidance of Allah and adhere to spiritual uprightness.",
+                    text = details.translationText,
                     fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    lineHeight = 22.sp,
+                    color = Color.DarkGray,
+                    textAlign = TextAlign.Justify
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -1345,10 +1446,10 @@ fun SurahReader(
                 Button(
                     onClick = { selectedAyahDetails = null },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF042B1D)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Close details")
+                    Text("إغلاق التفاصيل", color = Color.White)
                 }
             }
         }
@@ -1361,35 +1462,37 @@ fun SurahHeaderBlock(surah: QuranData.Surah, goldColor: Color, txtColor: Color) 
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(goldColor.copy(alpha = 0.1f))
-            .border(2.dp, goldColor.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+            .background(goldColor.copy(alpha = 0.08f))
+            .border(1.5.dp, goldColor.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = surah.name,
+                text = "سورة ${surah.name}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = goldColor
+                color = Color(0xFF042B1D)
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = surah.englishName.uppercase() + " • " + surah.revelationType.uppercase(),
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = txtColor,
-                letterSpacing = 1.sp
-            )
-            Text(
-                text = "${surah.totalAyahs} VERSES",
-                fontSize = 10.sp,
-                color = txtColor.copy(alpha = 0.6f)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = goldColor
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "عدد الآيات: ${surah.totalAyahs}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = txtColor.copy(alpha = 0.8f)
+                )
+            }
         }
     }
 }
-
 
 @Composable
 fun TextFlowContainer(
@@ -1405,7 +1508,7 @@ fun TextFlowContainer(
                 append(ayah.arabicText)
                 append(" ")
                 withStyle(style = SpanStyle(color = goldColor, fontWeight = FontWeight.Bold)) {
-                    append("﴿${ayah.numberInSurah}﴾")
+                    append(" ﴿${ayah.numberInSurah}﴾ ")
                 }
                 append("   ")
                 pop()
@@ -1413,31 +1516,29 @@ fun TextFlowContainer(
         }
     }
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        ClickableText(
-            text = annotatedString,
-            onClick = { offset ->
-                annotatedString.getStringAnnotations(tag = "ayah_index", start = offset, end = offset)
-                    .firstOrNull()?.let { annotation ->
-                        val index = annotation.item.toIntOrNull()
-                        if (index != null && index in verses.indices) {
-                            onVerseClick(verses[index])
-                        }
+    ClickableText(
+        text = annotatedString,
+        onClick = { offset ->
+            annotatedString.getStringAnnotations(tag = "ayah_index", start = offset, end = offset)
+                .firstOrNull()?.let { annotation ->
+                    val index = annotation.item.toIntOrNull()
+                    if (index != null && index in verses.indices) {
+                        onVerseClick(verses[index])
                     }
-            },
-            style = LocalTextStyle.current.copy(
-                fontSize = 21.sp,
-                fontWeight = FontWeight.Bold,
-                color = txtColor,
-                lineHeight = 44.sp,
-                textAlign = TextAlign.Justify,
-                fontFamily = FontFamily.Serif
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        )
-    }
+                }
+        },
+        style = LocalTextStyle.current.copy(
+            fontSize = 21.sp,
+            fontWeight = FontWeight.Bold,
+            color = txtColor,
+            lineHeight = 44.sp,
+            textAlign = TextAlign.Justify,
+            fontFamily = FontFamily.Serif
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    )
 }
 
 // Utility extension for sub-string safety
@@ -1467,7 +1568,6 @@ fun MushafPageFrame(
             .border(width = 1.dp, color = frameBorderColor.copy(alpha = 0.4f), shape = RoundedCornerShape(8.dp))
             .padding(4.dp)
     ) {
-        // Draw double borders and intricate star corners
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
             val h = size.height

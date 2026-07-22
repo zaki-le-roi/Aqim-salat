@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -27,7 +26,6 @@ import androidx.compose.ui.unit.sp
 data class ServicesGridItem(
     val key: String,
     val titleAr: String,
-    val titleEn: String,
     val icon: ImageVector,
     val tint: Color
 )
@@ -42,64 +40,64 @@ fun MoreScreen(
 ) {
     // 1. General Services List
     val generalServices = listOf(
-        ServicesGridItem("HOME", "الرئيسة", "Home", Icons.Filled.Home, Color(0xFF1E88E5)),
-        ServicesGridItem("SETTINGS", "الإعدادات", "Settings", Icons.Filled.Settings, Color(0xFFFF9800)),
-        ServicesGridItem("QIBLA", "القبلة", "Qibla", Icons.Filled.Explore, Color(0xFF009688)),
-        ServicesGridItem("DONATIONS", "حاسبة الزكاة", "Zakat Calc", Icons.Filled.Percent, Color(0xFF0D47A1)),
-        ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", "Deed Day/Night", Icons.Filled.WbTwilight, Color(0xFF00ACC1)),
-        ServicesGridItem("DONATIONS", "بنك الصدقات", "Charity Bank", Icons.Filled.VolunteerActivism, Color(0xFF29B6F6)),
-        ServicesGridItem("HADITH", "الفوائد", "Benefits", Icons.Filled.Lightbulb, Color(0xFFFFB300)),
-        ServicesGridItem("RAMADAN", "ورد المحاسبة", "Accountability", Icons.Filled.FactCheck, Color(0xFF9C27B0)),
-        ServicesGridItem("CALENDAR", "التقويم", "Calendar", Icons.Filled.CalendarMonth, Color(0xFFAB47BC)),
-        ServicesGridItem("TRAVEL", "حقيبة المسافر", "Travel Companion", Icons.Filled.Flight, Color(0xFF42A5F5)),
-        ServicesGridItem("PRAYER_TIMES", "الصلاة حول العالم", "Global Prayer", Icons.Filled.Public, Color(0xFF26A69A)),
-        ServicesGridItem("POLLS", "استطلاعات", "Polls", Icons.Filled.BarChart, Color(0xFF5C6BC0)),
-        ServicesGridItem("COMPETITION", "استباق", "Competition", Icons.Filled.Group, Color(0xFF26C6DA)),
-        ServicesGridItem("MOSQUES", "مساجد", "Mosques", Icons.Filled.Place, Color(0xFF66BB6A)),
-        ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", "Halal Food", Icons.Filled.Restaurant, Color(0xFF9CCC65)),
-        ServicesGridItem("COMMUNITY", "مجتمع أقم صلاتك", "Community", Icons.Filled.Forum, Color(0xFF4CAF50)),
-        ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", "On This Day", Icons.Filled.History, Color(0xFFFF7043)),
-        ServicesGridItem("FAJR_LIST", "قائمة الفجر", "Fajr List", Icons.Filled.Cloud, Color(0xFF5C6BC0)),
-        ServicesGridItem("RAMADAN", "رمضان", "Ramadan", Icons.Filled.NightsStay, Color(0xFFFF7043))
+        ServicesGridItem("HOME", "الرئيسة", Icons.Filled.Home, Color(0xFF1E88E5)),
+        ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color(0xFFFF9800)),
+        ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color(0xFF009688)),
+        ServicesGridItem("DONATIONS", "حاسبة الزكاة", Icons.Filled.Percent, Color(0xFF0D47A1)),
+        ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color(0xFF00ACC1)),
+        ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color(0xFF29B6F6)),
+        ServicesGridItem("HADITH", "الفوائد", Icons.Filled.Lightbulb, Color(0xFFFFB300)),
+        ServicesGridItem("RAMADAN", "ورد المحاسبة", Icons.Filled.FactCheck, Color(0xFF9C27B0)),
+        ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color(0xFFAB47BC)),
+        ServicesGridItem("TRAVEL", "حقيبة المسافر", Icons.Filled.Flight, Color(0xFF42A5F5)),
+        ServicesGridItem("PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color(0xFF26A69A)),
+        ServicesGridItem("POLLS", "استطلاعات", Icons.Filled.BarChart, Color(0xFF5C6BC0)),
+        ServicesGridItem("COMPETITION", "استباق", Icons.Filled.Group, Color(0xFF26C6DA)),
+        ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color(0xFF66BB6A)),
+        ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color(0xFF9CCC65)),
+        ServicesGridItem("COMMUNITY", "مجتمع أقم صلاتك", Icons.Filled.Forum, Color(0xFF4CAF50)),
+        ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color(0xFFFF7043)),
+        ServicesGridItem("FAJR_LIST", "قائمة الفجر", Icons.Filled.Cloud, Color(0xFF5C6BC0)),
+        ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color(0xFFFF7043))
     )
 
     // 2. Quran and Dhikr List
     val quranDhikrServices = listOf(
-        ServicesGridItem("QURAN", "المصحف", "Mushaf", Icons.Filled.MenuBook, Color(0xFF4CAF50)),
-        ServicesGridItem("QURAN", "التحفيظ", "Memorization", Icons.Filled.Bookmark, Color(0xFF3F51B5)),
-        ServicesGridItem("ADHKAR", "الأذكار", "Adhkar", Icons.Filled.SelfImprovement, Color(0xFF03A9F4)),
-        ServicesGridItem("HADITH", "كنوز", "Treasures", Icons.Filled.AutoAwesome, Color(0xFFFF9800)),
-        ServicesGridItem("TASBIH", "السبحة", "Tasbih", Icons.Filled.FormatListNumbered, Color(0xFF1E3A5F)),
-        ServicesGridItem("RAMADAN", "طاعاتك", "Obedience", Icons.Filled.WorkspacePremium, Color(0xFF673AB7)),
-        ServicesGridItem("RATE_SHARE", "الأجر بالنشر", "Share Reward", Icons.Filled.Spa, Color(0xFFE91E63)),
-        ServicesGridItem("DAILY_DUA", "الدعاء", "Supplications", Icons.Filled.Signpost, Color(0xFF00BCD4)),
-        ServicesGridItem("KHATMAH", "الختمة", "Khatmah", Icons.Filled.LibraryBooks, Color(0xFFE65100)),
-        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", "Hisn Al Muslim", Icons.Filled.Shield, Color(0xFF4E342E))
+        ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color(0xFF4CAF50)),
+        ServicesGridItem("QURAN", "التحفيظ", Icons.Filled.Bookmark, Color(0xFF3F51B5)),
+        ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color(0xFF03A9F4)),
+        ServicesGridItem("HADITH", "كنوز", Icons.Filled.AutoAwesome, Color(0xFFFF9800)),
+        ServicesGridItem("TASBIH", "السبحة", Icons.Filled.FormatListNumbered, Color(0xFF1E3A5F)),
+        ServicesGridItem("RAMADAN", "طاعاتك", Icons.Filled.WorkspacePremium, Color(0xFF673AB7)),
+        ServicesGridItem("RATE_SHARE", "الأجر بالنشر", Icons.Filled.Spa, Color(0xFFE91E63)),
+        ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color(0xFF00BCD4)),
+        ServicesGridItem("KHATMAH", "الختمة", Icons.Filled.LibraryBooks, Color(0xFFE65100)),
+        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color(0xFF4E342E))
     )
 
     // 3. Support and Interaction List
     val supportServices = listOf(
-        ServicesGridItem("FAQ", "الأسئلة الشائعة", "FAQ", Icons.Filled.QuestionMark, Color(0xFF78909C)),
-        ServicesGridItem("SUPPORT", "الدعم الفني", "Tech Support", Icons.Filled.ContactSupport, Color(0xFF455A64)),
-        ServicesGridItem("ABOUT_US", "من نحن", "About Us", Icons.Filled.Info, Color(0xFF37474F)),
-        ServicesGridItem("PARTNERS", "اعلن معنا", "Advertise", Icons.Filled.Campaign, Color(0xFF546E7A)),
-        ServicesGridItem("OUR_APPS", "برامجنا", "Our Apps", Icons.Filled.Apps, Color(0xFF5E35B1)),
-        ServicesGridItem("RATE_SHARE", "انشر التطبيق", "Share App", Icons.Filled.Share, Color(0xFF039BE5)),
-        ServicesGridItem("RATE_SHARE", "قيم التطبيق", "Rate App", Icons.Filled.ThumbUp, Color(0xFFFFB300)),
-        ServicesGridItem("RATE_SHARE", "تابعنا", "Follow Us", Icons.Filled.AlternateEmail, Color(0xFF26A69A)),
-        ServicesGridItem("PARTNERS", "شركاؤنا", "Partners", Icons.Filled.Handshake, Color(0xFF8D6E63))
+        ServicesGridItem("FAQ", "الأسئلة الشائعة", Icons.Filled.QuestionMark, Color(0xFF78909C)),
+        ServicesGridItem("SUPPORT", "الدعم الفني", Icons.Filled.ContactSupport, Color(0xFF455A64)),
+        ServicesGridItem("ABOUT_US", "من نحن", Icons.Filled.Info, Color(0xFF37474F)),
+        ServicesGridItem("PARTNERS", "اعلن معنا", Icons.Filled.Campaign, Color(0xFF546E7A)),
+        ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color(0xFF5E35B1)),
+        ServicesGridItem("RATE_SHARE", "انشر التطبيق", Icons.Filled.Share, Color(0xFF039BE5)),
+        ServicesGridItem("RATE_SHARE", "قيم التطبيق", Icons.Filled.ThumbUp, Color(0xFFFFB300)),
+        ServicesGridItem("RATE_SHARE", "تابعنا", Icons.Filled.AlternateEmail, Color(0xFF26A69A)),
+        ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color(0xFF8D6E63))
     )
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F5F8)) // Matching clean blue/grey body background
+            .background(Color(0xFFF2F5F8))
     ) {
         // --- IMMERSIVE SOLID DEEP BLUE HEADER ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF0A1E33)) // Solid matching deep blue
+                .background(Color(0xFF0A1E33))
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
@@ -112,7 +110,7 @@ fun MoreScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.ChevronLeft,
-                        contentDescription = "Back",
+                        contentDescription = "الرجوع",
                         tint = Color.White,
                         modifier = Modifier
                             .size(24.dp)
@@ -121,18 +119,17 @@ fun MoreScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Icon(
                         imageVector = Icons.Filled.Mail,
-                        contentDescription = "Mail",
-                        tint = Color(0xFFFFCA28), // Golden mail icon
+                        contentDescription = "الرسائل",
+                        tint = Color(0xFFFFCA28),
                         modifier = Modifier.size(22.dp)
                     )
                 }
 
                 val loggedInMember by viewModel.loggedInMember.collectAsState()
 
-                // Centered "Login" or "More Services" title in Arabic
+                // Centered User greeting or Login
                 Text(
-                    text = loggedInMember?.let { if (lang == "ar") "أهلاً، ${it.name}" else "Welcome, ${it.name}" } 
-                        ?: (if (lang == "ar") "تسجيل الدخول" else "Login / Register"),
+                    text = loggedInMember?.let { "أهلاً، ${it.name}" } ?: "تسجيل الدخول / التسجيل",
                     color = Color.White,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
@@ -152,7 +149,7 @@ fun MoreScreen(
                 ) {
                     Icon(
                         imageVector = if (loggedInMember != null) Icons.Filled.AccountCircle else Icons.Filled.Person,
-                        contentDescription = "User profile",
+                        contentDescription = "الملف الشخصي",
                         tint = if (loggedInMember != null) Color(0xFFFFCA28) else Color.White,
                         modifier = Modifier.size(22.dp)
                     )
@@ -172,9 +169,8 @@ fun MoreScreen(
             // Section 1: General Services Card
             item {
                 ServicesSectionCard(
-                    title = if (lang == "ar") "خدمات التطبيق العامة" else "General Services",
+                    title = "خدمات التطبيق العامة",
                     items = generalServices,
-                    lang = lang,
                     onItemClick = onNavigateToFeature
                 )
             }
@@ -182,9 +178,8 @@ fun MoreScreen(
             // Section 2: Quran and Dhikr Card
             item {
                 ServicesSectionCard(
-                    title = if (lang == "ar") "القرآن والذكر" else "Quran & Dhikr",
+                    title = "القرآن والذكر",
                     items = quranDhikrServices,
-                    lang = lang,
                     onItemClick = onNavigateToFeature
                 )
             }
@@ -192,9 +187,8 @@ fun MoreScreen(
             // Section 3: Support and Interaction Card
             item {
                 ServicesSectionCard(
-                    title = if (lang == "ar") "الدعم والتفاعل" else "Support & Feedback",
+                    title = "الدعم والتفاعل",
                     items = supportServices,
-                    lang = lang,
                     onItemClick = onNavigateToFeature
                 )
             }
@@ -223,20 +217,20 @@ fun MoreScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Shield,
-                                contentDescription = "Shield",
+                                contentDescription = "مميز",
                                 tint = Color(0xFFFFD700),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = if (lang == "ar") "أقم صلاتك المميز" else "Aqim Salah Premium",
+                                    text = "أقم صلاتك المميز",
                                     color = Color(0xFFFFD700),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = if (lang == "ar") "ميزات حصرية" else "Premium Features",
+                                    text = "ميزات حصرية",
                                     color = Color.White.copy(alpha = 0.7f),
                                     fontSize = 9.sp
                                 )
@@ -260,20 +254,20 @@ fun MoreScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.EmojiEvents,
-                                contentDescription = "Trophy",
+                                contentDescription = "تحدي",
                                 tint = Color(0xFFFF9800),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = if (lang == "ar") "تحدي الطاعات" else "Obedience Challenge",
+                                    text = "تحدي الطاعات",
                                     color = Color(0xFF333333),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = if (lang == "ar") "حافظ على صلاتك" else "Keep your prayers",
+                                    text = "حافظ على صلاتك",
                                     color = Color.Gray,
                                     fontSize = 9.sp
                                 )
@@ -290,7 +284,6 @@ fun MoreScreen(
 fun ServicesSectionCard(
     title: String,
     items: List<ServicesGridItem>,
-    lang: String,
     onItemClick: (String) -> Unit
 ) {
     Card(
@@ -301,7 +294,7 @@ fun ServicesSectionCard(
     ) {
         Column(
             modifier = Modifier.padding(14.dp),
-            horizontalAlignment = if (lang == "ar") Alignment.End else Alignment.Start
+            horizontalAlignment = Alignment.End
         ) {
             // Category Title Header
             Text(
@@ -322,7 +315,6 @@ fun ServicesSectionCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
-                    // Loop over 4 items in a row
                     for (i in 0 until 4) {
                         val item = rowItems.getOrNull(i)
                         if (item != null) {
@@ -350,7 +342,7 @@ fun ServicesSectionCard(
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
-                                    text = if (lang == "ar") item.titleAr else item.titleEn,
+                                    text = item.titleAr,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF444444),
@@ -360,7 +352,6 @@ fun ServicesSectionCard(
                                 )
                             }
                         } else {
-                            // Dummy spacing cell for grid alignment
                             Spacer(modifier = Modifier.weight(1f))
                         }
                     }
