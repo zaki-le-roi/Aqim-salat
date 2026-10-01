@@ -485,6 +485,16 @@ fun SupportScreen(
                             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+                            if (sisterApps.isEmpty()) {
+                                item {
+                                    Text(
+                                        if (lang == "ar") "لا توجد برامج إضافية منشورة حالياً." else "No additional published apps are available yet.",
+                                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
                             items(sisterApps) { (title, desc, icon) ->
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
