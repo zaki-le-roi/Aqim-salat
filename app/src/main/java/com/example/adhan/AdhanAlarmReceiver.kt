@@ -13,6 +13,7 @@ import com.example.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.core.content.ContextCompat
 
 class AdhanAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -25,7 +26,11 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         }
 
         val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: return
-        showAdhanNotification(context, prayerName)
+        val serviceIntent = Intent(context, AdhanPlaybackService::class.java).apply {
+            putExtra(AdhanPlaybackService.EXTRA_PRAYER_NAME, prayerName)
+        }
+        runCatching { ContextCompat.startForegroundService(context, serviceIntent) }
+            .onFailure { showAdhanNotification(context, prayerName) }
     }
 
     private fun showAdhanNotification(context: Context, prayerName: String) {
