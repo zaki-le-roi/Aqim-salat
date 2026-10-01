@@ -785,10 +785,10 @@ fun DonationsTab(viewModel: AppViewModel) {
     // Inputs
     var title by remember { mutableStateOf("") }
     var desc by remember { mutableStateOf("") }
-    var target by remember { mutableStateOf("15000") }
-    var progress by remember { mutableStateOf("3200") }
-    var start by remember { mutableStateOf("2026-07-01") }
-    var end by remember { mutableStateOf("2026-12-31") }
+    var target by remember { mutableStateOf("") }
+    var progress by remember { mutableStateOf("") }
+    var start by remember { mutableStateOf("") }
+    var end by remember { mutableStateOf("") }
     var imgUrl by remember { mutableStateOf("") }
 
     LazyColumn(
