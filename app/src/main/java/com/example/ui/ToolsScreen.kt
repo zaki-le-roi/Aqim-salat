@@ -830,8 +830,10 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
     val isFasting by viewModel.isFastingToday.collectAsState()
 
     // Charity & prayers logged
-    var charityLogged by remember { mutableStateOf(0) }
-    var qiyamLogged by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+    val ramadanPrefs = remember { context.getSharedPreferences("ramadan_progress", android.content.Context.MODE_PRIVATE) }
+    var charityLogged by remember { mutableStateOf(ramadanPrefs.getInt("charity_logged", 0)) }
+    var qiyamLogged by remember { mutableStateOf(ramadanPrefs.getInt("qiyam_logged", 0)) }
 
     LazyColumn(
         modifier = Modifier
@@ -931,7 +933,10 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                         Text(if (lang == "ar") "$charityLogged مرة" else "$charityLogged Times", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
-                            onClick = { charityLogged++ },
+                            onClick = {
+                                charityLogged++
+                                ramadanPrefs.edit().putInt("charity_logged", charityLogged).apply()
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.testTag("log_charity_button")
@@ -959,7 +964,10 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                         Text(if (lang == "ar") "$qiyamLogged جلسة" else "$qiyamLogged Sessions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
-                            onClick = { qiyamLogged++ },
+                            onClick = {
+                                qiyamLogged++
+                                ramadanPrefs.edit().putInt("qiyam_logged", qiyamLogged).apply()
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.testTag("log_qiyam_button")
