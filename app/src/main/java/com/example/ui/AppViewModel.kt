@@ -840,7 +840,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleFastingToday() {
-        _isFastingToday.value = !_isFastingToday.value
+        val key = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        val prefs = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE)
+        val value = !prefs.getBoolean(key, false)
+        prefs.edit().putBoolean(key, value).apply()
+        _isFastingToday.value = value
         triggerHapticFeedback()
     }
 
@@ -1435,6 +1439,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun updateFajrRecord(dateString: String, status: String) {
         _fajrRecords.value = _fajrRecords.value.map { record ->
             if (record.dateString == dateString) record.copy(status = status) else record
+        }
+        viewModelScope.launch {
+            if (status == "NOT_SET") {
+                repo.deletePrayerLog(dateString, "Fajr")
+            } else {
+                repo.insertPrayerLog(
+                    PrayerLog(
+                        date = dateString,
+                        prayerName = "Fajr",
+                        status = when (status) {
+                            "CONGREGATION" -> "CONGREGATION"
+                            "INDIVIDUAL" -> "PRAYED_ON_TIME"
+                            "MISSED" -> "MISSED"
+                            else -> status
+                        }
+                    )
+                )
+            }
         }
     }
 }
