@@ -37,5 +37,12 @@ jobs:
       - name: Debug APK
         run: gradle assembleDebug
 
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aqim-Salat-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
       - name: Release AAB compile check
         run: gradle bundleRelease
