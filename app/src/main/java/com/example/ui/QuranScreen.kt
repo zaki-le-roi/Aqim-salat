@@ -229,11 +229,12 @@ fun QuranScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        Icon(
-                            imageVector = Icons.Filled.MenuBook,
-                            contentDescription = null,
-                            tint = Color(0xFFD4AF37), // Luminous Gold
-                            modifier = Modifier.size(36.dp)
+                        Text(
+                            text = "﴿  القرآن الكريم  ﴾",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFD4AF37),
+                            textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
