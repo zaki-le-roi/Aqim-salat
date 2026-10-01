@@ -129,12 +129,16 @@ object PrayerCalculator {
         val asrAngle = -rtd(gAsr)
         var asrHour = hourAngle(asrAngle, 1)
 
-        // Fallback adjustments if NaN occurs (polar regions)
-        if (fajrHour.isNaN()) fajrHour = sunriseHour - 1.5
+        // High-latitude fallback: use an angle-based portion of the night.
         if (sunriseHour.isNaN()) sunriseHour = midDay - 6.0
-        if (asrHour.isNaN()) asrHour = midDay + 3.0
         if (sunsetHour.isNaN()) sunsetHour = midDay + 6.0
-        if (ishaHour.isNaN()) ishaHour = sunsetHour + 1.5
+        val estimatedFajr = sunriseHour - 1.5
+        val nextFajr = fajrHour.takeUnless { it.isNaN() } ?: estimatedFajr
+        val nightDurationToNextFajr = (24.0 - sunsetHour) + nextFajr
+        val nightPortion = { angle: Double -> (angle / 60.0).coerceIn(0.0, 0.5) }
+        if (fajrHour.isNaN()) fajrHour = sunriseHour - nightDurationToNextFajr * nightPortion(method.fajrAngle)
+        if (ishaHour.isNaN()) ishaHour = sunsetHour + nightDurationToNextFajr * nightPortion(if (method.useIshaInterval) 18.0 else method.ishaAngle)
+        if (asrHour.isNaN()) asrHour = midDay + 3.0
 
         // Calculate Midnight & Last Third of Night
         // Night begins at Sunset (sunsetHour) and ends at tomorrow's Fajr (fajrHour + 24.0)
@@ -145,9 +149,9 @@ object PrayerCalculator {
         // Format
         fun formatTime(hour: Double): String {
             val h = fixHour(hour)
-            val mins = floor((h - floor(h)) * 60.0).toInt()
-            val secs = floor(((h - floor(h)) * 60.0 - mins) * 60.0).toInt()
-            val formattedHour = floor(h).toInt()
+            val totalMinutes = kotlin.math.round(h * 60.0).toInt()
+            val formattedHour = (totalMinutes / 60) % 24
+            val mins = totalMinutes % 60
             return String.format("%02d:%02d", formattedHour, mins)
         }
 
