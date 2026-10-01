@@ -113,7 +113,7 @@ fun MoreScreen(
         ServicesGridItem("QURAN", "السهولة", Icons.Filled.Bookmark, Color.Unspecified),
         ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "أدعية", Icons.Filled.AutoAwesome, Color.Unspecified),
-        ServicesGridItem("NAMES", "أقيموا", Icons.Filled.Church, Color.Unspecified),
+        ServicesGridItem("NAMES", "أقيموا", Icons.Filled.Favorite, Color.Unspecified),
         ServicesGridItem("HADITH", "قاداك", Icons.Filled.MenuBook, Color.Unspecified),
         ServicesGridItem("DEEDS", "الأمر بالمعروف", Icons.Filled.VolunteerActivism, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color.Unspecified),
