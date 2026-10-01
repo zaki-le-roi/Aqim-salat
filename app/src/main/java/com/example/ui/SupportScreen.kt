@@ -375,8 +375,8 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            text = if (lang == "ar") "بإشراف نخبة من المختصين في العلوم الشرعية والتقنية المعاصرة."
-                                            else "Supervised by Islamic scholars and technology engineering experts.",
+                                            text = if (lang == "ar") "نسعى لتقديم أدوات إسلامية عملية وموثوقة دون ادعاءات غير موثقة."
+                                            else "We aim to provide practical, trustworthy Islamic tools without unsupported claims.",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFD4AF37),
@@ -478,8 +478,7 @@ fun SupportScreen(
                     }
 
                     "OUR_APPS" -> {
-                        val sisterApps = listOf(
-                            Triple("حصن المسلم برو", "أذكار الكتاب والسنة الصوتية مع ميزة التنبيهات الذكية.", Icons.Filled.MenuBook),
+                        val sisterApps = emptyList<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>(),
                             Triple("مصحف المدينة التفاعلي", "مصحف تفاعلي كامل بالرسم العثماني وسماع كبار القراء.", Icons.Filled.LibraryBooks),
                             Triple("سبحة الأذكار الذكية", "عداد تسبيح احترافي مع قفل تلقائي وتحديات جماعية.", Icons.Filled.AddCircle)
                         )
