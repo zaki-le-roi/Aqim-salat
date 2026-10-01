@@ -258,7 +258,7 @@ fun QuranAudioScreen(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
                     ) {
-                        Icon(Icons.Filled.SkipPrevious, contentDescription = "Prev", modifier = Modifier.size(24.dp))
+                        Icon(Icons.Filled.SkipPrevious, contentDescription = if (lang == "ar") "السابق" else "Prev", modifier = Modifier.size(24.dp))
                     }
 
                     // Large Play/Pause FAB
@@ -271,7 +271,7 @@ fun QuranAudioScreen(
                     ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                            contentDescription = "Play/Pause",
+                            contentDescription = if (lang == "ar") "تشغيل وإيقاف" else "Play/Pause",
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -283,7 +283,7 @@ fun QuranAudioScreen(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
                     ) {
-                        Icon(Icons.Filled.SkipNext, contentDescription = "Next", modifier = Modifier.size(24.dp))
+                        Icon(Icons.Filled.SkipNext, contentDescription = if (lang == "ar") "التالي" else "Next", modifier = Modifier.size(24.dp))
                     }
 
                     // Favorite/Bookmark indicator
@@ -292,7 +292,7 @@ fun QuranAudioScreen(
                             Toast.makeText(context, "Added Surah ${activeSurah.englishName} to offline downloads playlist", Toast.LENGTH_SHORT).show()
                         }
                     ) {
-                        Icon(Icons.Filled.Download, contentDescription = "Download", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Filled.Download, contentDescription = if (lang == "ar") "تنزيل" else "Download", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -372,7 +372,7 @@ fun QuranAudioScreen(
                         Spacer(modifier = Modifier.width(12.dp))
                         Icon(
                             imageVector = if (isActive && isPlaying) Icons.Filled.VolumeUp else Icons.Filled.PlayArrow,
-                            contentDescription = "Play",
+                            contentDescription = if (lang == "ar") "تشغيل" else "Play",
                             tint = if (isActive) Color(0xFFC59B27) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                             modifier = Modifier.size(16.dp)
                         )
