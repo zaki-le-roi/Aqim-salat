@@ -25,7 +25,7 @@ object Translations {
         "kaaba_distance" to "المسافة إلى الكعبة", "tools" to "الخدمات الإسلامية",
         "daily_inspiration" to "آية اليوم", "daily_hadith" to "حديث اليوم", "daily_dua" to "دعاء اليوم",
         "reminders" to "تنبيهات الأذان", "athan_voice" to "صوت الأذان", "snooze" to "غفوة التنبيه",
-        "language" to "لغة التطبيق", "arabic" to "العربية", "english" to "English",
+        "language" to "لغة التطبيق", "arabic" to "Arabic", "english" to "English",
         "theme" to "سمة التطبيق", "light" to "فاتح", "dark" to "داكن", "auto" to "تلقائي",
         "ramadan" to "رمضان", "continue_reading" to "مواصلة القراءة",
         "bookmark_saved" to "تم الحفظ", "bookmark_removed" to "تمت إزالة الحفظ",
