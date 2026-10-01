@@ -365,12 +365,19 @@ fun QuranAudioScreen(
                     // Favorite/Bookmark indicator
                     IconButton(
                         onClick = {
-                            Toast.makeText(context, "Added Surah ${activeSurah.englishName} to offline downloads playlist", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                if (lang == "ar") "التنزيل دون اتصال غير متاح حاليًا." else "Offline download is not available yet.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     ) {
-                        Icon(Icons.Filled.Download, contentDescription = if (lang == "ar") "تنزيل" else "Download", tint = MaterialTheme.colorScheme.primary)
-                    }
-                }
+                        Icon(
+                            Icons.Filled.Download,
+                            contentDescription = if (lang == "ar") "التنزيل غير متاح" else "Offline download unavailable",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+                        )
+                    }                }
             }
         }
 
