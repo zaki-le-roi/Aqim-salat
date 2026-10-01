@@ -43,7 +43,7 @@ fun AdminScreen(
 ) {
     val context = LocalContext.current
     var isAuthenticated by remember { mutableStateOf(false) }
-    var emailInput by remember { mutableStateOf("zakidj181@gmail.com") } // Pre-filled for development
+    var emailInput by remember { mutableStateOf("") }
     var passwordInput by remember { mutableStateOf("") }
     var loginError by remember { mutableStateOf<String?>(null) }
     var isAuthenticating by remember { mutableStateOf(false) }
