@@ -201,7 +201,7 @@ fun CommunityPollsScreen(
                                                 }
                                             }
                                             Text(
-                                                text = if (lang == "ar") "منذ قليل" else "Recently",
+                                                text = if (lang == "ar") "في هذه الجلسة" else "In this session",
                                                 fontSize = 11.sp,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                             )
