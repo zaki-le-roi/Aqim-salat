@@ -226,7 +226,7 @@ fun AqimSalahApp(
             }
             "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS", "AUTH",
             "COMMUNITY", "POLLS", "FAJR_LIST", "COMPETITION",
-            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY",
+            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY", "SEERAH",
             "ZAKAT", "ACCOUNTABILITY", "WORLD_PRAYER_TIMES", "DEEDS", "PREMIUM" -> {
                 activeDetailScreen = routeKey
             }
@@ -354,6 +354,8 @@ fun AqimSalahApp(
                             onBack = { activeDetailScreen = null }
                         )
                     }
+
+                    "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
 
                     "ON_THIS_DAY" -> {
                         OnThisDayScreen(
