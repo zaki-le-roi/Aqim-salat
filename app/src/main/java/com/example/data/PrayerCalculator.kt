@@ -82,7 +82,7 @@ object PrayerCalculator {
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
 
-        val jd = getJulianDate(year, month, day) - longitude / (360.0 * 24.0)
+        val jd = getJulianDate(year, month, day)
 
         // Solar Declination & Equation of Time
         val d = jd - 2451545.0
