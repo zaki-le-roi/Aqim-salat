@@ -655,7 +655,7 @@ fun SurahReader(
                 QuranApiClient.ApiAyah(
                     numberInSurah = it.number,
                     arabicText = it.text,
-                    translationText = "هذه الآية الكريمة تأتي ضمن سياق السورة ومقاصدها العظيمة.",
+                    translationText = "",
                     audioUrl = "https://everyayah.com/data/Alafasy_128kbps/$paddedSurah$paddedAyah.mp3"
                 )
             }
@@ -1169,11 +1169,11 @@ fun SurahReader(
 
                                             Text(
                                                 text = ayah.arabicText,
-                                                fontSize = 24.sp,
+                                                fontSize = 26.sp,
                                                 color = Color(0xFF042B1D),
                                                 textAlign = TextAlign.Right,
                                                 modifier = Modifier.fillMaxWidth(),
-                                                lineHeight = 38.sp,
+                                                lineHeight = 48.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
 
