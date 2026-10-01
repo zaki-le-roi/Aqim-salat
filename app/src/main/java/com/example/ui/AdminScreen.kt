@@ -845,14 +845,14 @@ fun DonationsTab(viewModel: AppViewModel) {
                                     DonationCampaign(
                                         title = title,
                                         description = desc,
-                                        targetAmount = target.toDoubleOrNull() ?: 15000.0,
-                                        currentProgress = progress.toDoubleOrNull() ?: 3200.0,
+                                        targetAmount = target.toDoubleOrNull() ?: 0.0,
+                                        currentProgress = progress.toDoubleOrNull() ?: 0.0,
                                         startDate = start,
                                         endDate = end,
                                         imageUrl = imgUrl
                                     )
                                 )
-                                Toast.makeText(context, "تم نشر وإطلاق الحملة الخيرية بنجاح!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم حفظ الحملة الخيرية في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                 title = ""
                                 desc = ""
                                 imgUrl = ""
@@ -996,7 +996,7 @@ fun BroadcastsTab(viewModel: AppViewModel) {
                                     else -> selectedAudience
                                 }
                                 viewModel.insertNotificationLog(notifTitle, notifBody, audienceEng)
-                                Toast.makeText(context, "تم بث الإشعار بنجاح لجميع الأجهزة المستهدفة!", Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, "تم تسجيل الإشعار محليًا؛ لا يتم بثه إلى أجهزة المستخدمين حاليًا.", Toast.LENGTH_LONG).show()
                                 notifTitle = ""
                                 notifBody = ""
                             }
