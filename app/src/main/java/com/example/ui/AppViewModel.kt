@@ -442,9 +442,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val queryStr = """
-                    [out:json][timeout:25];
+                    [out:json][timeout:20];
                     (
-                      nwr["amenity"="place_of_worship"]["religion"="muslim"](around:10000,$lat,$lng);
+                      nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,$lat,$lng);
                       nwr["building"="mosque"](around:10000,$lat,$lng);
                     );
                     out center tags;
