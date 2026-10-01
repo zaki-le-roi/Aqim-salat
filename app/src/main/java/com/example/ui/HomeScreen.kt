@@ -779,20 +779,17 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 val items = listOf(
-                    // Row 1
-                    Triple("QURAN", if (lang == "ar") "المصحف" else "Mushaf", Color(0xFF4CAF50)), // Green
-                    Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Color(0xFF2196F3)), // Blue
-                    Triple("TASBIH", if (lang == "ar") "السبحة" else "Tasbih", Color(0xFF1A237E)), // Dark Blue
-                    Triple("QIBLA", if (lang == "ar") "القبلة" else "Qibla", Color(0xFFFFB300)), // Yellow/Gold
-                    Triple("CALENDAR", if (lang == "ar") "التقويم" else "Calendar", Color(0xFFAB47BC)), // Purple
-                    Triple("HISN_AL_MUSLIM", if (lang == "ar") "حصن المسلم" else "Hisn Al Muslim", Color(0xFF4E342E)), // Brown
-                    // Row 2
-                    Triple("DONATIONS", if (lang == "ar") "حاسبة الزكاة" else "Zakat Calc", Color(0xFF009688)), // Teal
-                    Triple("RAMADAN", if (lang == "ar") "طاعاتك" else "Obedience", Color(0xFF673AB7)), // Purple
-                    Triple("DAILY_DUA", if (lang == "ar") "الدعاء" else "Dua", Color(0xFF00BCD4)), // Cyan
-                    Triple("KHATMAH", if (lang == "ar") "الختمة" else "Khatmah", Color(0xFFFF5722)), // Orange
-                    Triple("NAMES", if (lang == "ar") "أسماء الله" else "Allah Names", Color(0xFFE91E63)), // Pink
-                    Triple("MORE_MENU", if (lang == "ar") "المزيد" else "More", Color(0xFFFFCA28)) // Amber
+                    Triple("HISN_AL_MUSLIM", if (lang == "ar") "حصن المسلم" else "Hisn Al-Muslim", Color(0xFF2E7D32)),
+                    Triple("CALENDAR", if (lang == "ar") "التقويم" else "Calendar", Color(0xFF6A1B9A)),
+                    Triple("QIBLA", if (lang == "ar") "القبلة" else "Qibla", Color(0xFF00897B)),
+                    Triple("HADITH", if (lang == "ar") "السيرة" else "Seerah", Color(0xFF795548)),
+                    Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Color(0xFF1565C0)),
+                    Triple("QURAN", if (lang == "ar") "المصحف" else "Quran", Color(0xFF2E7D32)),
+                    Triple("MORE_MENU", if (lang == "ar") "المزيد" else "More", Color(0xFF455A64)),
+                    Triple("NAMES", if (lang == "ar") "أسماء الله" else "Names of Allah", Color(0xFF8E24AA)),
+                    Triple("DAILY_DUA", if (lang == "ar") "الأدعية" else "Duas", Color(0xFF00838F)),
+                    Triple("FAVORITES", if (lang == "ar") "علامات" else "Bookmarks", Color(0xFFEF6C00)),
+                    Triple("ZAKAT", if (lang == "ar") "حاسبة الزكاة" else "Zakat Calculator", Color(0xFF00796B))
                 )
 
                 Row(
