@@ -32,30 +32,30 @@ fun ZakatCalculatorScreen(lang: String, onBack: () -> Unit) {
     val zakat = if (threshold > 0 && net >= threshold) net * 0.025 else 0.0
 
     SimpleExtraScaffold(if (lang == "ar") "حاسبة الزكاة" else "Zakat Calculator", onBack) {
-        Text("أدخل القيم بالعملة التي تستخدمها، واضبط النصاب وفق المرجع الشرعي الذي تتبعه.", fontSize = 13.sp)
+        Text(if (lang == "ar") "أدخل القيم بالعملة التي تستخدمها، واضبط النصاب وفق المرجع الشرعي الذي تتبعه." else "Enter the values in your currency and set the nisab according to your chosen reference.", fontSize = 13.sp)
         Spacer(Modifier.height(12.dp))
-        ExtraNumberField("النقد والمدخرات", cash) { cash = it }
-        ExtraNumberField("قيمة الذهب", gold) { gold = it }
-        ExtraNumberField("قيمة الفضة", silver) { silver = it }
-        ExtraNumberField("عروض التجارة", trade) { trade = it }
-        ExtraNumberField("الديون المستحقة القابلة للخصم", debts) { debts = it }
-        ExtraNumberField("قيمة النصاب", nisab) { nisab = it }
+        ExtraNumberField(if (lang == "ar") "النقد والمدخرات" else "Cash and savings", cash) { cash = it }
+        ExtraNumberField(if (lang == "ar") "قيمة الذهب" else "Gold value", gold) { gold = it }
+        ExtraNumberField(if (lang == "ar") "قيمة الفضة" else "Silver value", silver) { silver = it }
+        ExtraNumberField(if (lang == "ar") "عروض التجارة" else "Trade assets", trade) { trade = it }
+        ExtraNumberField(if (lang == "ar") "الديون المستحقة القابلة للخصم" else "Deductible debts", debts) { debts = it }
+        ExtraNumberField(if (lang == "ar") "قيمة النصاب" else "Nisab value", nisab) { nisab = it }
         Spacer(Modifier.height(12.dp))
-        ResultCard("صافي المال", String.format("%.2f", net))
-        ResultCard("الزكاة المقدرة 2.5%", String.format("%.2f", zakat))
-        if (threshold <= 0) Text("أدخل قيمة النصاب لإظهار النتيجة.", color = MaterialTheme.colorScheme.error)
-        else if (net < threshold) Text("المبلغ المدخل دون النصاب المحدد.")
+        ResultCard(if (lang == "ar") "صافي المال" else "Net wealth", String.format("%.2f", net))
+        ResultCard(if (lang == "ar") "الزكاة المقدرة 2.5%" else "Estimated Zakat 2.5%", String.format("%.2f", zakat))
+        if (threshold <= 0) Text(if (lang == "ar") "أدخل قيمة النصاب لإظهار النتيجة." else "Enter the nisab value to calculate the result.", color = MaterialTheme.colorScheme.error)
+        else if (net < threshold) Text(if (lang == "ar") "المبلغ المدخل دون النصاب المحدد." else "The entered amount is below the selected nisab.")
     }
 }
 
 @Composable
 fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boolean = false) {
-    val items = remember { listOf("الفجر", "الظهر", "العصر", "المغرب", "العشاء", "قراءة القرآن", "أذكار اليوم") }
+    val items = remember(lang) { if (lang == "ar") listOf("الفجر", "الظهر", "العصر", "المغرب", "العشاء", "قراءة القرآن", "أذكار اليوم") else listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha", "Quran reading", "Daily adhkar") }
     val checked = remember { mutableStateMapOf<String, Boolean>() }
     val done = items.count { checked[it] == true }
 
     SimpleExtraScaffold(if (challenge) "تحدي الطاعات" else "ورد المحاسبة", onBack) {
-        Text(if (challenge) "سجّل إنجازك اليومي وحافظ على الاستمرارية." else "راجع أعمال يومك وسجّل ما أتممته.", fontSize = 14.sp)
+        Text(if (lang == "ar") { if (challenge) "سجّل إنجازك اليومي وحافظ على الاستمرارية." else "راجع أعمال يومك وسجّل ما أتممته." } else { if (challenge) "Track your daily progress and keep your streak." else "Review your daily deeds and record what you completed." }, fontSize = 14.sp)
         Spacer(Modifier.height(10.dp))
         LinearProgressIndicator(progress = { done.toFloat() / items.size }, modifier = Modifier.fillMaxWidth())
         Text("$done / ${items.size}", modifier = Modifier.padding(vertical = 8.dp), fontWeight = FontWeight.Bold)
@@ -71,21 +71,21 @@ fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boole
     }
 }
 
-data class WorldCity(val name: String, val lat: Double, val lon: Double, val tz: Double)
+data class WorldCity(val nameAr: String, val nameEn: String, val lat: Double, val lon: Double, val tz: Double)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorldPrayerTimesScreen(lang: String, onBack: () -> Unit) {
     val cities = remember {
         listOf(
-            WorldCity("الجزائر", 36.7538, 3.0588, 1.0),
-            WorldCity("العلمة", 36.1528, 5.6902, 1.0),
-            WorldCity("مكة المكرمة", 21.4225, 39.8262, 3.0),
-            WorldCity("المدينة المنورة", 24.4672, 39.6024, 3.0),
-            WorldCity("القاهرة", 30.0444, 31.2357, 2.0),
-            WorldCity("إسطنبول", 41.0082, 28.9784, 3.0),
-            WorldCity("باريس", 48.8566, 2.3522, 2.0),
-            WorldCity("لندن", 51.5074, -0.1278, 1.0)
+            WorldCity("الجزائر", "Algiers", 36.7538, 3.0588, 1.0),
+            WorldCity("العلمة", "El Eulma", 36.1528, 5.6902, 1.0),
+            WorldCity("مكة المكرمة", "Makkah", 21.4225, 39.8262, 3.0),
+            WorldCity("المدينة المنورة", "Madinah", 24.4672, 39.6024, 3.0),
+            WorldCity("القاهرة", "Cairo", 30.0444, 31.2357, 2.0),
+            WorldCity("إسطنبول", "Istanbul", 41.0082, 28.9784, 3.0),
+            WorldCity("باريس", "Paris", 48.8566, 2.3522, 2.0),
+            WorldCity("لندن", "London", 51.5074, -0.1278, 1.0)
         )
     }
     var selected by remember { mutableStateOf(cities.first()) }
@@ -97,14 +97,14 @@ fun WorldPrayerTimesScreen(lang: String, onBack: () -> Unit) {
     SimpleExtraScaffold(if (lang == "ar") "الصلاة حول العالم" else "Prayer Times Around the World", onBack) {
         ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
             OutlinedTextField(
-                value = selected.name, onValueChange = {}, readOnly = true,
-                label = { Text("المدينة") },
+                value = if (lang == "ar") selected.nameAr else selected.nameEn, onValueChange = {}, readOnly = true,
+                label = { Text(if (lang == "ar") "المدينة" else "City") },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                 modifier = Modifier.menuAnchor().fillMaxWidth()
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 cities.forEach { city ->
-                    DropdownMenuItem(text = { Text(city.name) }, onClick = { selected = city; expanded = false })
+                    DropdownMenuItem(text = { Text(if (lang == "ar") city.nameAr else city.nameEn) }, onClick = { selected = city; expanded = false })
                 }
             }
         }
