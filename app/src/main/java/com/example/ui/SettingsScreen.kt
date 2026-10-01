@@ -90,7 +90,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.Language,
                 title = Translations.get("language", lang),
-                subtitle = if (lang == "ar") "العربية" else "English",
+                subtitle = languages.firstOrNull { it.first == lang }?.second ?: "العربية",
                 tag = "setting_language",
                 onClick = { activeDialog = "LANG" }
             )
@@ -126,7 +126,7 @@ fun SettingsScreen(
                                 fontSize = 15.sp
                             )
                             Text(
-                                text = if (notificationsVal) "Athan audio play enabled" else "Reminders muted",
+                                text = if (lang == "ar") { if (notificationsVal) "تشغيل أذان التذكير مفعّل" else "التذكيرات مكتومة" } else { if (notificationsVal) "Athan reminders enabled" else "Reminders muted" },
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
@@ -387,17 +387,21 @@ fun SettingsScreen(
     if (activeDialog == "BACKUP") {
         AlertDialog(
             onDismissRequest = { activeDialog = null },
-            title = { Text(if (lang == "ar") "النسخ الاحتياطي السحابي" else "Backup & Sync Dashboard", fontWeight = FontWeight.Bold) },
+            title = { Text(if (lang == "ar") "النسخ الاحتياطي والمزامنة" else "Backup & Sync", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text(if (lang == "ar") "الحالة: تمت المزامنة قبل 5 دقائق" else "Status: Synchronized 5 minutes ago", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
-                    Text(if (lang == "ar") "احفظ تقدم التسبيح والمحفوظات وسجل الصلوات الفائتة بأمان داخل تخزين التطبيق." else "Save your tasbih progress, favorites lists, and qaza history safely inside secure sandbox encryption.", fontSize = 12.sp, color = Color.Gray)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            Toast.makeText(context, if (lang == "ar") "تم حفظ النسخة الاحتياطية بأمان." else "Backup successfully pushed to secure sandbox!", Toast.LENGTH_SHORT).show()
-                            activeDialog = null
-                        },
+                    Text(
+                        if (lang == "ar") "الحالة: البيانات المحلية محفوظة على هذا الجهاز" else "Status: Data is stored locally on this device",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        if (lang == "ar") "النسخ الاحتياطي السحابي غير مفعّل حاليًا. لا يدّعي التطبيق تنفيذ مزامنة خارج الجهاز." else "Cloud backup is not currently connected. The app does not claim to synchronize data outside this device.",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         modifier = Modifier.fillMaxWidth()
                     ) {
