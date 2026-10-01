@@ -1365,8 +1365,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     val date = dayFormat.format(day.time)
                     val status = when (byDate[date]?.status) {
-                        "PRAYED_ON_TIME" -> "PRAYED_ON_TIME"
-                        "PRAYED_LATE" -> "PRAYED_LATE"
+                        "PRAYED_ON_TIME" -> "INDIVIDUAL"
+                        "PRAYED_LATE" -> "INDIVIDUAL"
                         "MISSED" -> "MISSED"
                         else -> "NOT_SET"
                     }
