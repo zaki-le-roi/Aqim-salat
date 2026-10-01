@@ -417,7 +417,7 @@ fun SupportScreen(
                                  }
                              }
 
-                            items(partners) { (name, desc) ->
+                            items(emptyList<Pair<String, String>>()) { (name, desc) ->
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
@@ -466,7 +466,7 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            if (lang == "ar") "للاستفسار تواصل معنا: ads@aqimsalah.org" else "For booking inquiries: ads@aqimsalah.org",
+                                            if (lang == "ar") "لا يوجد حالياً عنوان بريد منشور موثق داخل التطبيق." else "No verified public email address is currently published in the app.",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary
@@ -633,8 +633,8 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            if (lang == "ar") "قال النبي ﷺ: 'من دلّ على خير فله مثل أجر فاعله'. انشر رابط تطبيق أقم صلاتك الإسلامي لأهلك وأصحابك واكسب مثل أجور صلاتهم وقراءتهم دون أن ينقص من أجورهم شيء."
-                                            else "The Prophet ﷺ said: 'Whoever guides to good has a reward like that of its doer.' Share this application with family and friends.",
+                                            if (lang == "ar") "قال محمد صلى الله عليه وسلم: 'من دلّ على خير فله مثل أجر فاعله'. انشر رابط تطبيق أقم صلاتك الإسلامي لأهلك وأصحابك واكسب مثل أجور صلاتهم وقراءتهم دون أن ينقص من أجورهم شيء."
+                                            else "Muhammad, peace and blessings be upon him, said: 'Whoever guides to good has a reward like that of its doer.' Share this application with family and friends.",
                                             fontSize = 12.sp,
                                             lineHeight = 18.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
@@ -644,9 +644,12 @@ fun SupportScreen(
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Button(
                                             onClick = {
-                                                val shareText = "تطبيق أقم صلاتك الإسلامي المتميز - مواقيت الصلاة والأذان، القرآن الكريم كاملاً، الأذكار وحصن المسلم، حاسبة الزكاة وبنك الصدقة والمجتمع التفاعلي! حمله الآن مجاناً: https://play.google.com/store/apps/details?id=" + context.packageName
-                                                clipboardManager.setText(AnnotatedString(shareText))
-                                                Toast.makeText(context, if (lang == "ar") "تم نسخ رابط وتفاصيل المشاركة إلى الحافظة!" else "App share details copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                                val shareText = "تطبيق أقم صلاتك: مواقيت الصلاة والقرآن والأذكار وغيرها من الخدمات الإسلامية. https://play.google.com/store/apps/details?id=" + context.packageName
+                                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                    type = "text/plain"
+                                                    putExtra(Intent.EXTRA_TEXT, shareText)
+                                                }
+                                                context.startActivity(Intent.createChooser(shareIntent, if (lang == "ar") "مشاركة التطبيق" else "Share app"))
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
                                             modifier = Modifier.fillMaxWidth()
