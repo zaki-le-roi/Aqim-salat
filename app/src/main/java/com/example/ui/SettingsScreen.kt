@@ -335,7 +335,7 @@ fun SettingsScreen(
                         viewModel.setCalculationMethod(currentMethod)
                         viewModel.setMadhab(currentMadhab)
                         activeDialog = null
-                        Toast.makeText(context, "Calculation rules saved successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if (lang == "ar") "تم حفظ إعدادات المواقيت بنجاح" else "Calculation rules saved successfully", Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
@@ -373,7 +373,7 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         activeDialog = null
-                        Toast.makeText(context, "Default reciter set to $selectedReciter", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if (lang == "ar") "تم تعيين المقرئ الافتراضي: $selectedReciter" else "Default reciter set to $selectedReciter", Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
@@ -390,12 +390,12 @@ fun SettingsScreen(
             title = { Text(if (lang == "ar") "النسخ الاحتياطي السحابي" else "Backup & Sync Dashboard", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Status: Synchronized 5 minutes ago", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
-                    Text("Save your tasbih progress, favorites lists, and qaza history safely inside secure sandbox encryption.", fontSize = 12.sp, color = Color.Gray)
+                    Text(if (lang == "ar") "الحالة: تمت المزامنة قبل 5 دقائق" else "Status: Synchronized 5 minutes ago", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                    Text(if (lang == "ar") "احفظ تقدم التسبيح والمحفوظات وسجل الصلوات الفائتة بأمان داخل تخزين التطبيق." else "Save your tasbih progress, favorites lists, and qaza history safely inside secure sandbox encryption.", fontSize = 12.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-                            Toast.makeText(context, "Backup successfully pushed to secure sandbox!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, if (lang == "ar") "تم حفظ النسخة الاحتياطية بأمان." else "Backup successfully pushed to secure sandbox!", Toast.LENGTH_SHORT).show()
                             activeDialog = null
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -407,7 +407,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { activeDialog = null }) {
-                    Text("Close")
+                    Text(if (lang == "ar") "إغلاق" else "Close")
                 }
             }
         )
@@ -420,16 +420,16 @@ fun SettingsScreen(
             title = { Text(if (lang == "ar") "شروط الخدمة والخصوصية" else "Privacy sandbox & Location", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("1. Device Coordinates", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("The application requests fine & coarse GPS locations locally to calculate astronomical prayer timings, compass bearings, and distance to mosques. Location coordinates are strictly private and NEVER uploaded.", fontSize = 12.sp, color = Color.Gray)
+                    Text(if (lang == "ar") "1. إحداثيات الجهاز" else "1. Device Coordinates", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(if (lang == "ar") "يستخدم التطبيق موقع الجهاز محليًا لحساب المواقيت والقبلة والمسافة إلى المساجد، ولا يرفع إحداثيات موقعك إلى خادم التطبيق." else "The application requests fine & coarse GPS locations locally to calculate astronomical prayer timings, compass bearings, and distance to mosques. Location coordinates are strictly private and NEVER uploaded.", fontSize = 12.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(10.dp))
-                    Text("2. Offline Sandbox Mode", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("No personal information is harvested. The application values user security, strictly executing computations client-side.", fontSize = 12.sp, color = Color.Gray)
+                    Text(if (lang == "ar") "2. التشغيل المحلي" else "2. Offline Sandbox Mode", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text(if (lang == "ar") "لا يجمع التطبيق معلوماتك الشخصية لأغراض غير ضرورية، وتُنفذ الحسابات الأساسية على الجهاز." else "No personal information is harvested. The application values user security, strictly executing computations client-side.", fontSize = 12.sp, color = Color.Gray)
                 }
             },
             confirmButton = {
                 Button(onClick = { activeDialog = null }) {
-                    Text("Acknowledge")
+                    Text(if (lang == "ar") "فهمت" else "Acknowledge")
                 }
             }
         )
@@ -446,7 +446,7 @@ fun SettingsScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Column {
-                        Text("Text Size Multiplier: ${"%.1f".format(zoomScale)}x", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(if (lang == "ar") "تكبير الخط: ${"%.1f".format(zoomScale)}×" else "Text Size Multiplier: ${"%.1f".format(zoomScale)}x", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         Slider(
                             value = zoomScale,
                             onValueChange = { zoomScale = it },
@@ -461,8 +461,8 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Haptic Feedback on Tap", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text("Gentle vibration when logging tasks & clicking tasbih beads", fontSize = 12.sp, color = Color.Gray)
+                            Text(if (lang == "ar") "اهتزاز عند اللمس" else "Haptic Feedback on Tap", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(if (lang == "ar") "اهتزاز خفيف عند تسجيل الأعمال والضغط على السبحة" else "Gentle vibration when logging tasks & clicking tasbih beads", fontSize = 12.sp, color = Color.Gray)
                         }
                         Switch(
                             checked = currentHaptics,
@@ -478,11 +478,11 @@ fun SettingsScreen(
                         fontSizeZoom = zoomScale
                         hapticsEnabled = currentHaptics
                         activeDialog = null
-                        Toast.makeText(context, "Accessibility changes applied", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if (lang == "ar") "تم تطبيق إعدادات سهولة الاستخدام" else "Accessibility changes applied", Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Apply")
+                    Text(if (lang == "ar") "تطبيق" else "Apply")
                 }
             }
         )
