@@ -446,7 +446,7 @@ fun HomeScreen(
                                 .background(Color(0xFFE3F2FD))
                                 .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
-                            val midnightTime = times?.midnight ?: "11:51"
+                            val midnightTime = times?.midnight ?: "—"
                             Text(
                                 text = if (lang == "ar") "منتصف الليل : $midnightTime" else "Midnight: $midnightTime",
                                 color = Color(0xFF1E88E5),
@@ -470,7 +470,7 @@ fun HomeScreen(
                                 .background(Color(0xFFE0F7FA))
                                 .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
-                            val lastThirdTime = times?.lastThird ?: "01:06"
+                            val lastThirdTime = times?.lastThird ?: "—"
                             Text(
                                 text = if (lang == "ar") "الثلث الأخير : $lastThirdTime" else "Last Third: $lastThirdTime",
                                 color = Color(0xFF00ACC1),
@@ -921,9 +921,9 @@ fun HomeScreen(
                         // Body Description
                         Text(
                             text = if (lang == "ar") {
-                                "تستصعب حساب زكاتك أو تنسى صدقتك الدورية؟ أطلقنا (حاسبة الزكاة) لحساب زكاتك بضغطة زر، مع تذكيرك بصدقاتك الشهرية وتوجيهها لجهات موثوقة (متاح بالسعودية)."
+                                "أطلقنا (حاسبة الزكاة) لمساعدتك على حساب زكاة المال والتجارة بنسبة 2.5% عند تحقق شروطها. راجع نصاب الزكاة وأحكامها الشرعية قبل الاعتماد على النتيجة."
                             } else {
-                                "Do you find it difficult to calculate your Zakat or forget your recurring charity? We launched the Zakat Calculator to calculate with one click, with monthly reminders."
+                                "The Zakat Calculator helps estimate monetary and trade-wealth zakat at 2.5% when its conditions are met. Verify the current nisab and applicable rulings before relying on the result."
                             },
                             fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.85f),
