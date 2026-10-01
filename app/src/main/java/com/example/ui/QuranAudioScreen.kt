@@ -36,6 +36,7 @@ fun QuranAudioScreen(
     onBack: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val defaultReciterName by viewModel.defaultReciter.collectAsState()
 
     val reciters = listOf(
         Triple("Mishary Al-Afasy", "مشاري العفاسي", "https://server8.mp3quran.net/afs/"),
@@ -43,42 +44,97 @@ fun QuranAudioScreen(
         Triple("Saad Al-Ghamdi", "سعد الغامدي", "https://server7.mp3quran.net/gha/")
     )
 
-    var selectedReciter by remember { mutableStateOf(reciters[0]) }
-    var currentSurahIndex by remember { mutableStateOf(0) } // Surah Al-Fatihah
+    var selectedReciter by remember {
+        mutableStateOf(reciters.firstOrNull { it.first == defaultReciterName } ?: reciters[0])
+    }
+    var currentSurahIndex by remember { mutableStateOf(0) }
     var isPlaying by remember { mutableStateOf(false) }
     var sliderPosition by remember { mutableStateOf(0f) }
-    var totalDurationSeconds by remember { mutableStateOf(180) } // Simulated or real
+    var totalDurationSeconds by remember { mutableStateOf(0) }
     var playbackSpeed by remember { mutableStateOf(1.0f) }
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+    LaunchedEffect(defaultReciterName) {
+        reciters.firstOrNull { it.first == defaultReciterName }?.let { selectedReciter = it }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
+
+    fun releasePlayer() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+        isPlaying = false
+    }
 
     val surahs = QuranData.surahs
 
-    // Seek simulation loop when playing
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) {
-            while (true) {
-                delay(1000)
-                if (sliderPosition < totalDurationSeconds) {
-                    sliderPosition += playbackSpeed
-                } else {
-                    // Next track automatically
-                    if (currentSurahIndex < surahs.size - 1) {
-                        currentSurahIndex++
-                        sliderPosition = 0f
-                    } else {
-                        isPlaying = false
-                    }
+    // Keep the progress bar synchronized with the real MediaPlayer.
+    LaunchedEffect(isPlaying, mediaPlayer) {
+        while (isPlaying) {
+            mediaPlayer?.let { player ->
+                if (player.isPlaying) {
+                    sliderPosition = player.currentPosition / 1000f
                 }
             }
+            delay(500)
         }
     }
 
     fun playTrack(index: Int) {
+        if (index !in surahs.indices) return
         currentSurahIndex = index
         sliderPosition = 0f
-        isPlaying = true
-        // Simulating loading the stream
+        totalDurationSeconds = 0
+        releasePlayer()
+
         val url = selectedReciter.third + "%03d.mp3".format(index + 1)
-        Toast.makeText(context, if (lang == "ar") "تشغيل: ${surahs[index].name} • ${selectedReciter.second}" else "Streaming: ${surahs[index].englishName} by ${selectedReciter.first}", Toast.LENGTH_SHORT).show()
+        val player = MediaPlayer()
+        mediaPlayer = player
+
+        try {
+            player.setDataSource(url)
+            player.setOnPreparedListener {
+                totalDurationSeconds = (it.duration / 1000).coerceAtLeast(1)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    it.playbackParams = it.playbackParams.setSpeed(playbackSpeed)
+                }
+                it.start()
+                isPlaying = true
+            }
+            player.setOnCompletionListener {
+                if (currentSurahIndex < surahs.size - 1) {
+                    playTrack(currentSurahIndex + 1)
+                } else {
+                    isPlaying = false
+                    sliderPosition = totalDurationSeconds.toFloat()
+                }
+            }
+            player.setOnErrorListener { _, _, _ ->
+                isPlaying = false
+                totalDurationSeconds = 0
+                Toast.makeText(context,
+                    if (lang == "ar") "تعذر تشغيل التلاوة. تحقق من اتصال الإنترنت."
+                    else "Unable to play the recitation. Check your internet connection.",
+                    Toast.LENGTH_SHORT).show()
+                releasePlayer()
+                true
+            }
+            player.prepareAsync()
+            Toast.makeText(context,
+                if (lang == "ar") "جارٍ تحميل: " + surahs[index].name + " • " + selectedReciter.second
+                else "Loading: " + surahs[index].englishName + " by " + selectedReciter.first,
+                Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            releasePlayer()
+            Toast.makeText(context,
+                if (lang == "ar") "تعذر تشغيل التلاوة." else "Unable to play the recitation.",
+                Toast.LENGTH_SHORT).show()
+        }
     }
 
     Column(
@@ -243,8 +299,14 @@ fun QuranAudioScreen(
                         onClick = {
                             playbackSpeed = when (playbackSpeed) {
                                 1.0f -> 1.25f
+                                1.25f -> 1.5f
                                 1.5f -> 2.0f
                                 else -> 1.0f
+                            }
+                            mediaPlayer?.let {
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                                    it.playbackParams = it.playbackParams.setSpeed(playbackSpeed)
+                                }
                             }
                         }
                     ) {
@@ -263,7 +325,18 @@ fun QuranAudioScreen(
 
                     // Large Play/Pause FAB
                     FloatingActionButton(
-                        onClick = { isPlaying = !isPlaying },
+                        onClick = {
+                        val player = mediaPlayer
+                        if (player == null) {
+                            playTrack(currentSurahIndex)
+                        } else if (player.isPlaying) {
+                            player.pause()
+                            isPlaying = false
+                        } else {
+                            player.start()
+                            isPlaying = true
+                        }
+                    },
                         containerColor = Color(0xFFD4AF37),
                         contentColor = Color.Black,
                         shape = CircleShape,
