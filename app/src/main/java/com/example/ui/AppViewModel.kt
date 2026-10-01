@@ -2,6 +2,7 @@ package com.example.ui
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.os.VibrationEffect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
+import com.example.adhan.AdhanScheduler
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -36,7 +38,8 @@ data class LocalMosque(
     val lat: Double,
     val lng: Double,
     val addressAr: String,
-    val addressEn: String
+    val addressEn: String,
+    val distanceKm: Double = 0.0
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -141,6 +144,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     
     private val _nearbyRealMosques = MutableStateFlow<List<LocalMosque>>(emptyList())
     val nearbyRealMosques: StateFlow<List<LocalMosque>> = _nearbyRealMosques.asStateFlow()
+    val nearestRealMosque: StateFlow<LocalMosque?> = nearbyRealMosques.map { it.firstOrNull() }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     
     private val _isTrackingLocation = MutableStateFlow(false)
     val isTrackingLocation: StateFlow<Boolean> = _isTrackingLocation.asStateFlow()
@@ -265,8 +269,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val hasCoarse = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
         
         if (!hasFine && !hasCoarse) {
-            // No permissions granted! Automatically fall back to IP Geolocation
-            detectLocationByIp()
+            // Exact prayer times and nearby-mosque ranking require device location.
+            // Never silently replace precise GPS with IP geolocation.
+            runCatching {
+                val settingsIntent = Intent(
+                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:$context.packageName")
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(settingsIntent)
+            }
             return
         }
         
@@ -404,6 +415,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         } else {
                             repo.setLocation("My Location", lat, lng)
+                            AdhanScheduler.schedule(getApplication())
                         }
                     }
                 } catch (e: Exception) {
@@ -416,6 +428,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
+    fun openMosqueNavigation(mosque: LocalMosque) {
+        val uri = Uri.parse("geo:${mosque.lat},${mosque.lng}?q=${Uri.encode(mosque.nameAr)}")
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri).apply {
+            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { context.startActivity(intent) }
+    }
+
     fun fetchRealNearbyMosques(lat: Double, lng: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             // Exclusively query OpenStreetMap Overpass API for nearby mosques
@@ -472,6 +492,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     
                     _nearbyRealMosques.value = loadedList
+                        .map { mosque -> mosque.copy(distanceKm = calculateDist(lat, lng, mosque.lat, mosque.lng)) }
+                        .sortedBy { it.distanceKm }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -745,15 +767,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCalculationMethod(method: String) {
-        viewModelScope.launch { repo.setCalcMethod(method) }
+        viewModelScope.launch { repo.setCalcMethod(method); AdhanScheduler.schedule(getApplication()) }
     }
 
     fun setMadhab(madhabName: String) {
-        viewModelScope.launch { repo.setMadhab(madhabName) }
+        viewModelScope.launch { repo.setMadhab(madhabName); AdhanScheduler.schedule(getApplication()) }
     }
 
     fun toggleNotifications(enabled: Boolean) {
-        viewModelScope.launch { repo.setNotificationsEnabled(enabled) }
+        viewModelScope.launch { repo.setNotificationsEnabled(enabled); AdhanScheduler.schedule(getApplication()) }
     }
 
     fun setAthanVoices(fajr: String, other: String) {
@@ -770,6 +792,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setManualCity(city: String, lat: Double, lng: Double) {
         viewModelScope.launch {
             repo.setLocation(city, lat, lng)
+            AdhanScheduler.schedule(getApplication())
             triggerHapticFeedback()
         }
     }
@@ -932,48 +955,48 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminHadith(hadith: AdminHadith) = viewModelScope.launch { repo.insertAdminHadith(hadith) }
-    fun deleteAdminHadith(id: Int) = viewModelScope.launch { repo.deleteAdminHadith(id) }
+    fun insertAdminHadith(hadith: AdminHadith) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminHadith(hadith) }
+    fun deleteAdminHadith(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminHadith(id) }
 
     val adminAdhkars = repo.allAdminAdhkars.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminAdhkar(adhkar: AdminAdhkar) = viewModelScope.launch { repo.insertAdminAdhkar(adhkar) }
-    fun deleteAdminAdhkar(id: Int) = viewModelScope.launch { repo.deleteAdminAdhkar(id) }
+    fun insertAdminAdhkar(adhkar: AdminAdhkar) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminAdhkar(adhkar) }
+    fun deleteAdminAdhkar(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminAdhkar(id) }
 
     val adminDuas = repo.allAdminDuas.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminDua(dua: AdminDua) = viewModelScope.launch { repo.insertAdminDua(dua) }
-    fun deleteAdminDua(id: Int) = viewModelScope.launch { repo.deleteAdminDua(id) }
+    fun insertAdminDua(dua: AdminDua) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminDua(dua) }
+    fun deleteAdminDua(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminDua(id) }
 
     val adminArticles = repo.allAdminArticles.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminArticle(article: AdminArticle) = viewModelScope.launch { repo.insertAdminArticle(article) }
-    fun deleteAdminArticle(id: Int) = viewModelScope.launch { repo.deleteAdminArticle(id) }
+    fun insertAdminArticle(article: AdminArticle) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminArticle(article) }
+    fun deleteAdminArticle(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminArticle(id) }
 
     val adminBannersReminders = repo.allAdminBannersReminders.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminBannerReminder(br: AdminBannerReminder) = viewModelScope.launch { repo.insertAdminBannerReminder(br) }
-    fun deleteAdminBannerReminder(id: Int) = viewModelScope.launch { repo.deleteAdminBannerReminder(id) }
+    fun insertAdminBannerReminder(br: AdminBannerReminder) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminBannerReminder(br) }
+    fun deleteAdminBannerReminder(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminBannerReminder(id) }
 
     val donationCampaigns = repo.allDonationCampaigns.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertDonationCampaign(campaign: DonationCampaign) = viewModelScope.launch { repo.insertDonationCampaign(campaign) }
-    fun deleteDonationCampaign(id: Int) = viewModelScope.launch { repo.deleteDonationCampaign(id) }
+    fun insertDonationCampaign(campaign: DonationCampaign) = viewModelScope.launch { if (hasAdminPermission("MANAGE_DONATIONS")) repo.insertDonationCampaign(campaign) }
+    fun deleteDonationCampaign(id: Int) = viewModelScope.launch { if (hasAdminPermission("MANAGE_DONATIONS")) repo.deleteDonationCampaign(id) }
 
     val notificationLogs = repo.allNotificationLogs.stateIn(
         scope = viewModelScope,
@@ -981,6 +1004,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         initialValue = emptyList()
     )
     fun insertNotificationLog(title: String, body: String, audience: String) = viewModelScope.launch {
+        if (!hasAdminPermission("SEND_ALERTS")) return@launch
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
         repo.insertNotificationLog(NotificationLog(title = title, body = body, audience = audience, sentTime = sdf.format(java.util.Date())))
     }
@@ -1000,52 +1024,86 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     val loggedInMember = MutableStateFlow<AppMember?>(null)
 
+    private val _adminRole = MutableStateFlow<String?>(null)
+    val adminRole: StateFlow<String?> = _adminRole.asStateFlow()
+    private val _adminPermissions = MutableStateFlow<Set<String>>(emptySet())
+    val adminPermissions: StateFlow<Set<String>> = _adminPermissions.asStateFlow()
+
+    private fun hasAdminPermission(permission: String): Boolean =
+        _adminPermissions.value.contains("ALL") || _adminPermissions.value.contains(permission)
+
     fun registerMember(
-        name: String, 
-        email: String, 
-        country: String, 
-        city: String, 
-        onSuccess: () -> Unit, 
+        name: String,
+        email: String,
+        password: String,
+        country: String,
+        city: String,
+        onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
         viewModelScope.launch {
-            if (name.isBlank() || email.isBlank()) {
-                onFailure("يرجى ملء جميع الحقول المطلوبة.")
+            if (name.isBlank() || email.isBlank() || password.length < 8) {
+                onFailure("أدخل الاسم والبريد وكلمة مرور من 8 أحرف على الأقل.")
                 return@launch
             }
-            val existing = allMembers.value.find { it.email.trim().lowercase() == email.trim().lowercase() }
-            if (existing != null) {
-                onFailure("البريد الإلكتروني مسجل بالفعل كعضو في أقم صلاتك.")
-            } else {
-                val newMember = AppMember(
-                    name = name,
-                    email = email.trim().lowercase(),
-                    country = country,
-                    city = city,
-                    points = 150, // Starting point gift
-                    registrationDate = System.currentTimeMillis(),
-                    streakDays = 1,
-                    isActive = true
-                )
-                repo.insertMember(newMember)
-                loggedInMember.value = newMember
-                onSuccess()
+            try {
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                auth.createUserWithEmailAndPassword(email.trim().lowercase(), password)
+                    .addOnSuccessListener { result ->
+                        val userEmail = result.user?.email?.trim()?.lowercase()
+                        if (userEmail.isNullOrBlank()) {
+                            onFailure("تعذر إنشاء الحساب.")
+                            return@addOnSuccessListener
+                        }
+                        viewModelScope.launch {
+                            val newMember = AppMember(
+                                name = name.trim(),
+                                email = userEmail,
+                                country = country.trim(),
+                                city = city.trim(),
+                                points = 150,
+                                registrationDate = System.currentTimeMillis(),
+                                streakDays = 1,
+                                isActive = true
+                            )
+                            repo.insertMember(newMember)
+                            loggedInMember.value = newMember
+                            onSuccess()
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        onFailure(error.message ?: "تعذر إنشاء الحساب.")
+                    }
+            } catch (_: Exception) {
+                onFailure("خدمة العضوية غير متاحة حاليًا.")
             }
         }
     }
 
-    fun loginMember(email: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun loginMember(email: String, password: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         viewModelScope.launch {
-            val matched = allMembers.value.find { it.email.trim().lowercase() == email.trim().lowercase() }
-            if (matched != null) {
-                if (!matched.isActive) {
-                    onFailure("هذا الحساب تم تجميده من قبل الإدارة.")
-                } else {
-                    loggedInMember.value = matched
-                    onSuccess()
-                }
-            } else {
-                onFailure("العضوية غير موجودة. يرجى التسجيل كعضو جديد أولاً.")
+            try {
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                auth.signInWithEmailAndPassword(email.trim().lowercase(), password)
+                    .addOnSuccessListener { result ->
+                        val authenticatedEmail = result.user?.email?.trim()?.lowercase()
+                        val matched = allMembers.value.find { it.email.trim().lowercase() == authenticatedEmail }
+                        if (matched == null) {
+                            auth.signOut()
+                            onFailure("الحساب موثق، لكن ملف العضوية غير موجود.")
+                        } else if (!matched.isActive) {
+                            auth.signOut()
+                            onFailure("هذا الحساب تم تجميده من قبل الإدارة.")
+                        } else {
+                            loggedInMember.value = matched
+                            onSuccess()
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        onFailure(error.message ?: "تعذر تسجيل الدخول.")
+                    }
+            } catch (_: Exception) {
+                onFailure("خدمة العضوية غير متاحة حاليًا.")
             }
         }
     }
@@ -1055,6 +1113,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateMemberPoints(memberId: Int, pointsToAdd: Int) {
+        if (loggedInMember.value?.id != memberId && !hasAdminPermission("ALL")) return
         viewModelScope.launch {
             val matched = allMembers.value.find { it.id == memberId }
             if (matched != null) {
@@ -1068,10 +1127,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteMember(id: Int) = viewModelScope.launch {
+        if (!hasAdminPermission("ALL")) return@launch
         repo.deleteMember(id)
     }
 
     fun setMemberActiveState(id: Int, isActive: Boolean) = viewModelScope.launch {
+        if (!hasAdminPermission("ALL")) return@launch
         val matched = allMembers.value.find { it.id == id }
         if (matched != null) {
             repo.insertMember(matched.copy(isActive = isActive))
@@ -1084,103 +1145,82 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         onSuccess: (role: String, permissions: String) -> Unit,
         onFailure: (String) -> Unit
     ) {
-        viewModelScope.launch {
-            try {
-                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-                auth.signInWithEmailAndPassword(emailInput, passwordInput)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val user = auth.currentUser
-                            if (user != null && user.email != null) {
-                                val email = user.email!!.trim().lowercase()
-                                try {
-                                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                                    db.collection("admins").document(email).get()
-                                        .addOnCompleteListener { fsTask ->
-                                            if (fsTask.isSuccessful) {
-                                                val doc = fsTask.result
-                                                if (doc != null && doc.exists()) {
-                                                    val role = doc.getString("role") ?: "Moderator"
-                                                    val permissions = doc.getString("permissions") ?: "EDIT_CONTENT"
-                                                    onSuccess(role, permissions)
-                                                } else {
-                                                    if (email == "zakidj181@gmail.com") {
-                                                        // Auto-provision Super Admin document in Firestore
-                                                        val data = mapOf(
-                                                            "email" to email,
-                                                            "role" to "Super Admin",
-                                                            "permissions" to "ALL"
-                                                        )
-                                                        db.collection("admins").document(email).set(data)
-                                                        onSuccess("Super Admin", "ALL")
-                                                    } else {
-                                                        onFailure("Access denied. No admin record found in Firestore for $email.")
-                                                    }
-                                                }
-                                            } else {
-                                                if (email == "zakidj181@gmail.com") {
-                                                    onSuccess("Super Admin", "ALL")
-                                                } else {
-                                                    onFailure("Firestore query failed: ${fsTask.exception?.message}")
-                                                }
-                                            }
-                                        }
-                                } catch (e: Exception) {
-                                    val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
-                                    if (email == "zakidj181@gmail.com") {
-                                        onSuccess("Super Admin", "ALL")
-                                    } else if (matchedLocal != null) {
-                                        onSuccess(matchedLocal.role, matchedLocal.permissions)
-                                    } else {
-                                        onFailure("Firestore authorization failed: ${e.message}")
-                                    }
-                                }
-                            } else {
-                                onFailure("Authenticated user has no email address.")
-                            }
-                        } else {
-                            val errorMsg = task.exception?.message ?: "Unknown error"
-                            val email = emailInput.trim().lowercase()
-                            val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
-                            if ((email == "zakidj181@gmail.com" && passwordInput == "admin123") || 
-                                (matchedLocal != null && passwordInput == "admin123")) {
-                                onSuccess(if (email == "zakidj181@gmail.com") "Super Admin" else matchedLocal?.role ?: "Moderator", 
-                                          if (email == "zakidj181@gmail.com") "ALL" else matchedLocal?.permissions ?: "EDIT_CONTENT")
-                            } else {
-                                onFailure("Firebase Authentication failed: $errorMsg")
-                            }
-                        }
+        val email = emailInput.trim().lowercase()
+        if (email.isBlank() || passwordInput.isBlank()) {
+            onFailure("البريد الإلكتروني وكلمة المرور مطلوبان.")
+            return
+        }
+
+        try {
+            val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+            auth.signInWithEmailAndPassword(email, passwordInput)
+                .addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        onFailure("تعذر التحقق من بيانات الدخول.")
+                        return@addOnCompleteListener
                     }
-            } catch (e: Exception) {
-                val email = emailInput.trim().lowercase()
-                val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
-                if ((email == "zakidj181@gmail.com" && passwordInput == "admin123") || 
-                    (matchedLocal != null && passwordInput == "admin123")) {
-                    onSuccess(if (email == "zakidj181@gmail.com") "Super Admin" else matchedLocal?.role ?: "Moderator", 
-                              if (email == "zakidj181@gmail.com") "ALL" else matchedLocal?.permissions ?: "EDIT_CONTENT")
-                } else {
-                    onFailure("Firebase not initialized: ${e.message}. Testing credentials: zakidj181@gmail.com / admin123")
+
+                    val authenticatedEmail = auth.currentUser?.email?.trim()?.lowercase()
+                    if (authenticatedEmail.isNullOrBlank()) {
+                        auth.signOut()
+                        onFailure("حساب Firebase الموثق لا يحتوي على بريد إلكتروني.")
+                        return@addOnCompleteListener
+                    }
+
+                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    db.collection("admins").document(authenticatedEmail).get()
+                        .addOnSuccessListener { doc ->
+                            if (!doc.exists()) {
+                                auth.signOut()
+                                onFailure("هذا الحساب موثق لكنه غير مصرح له بالدخول إلى لوحة الإدارة.")
+                                return@addOnSuccessListener
+                            }
+
+                            val role = doc.getString("role")?.trim()
+                            val permissions = doc.getString("permissions")?.trim()
+                            val active = doc.getBoolean("isActive") ?: true
+
+                            if (!active || role.isNullOrBlank() || permissions.isNullOrBlank()) {
+                                auth.signOut()
+                                onFailure("حساب الإدارة غير نشط أو أن صلاحياته غير مكتملة.")
+                                return@addOnSuccessListener
+                            }
+
+                            _adminRole.value = role
+                            _adminPermissions.value = permissions.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
+                            onSuccess(role, permissions)
+                        }
+                        .addOnFailureListener {
+                            auth.signOut()
+                            onFailure("تعذر التحقق من صلاحيات الإدارة. حاول لاحقًا.")
+                        }
                 }
-            }
+        } catch (_: Exception) {
+            onFailure("خدمة المصادقة غير متاحة حاليًا.")
         }
     }
 
     fun insertAdminAccount(email: String, role: String, permissions: String) = viewModelScope.launch {
-        repo.insertAdminAccount(AdminAccount(email = email, role = role, permissions = permissions))
+        if (!hasAdminPermission("ALL")) return@launch
+        val normalizedEmail = email.trim().lowercase()
+        if (normalizedEmail.isBlank() || role.isBlank() || permissions.isBlank()) return@launch
+        repo.insertAdminAccount(AdminAccount(email = normalizedEmail, role = role, permissions = permissions))
         try {
             val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
             val data = mapOf(
-                "email" to email.trim().lowercase(),
+                "email" to normalizedEmail,
                 "role" to role,
                 "permissions" to permissions
             )
-            db.collection("admins").document(email.trim().lowercase()).set(data)
+            db.collection("admins").document(normalizedEmail).set(data)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
     fun deleteAdminAccount(id: Int, email: String) = viewModelScope.launch {
+        if (!hasAdminPermission("ALL")) return@launch
+        if (email.trim().lowercase() == com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email?.trim()?.lowercase()) return@launch
         repo.deleteAdminAccount(id)
         try {
             val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
@@ -1219,18 +1259,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
             
-            // Seed a default Super Admin account
-            repo.allAdminAccounts.first().let { currentAdmins ->
-                if (currentAdmins.isEmpty()) {
-                    repo.insertAdminAccount(
-                        AdminAccount(
-                            email = "zakidj181@gmail.com",
-                            role = "Super Admin",
-                            permissions = "ALL"
-                        )
-                    )
-                }
-            }
         }
     }
 
@@ -1371,66 +1399,3 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 poll.copy(
                     votes = newVotes,
                     totalVotes = poll.totalVotes + 1,
-                    votedOptionIndex = optionIndex
-                )
-            } else {
-                poll
-            }
-        }
-        
-        // Reward user with 10 Barakah points for participating in polls!
-        loggedInMember.value?.let {
-            updateMemberPoints(it.id, 10)
-        }
-    }
-
-    fun updateFajrRecord(dateString: String, newStatus: String) {
-        _fajrRecords.value = _fajrRecords.value.map { rec ->
-            if (rec.dateString == dateString) {
-                rec.copy(status = newStatus)
-            } else {
-                rec
-            }
-        }
-        
-        // Give points for tracking Fajr prayer!
-        val addedPoints = when (newStatus) {
-            "CONGREGATION" -> 25 // 25 points for Congregation!
-            "INDIVIDUAL" -> 10   // 10 points for Individual!
-            else -> 0
-        }
-        if (addedPoints > 0) {
-            loggedInMember.value?.let {
-                updateMemberPoints(it.id, addedPoints)
-            }
-        }
-    }
-}
-
-data class CommunityPost(
-    val id: Int,
-    val authorName: String,
-    val authorCountry: String,
-    val content: String,
-    val likesCount: Int,
-    val isLiked: Boolean,
-    val timestamp: Long
-)
-
-data class CommunityPoll(
-    val id: Int,
-    val questionAr: String,
-    val questionEn: String,
-    val optionsAr: List<String>,
-    val optionsEn: List<String>,
-    val votes: List<Int>,
-    val totalVotes: Int,
-    val votedOptionIndex: Int? // null if not voted yet
-)
-
-data class FajrDayRecord(
-    val dayNameAr: String,
-    val dayNameEn: String,
-    val dateString: String,
-    val status: String // "NOT_SET", "CONGREGATION", "INDIVIDUAL", "MISSED", "EXCUSED"
-)

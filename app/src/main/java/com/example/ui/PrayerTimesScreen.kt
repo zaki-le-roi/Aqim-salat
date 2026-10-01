@@ -55,6 +55,8 @@ fun PrayerTimesScreen(
     val lng by viewModel.longitude.collectAsState()
     val calcMethodStr by viewModel.calcMethod.collectAsState()
     val madhabStr by viewModel.madhab.collectAsState()
+    val nearbyMosques by viewModel.nearbyRealMosques.collectAsState()
+    val nearestMosque by viewModel.nearestRealMosque.collectAsState()
 
     var showQazaTracker by remember { mutableStateOf(false) }
     var showMonthlyTimes by remember { mutableStateOf(false) }
@@ -121,6 +123,36 @@ fun PrayerTimesScreen(
             }
         }
 
+        // --- Nearby Mosques ---
+        item {
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = if (lang == "ar") "المساجد القريبة" else "Nearby Mosques", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Filled.Mosque, contentDescription = null, tint = Color(0xFFD4AF37))
+                    }
+                    nearestMosque?.let { mosque ->
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(text = if (lang == "ar") "أقرب مسجد: ${mosque.nameAr}" else "Nearest: ${mosque.nameEn}", fontWeight = FontWeight.Bold)
+                        Text(text = String.format(Locale.US, "%.2f كم", mosque.distanceKm), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { viewModel.openMosqueNavigation(mosque) }, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Filled.Navigation, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (lang == "ar") "الملاحة إلى أقرب مسجد" else "Navigate to nearest mosque")
+                        }
+                    }
+                    if (nearbyMosques.isEmpty()) {
+                        Text(text = if (lang == "ar") "لم يتم العثور على مساجد مسجلة حول موقعك بعد." else "No mapped mosques found around your location yet.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f), modifier = Modifier.padding(top = 10.dp))
+                    } else {
+                        nearbyMosques.take(5).forEach { mosque ->
+                            ListItem(headlineContent = { Text(if (lang == "ar") mosque.nameAr else mosque.nameEn, fontWeight = FontWeight.Medium) }, supportingContent = { Text(String.format(Locale.US, "%.2f كم", mosque.distanceKm)) }, leadingContent = { Icon(Icons.Filled.Place, contentDescription = null) }, trailingContent = { IconButton(onClick = { viewModel.openMosqueNavigation(mosque) }) { Icon(Icons.Filled.Navigation, contentDescription = if (lang == "ar") "الملاحة" else "Navigate") } })
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+        }
         if (showQazaTracker) {
             // --- Qaza (Missed) Prayer Tracker Ledger ---
             item {
