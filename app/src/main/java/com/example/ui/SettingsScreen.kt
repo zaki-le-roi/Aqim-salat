@@ -526,7 +526,7 @@ fun SettingsItemCard(
                     Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                 }
             }
-            Icon(Icons.Filled.ChevronRight, contentDescription = if (lang == "ar") "تعديل" else "Edit", tint = Color(0xFFD4AF37))
+            Icon(Icons.Filled.ChevronRight, contentDescription = title, tint = Color(0xFFD4AF37))
         }
     }
 }
