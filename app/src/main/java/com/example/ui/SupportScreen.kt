@@ -71,7 +71,7 @@ fun SupportScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("support_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "ar") "رجوع" else "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -190,7 +190,7 @@ fun SupportScreen(
                                             )
                                             Icon(
                                                 imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                                                contentDescription = "Expand",
+                                                contentDescription = if (lang == "ar") "توسيع" else "Expand",
                                                 tint = Color(0xFFD4AF37)
                                             )
                                         }
@@ -226,7 +226,7 @@ fun SupportScreen(
                                             modifier = Modifier.padding(24.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            Icon(Icons.Filled.CheckCircle, contentDescription = "Success", tint = Color(0xFF4CAF50), modifier = Modifier.size(56.dp))
+                                            Icon(Icons.Filled.CheckCircle, contentDescription = if (lang == "ar") "نجاح" else "Success", tint = Color(0xFF4CAF50), modifier = Modifier.size(56.dp))
                                             Spacer(modifier = Modifier.height(16.dp))
                                             Text(
                                                 if (lang == "ar") "تم إرسال بلاغك بنجاح!" else "Support Message Sent!",
@@ -308,7 +308,7 @@ fun SupportScreen(
                                                 if (isSending) {
                                                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                                                 } else {
-                                                    Icon(Icons.Filled.Send, contentDescription = "Submit")
+                                                    Icon(Icons.Filled.Send, contentDescription = if (lang == "ar") "إرسال" else "Submit")
                                                     Spacer(modifier = Modifier.width(8.dp))
                                                     Text(if (lang == "ar") "إرسال الطلب الآن" else "Submit Request")
                                                 }
@@ -414,7 +414,7 @@ fun SupportScreen(
                                                 .background(Color(0xFFD4AF37).copy(alpha = 0.1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Icon(Icons.Filled.Handshake, contentDescription = "Waqf", tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
+                                            Icon(Icons.Filled.Handshake, contentDescription = if (lang == "ar") "وقف" else "Waqf", tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
                                         }
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Column {
@@ -530,7 +530,7 @@ fun SupportScreen(
                                             modifier = Modifier.padding(24.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            Icon(Icons.Filled.Star, contentDescription = "Star", tint = Color(0xFFFFD700), modifier = Modifier.size(56.dp))
+                                            Icon(Icons.Filled.Star, contentDescription = if (lang == "ar") "نجمة" else "Star", tint = Color(0xFFFFD700), modifier = Modifier.size(56.dp))
                                             Spacer(modifier = Modifier.height(16.dp))
                                             Text(
                                                 if (lang == "ar") "شكراً جزيلاً لتقييمك الطيب!" else "Thank you for your rating!",
@@ -605,7 +605,7 @@ fun SupportScreen(
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Icon(Icons.Filled.Share, contentDescription = "Share", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
+                                        Icon(Icons.Filled.Share, contentDescription = if (lang == "ar") "مشاركة" else "Share", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
                                             if (lang == "ar") "الأجر بالنشر والدعوة للخير" else "Share the App & Earn Rewards",
@@ -633,7 +633,7 @@ fun SupportScreen(
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Icon(Icons.Filled.ContentCopy, contentDescription = "Copy")
+                                            Icon(Icons.Filled.ContentCopy, contentDescription = if (lang == "ar") "نسخ" else "Copy")
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(if (lang == "ar") "نسخ رابط المشاركة" else "Copy Share Link")
                                         }
