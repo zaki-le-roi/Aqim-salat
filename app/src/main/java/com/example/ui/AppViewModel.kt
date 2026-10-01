@@ -438,65 +438,72 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun fetchRealNearbyMosques(lat: Double, lng: Double) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Exclusively query OpenStreetMap Overpass API for nearby mosques
             try {
-                val queryStr = "[out:json][timeout:15];(node[\"amenity\"=\"place_of_worship\"][\"religion\"=\"islam\"](around:10000,$lat,$lng);way[\"amenity\"=\"place_of_worship\"][\"religion\"=\"islam\"](around:10000,$lat,$lng););out center;"
-                val urlStr = "https://overpass-api.de/api/interpreter?data=" + java.net.URLEncoder.encode(queryStr, "UTF-8")
-                val url = java.net.URL(urlStr)
-                val conn = url.openConnection() as java.net.HttpURLConnection
-                conn.connectTimeout = 8000
-                conn.readTimeout = 8000
-                conn.requestMethod = "GET"
-                
+                val queryStr = """
+                    [out:json][timeout:25];
+                    (
+                      nwr["amenity"="place_of_worship"]["religion"="muslim"](around:10000,$lat,$lng);
+                      nwr["building"="mosque"](around:10000,$lat,$lng);
+                    );
+                    out center tags;
+                """.trimIndent()
+                val urlStr = "https://overpass-api.de/api/interpreter?data=" +
+                    java.net.URLEncoder.encode(queryStr, "UTF-8")
+                val conn = (java.net.URL(urlStr).openConnection() as java.net.HttpURLConnection).apply {
+                    connectTimeout = 10000
+                    readTimeout = 25000
+                    requestMethod = "GET"
+                    setRequestProperty("User-Agent", "Aqim-Salat/1.1 Android")
+                }
+
                 if (conn.responseCode == 200) {
                     val response = conn.inputStream.bufferedReader().use { it.readText() }
-                    val json = org.json.JSONObject(response)
-                    val elements = json.getJSONArray("elements")
-                    val loadedList = mutableListOf<LocalMosque>()
-                    
+                    val elements = org.json.JSONObject(response).optJSONArray("elements") ?: org.json.JSONArray()
+                    val unique = LinkedHashMap<String, LocalMosque>()
+
                     for (i in 0 until elements.length()) {
                         val el = elements.getJSONObject(i)
-                        val id = el.getLong("id")
-                        
-                        val mLat = if (el.has("lat")) el.getDouble("lat") else el.getJSONObject("center").getDouble("lat")
-                        val mLng = if (el.has("lon")) el.getDouble("lon") else el.getJSONObject("center").getDouble("lon")
-                        
-                        var nameAr = ""
-                        var nameEn = ""
-                        var addrAr = ""
-                        var addrEn = ""
-                        
-                        if (el.has("tags")) {
-                             val tags = el.getJSONObject("tags")
-                             nameAr = if (tags.has("name:ar")) tags.getString("name:ar") 
-                                      else if (tags.has("name")) tags.getString("name") 
-                                      else "مسجد"
-                             
-                             nameEn = if (tags.has("name:en")) tags.getString("name:en") 
-                                      else if (tags.has("name")) tags.getString("name") 
-                                      else "Mosque"
-                                      
-                             val street = if (tags.has("addr:street")) tags.getString("addr:street") else ""
-                             val city = if (tags.has("addr:city")) tags.getString("addr:city") else ""
-                             
-                             addrEn = if (street.isNotEmpty() || city.isNotEmpty()) "$street, $city" else "Nearby Mosque"
-                             addrAr = if (street.isNotEmpty() || city.isNotEmpty()) "$street, $city" else "مسجد قريب"
-                        } else {
-                             nameAr = "مسجد"
-                             nameEn = "Mosque"
-                             addrEn = "Nearby Mosque"
-                             addrAr = "مسجد قريب"
+                        val id = el.optLong("id", 0L)
+                        if (id == 0L) continue
+
+                        val center = el.optJSONObject("center")
+                        val mLat = if (el.has("lat")) el.getDouble("lat") else center?.optDouble("lat", Double.NaN) ?: Double.NaN
+                        val mLng = if (el.has("lon")) el.getDouble("lon") else center?.optDouble("lon", Double.NaN) ?: Double.NaN
+                        if (mLat.isNaN() || mLng.isNaN()) continue
+
+                        val tags = el.optJSONObject("tags")
+                        val name = tags?.optString("name", "")?.trim().orEmpty()
+                        val nameAr = tags?.optString("name:ar", "")?.trim().orEmpty().ifBlank {
+                            if (name.isNotBlank()) name else "مسجد"
                         }
-                        
-                        loadedList.add(LocalMosque(id, nameAr, nameEn, mLat, mLng, addrAr, addrEn))
+                        val nameEn = tags?.optString("name:en", "")?.trim().orEmpty().ifBlank {
+                            if (name.isNotBlank()) name else "Mosque"
+                        }
+
+                        val street = tags?.optString("addr:street", "")?.trim().orEmpty()
+                        val city = tags?.optString("addr:city", "")?.trim().orEmpty()
+                        val suburb = tags?.optString("addr:suburb", "")?.trim().orEmpty()
+                        val district = listOf(suburb, city).filter { it.isNotBlank() }.joinToString("، ")
+                        val addressAr = listOf(street, district).filter { it.isNotBlank() }.joinToString("، ")
+                            .ifBlank { "مسجد قريب من موقعك" }
+                        val addressEn = listOf(street, district).filter { it.isNotBlank() }.joinToString(", ")
+                            .ifBlank { "Mosque near your location" }
+
+                        val key = "$mLat,$mLng"
+                        unique[key] = LocalMosque(id, nameAr, nameEn, mLat, mLng, addressAr, addressEn)
                     }
-                    
-                    _nearbyRealMosques.value = loadedList
+
+                    _nearbyRealMosques.value = unique.values
                         .map { mosque -> mosque.copy(distanceKm = calculateDist(lat, lng, mosque.lat, mosque.lng)) }
                         .sortedBy { it.distanceKm }
+                        .take(100)
+                } else {
+                    _nearbyRealMosques.value = emptyList()
                 }
+                conn.disconnect()
             } catch (e: Exception) {
                 e.printStackTrace()
+                _nearbyRealMosques.value = emptyList()
             }
         }
     }
