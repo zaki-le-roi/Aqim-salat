@@ -1168,7 +1168,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                         }
                     }
 
-                    Text("نطاق الصلاحيات المحلية", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                    Text("نطاق الصلاحيات", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         listOf(
                             "ALL" to "كامل الصلاحيات", 
@@ -1215,7 +1215,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("حفظ الصلاحيات محليًا وفي Firestore", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("حفظ الربط والصلاحيات في التطبيق وFirestore", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
@@ -1403,7 +1403,7 @@ fun MembersTab(viewModel: AppViewModel) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Filled.AutoAwesome, null, tint = Color(0xFFD4AF37), modifier = Modifier.size(13.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(text = "${member.points} نقطة بركة", fontSize = 11.sp, color = Color(0xFFD4AF37), fontWeight = FontWeight.SemiBold)
+                                Text(text = "${member.points} نقطة داخل التطبيق", fontSize = 11.sp, color = Color(0xFFD4AF37), fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Icon(Icons.Filled.LocalFireDepartment, null, tint = Color(0xFFFF9800), modifier = Modifier.size(13.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
