@@ -47,13 +47,10 @@ fun SupportScreen(
     var supportEmail by remember { mutableStateOf("") }
     var supportMsg by remember { mutableStateOf("") }
     var issueType by remember { mutableStateOf("عام / اقتراح") }
-    var isSending by remember { mutableStateOf(false) }
-    var supportSuccess by remember { mutableStateOf(false) }
-
+    
     // Rating star state
     var selectedStars by remember { mutableIntStateOf(0) }
     var feedbackText by remember { mutableStateOf("") }
-    var ratedSuccess by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -225,7 +222,7 @@ fun SupportScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    if (supportSuccess) {
+                                    if (false) {
                                         Column(
                                             modifier = Modifier.padding(24.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally
@@ -233,14 +230,14 @@ fun SupportScreen(
                                             Icon(Icons.Filled.CheckCircle, contentDescription = if (lang == "ar") "نجاح" else "Success", tint = Color(0xFF4CAF50), modifier = Modifier.size(56.dp))
                                             Spacer(modifier = Modifier.height(16.dp))
                                             Text(
-                                                if (lang == "ar") "تم إرسال بلاغك بنجاح!" else "Support Message Sent!",
+                                                if (lang == "ar") "تم فتح تطبيق البريد. أكمل الإرسال من تطبيق البريد." else "Email opened. Complete the send action in your email app.",
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 18.sp
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Text(
-                                                if (lang == "ar") "سيقوم مهندسو الدعم الفني بمراجعة طلبك والتواصل معك عبر البريد الإلكتروني المدخل في أقرب وقت."
-                                                else "Our engineers will review your request and get back to you via your entered email as soon as possible.",
+                                                if (lang == "ar") "لا نعرض نجاحاً نهائياً لأن عملية الإرسال تتم خارج التطبيق."
+                                                else "The app does not claim final delivery because sending happens outside the app.",
                                                 fontSize = 13.sp,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                                 textAlign = TextAlign.Center,
@@ -314,13 +311,9 @@ fun SupportScreen(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
                                             ) {
-                                                if (isSending) {
-                                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                                                } else {
-                                                    Icon(Icons.Filled.Send, contentDescription = if (lang == "ar") "إرسال" else "Submit")
-                                                    Spacer(modifier = Modifier.width(8.dp))
-                                                    Text(if (lang == "ar") "إرسال الطلب الآن" else "Submit Request")
-                                                }
+                                                Icon(Icons.Filled.Send, contentDescription = if (lang == "ar") "فتح البريد" else "Open email")
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(if (lang == "ar") "فتح البريد لإرسال الطلب" else "Open Email to Send")
                                             }
                                         }
                                     }
@@ -451,7 +444,7 @@ fun SupportScreen(
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(
-                                            if (lang == "ar") "📢 أعلن معنا للمشاريع الهادفة" else "📢 Advertise with Us",
+                                            if (lang == "ar") "📢 الشراكات والإعلان" else "📢 Partnerships & Advertising",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
                                             color = Color(0xFFD4AF37)
@@ -548,7 +541,7 @@ fun SupportScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    if (ratedSuccess) {
+                                    if (false) {
                                         Column(
                                             modifier = Modifier.padding(24.dp),
                                             horizontalAlignment = Alignment.CenterHorizontally
