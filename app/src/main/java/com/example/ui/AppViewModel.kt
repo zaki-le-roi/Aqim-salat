@@ -825,12 +825,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 val mPlayer = MediaPlayer().apply {
                     setAudioAttributes(
                         AudioAttributes.Builder()
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .setUsage(AudioAttributes.USAGE_ALARM)
                             .build()
                     )
                     // URL streaming Athan (Makkah recitation)
-                    setDataSource("https://download.tvquran.com/download/selections/3/570773b064c12.mp3")
+                    setDataSource("https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__04.athan.mp3")
                     prepare()
                     start()
                 }
