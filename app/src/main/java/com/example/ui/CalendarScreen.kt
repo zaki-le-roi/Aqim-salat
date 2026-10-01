@@ -43,7 +43,13 @@ fun CalendarScreen(
     var convertedHijriResult by remember { mutableStateOf("") }
 
     val currentHijri = PrayerCalculator.getHijriDate(today, lang)
-    val daysInCurrentHijriMonth = (1..30).toList()
+    val isHijriLeapYear = ((11 * currentHijri.year + 14) % 30) < 11
+    val currentHijriMonthLength = when {
+        currentHijri.month == 12 && isHijriLeapYear -> 30
+        currentHijri.month % 2 == 1 -> 30
+        else -> 29
+    }
+    val daysInCurrentHijriMonth = (1..currentHijriMonthLength).toList()
 
     val islamicEvents = listOf(
         Triple("1 Ramadan", if (lang == "ar") "بداية صيام شهر رمضان المبارك" else "1st of Ramadan - Beginning of Fasting", "01 Ramadan"),
