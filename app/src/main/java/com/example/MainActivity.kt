@@ -205,7 +205,8 @@ fun AqimSalahApp(
             }
             "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS", "AUTH",
             "COMMUNITY", "POLLS", "FAJR_LIST", "COMPETITION",
-            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY" -> {
+            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY",
+            "ZAKAT", "ACCOUNTABILITY", "WORLD_PRAYER_TIMES", "DEEDS", "PREMIUM" -> {
                 activeDetailScreen = routeKey
             }
         }
@@ -274,6 +275,11 @@ fun AqimSalahApp(
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
+                    "ZAKAT" -> ZakatCalculatorScreen(lang = lang, onBack = { activeDetailScreen = null })
+                    "ACCOUNTABILITY" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null })
+                    "WORLD_PRAYER_TIMES" -> WorldPrayerTimesScreen(lang = lang, onBack = { activeDetailScreen = null })
+                    "DEEDS" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null }, challenge = true)
+                    "PREMIUM" -> PremiumFeaturesScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "DAILY_DUA" -> DailyDuaScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "ADMIN" -> AdminScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
