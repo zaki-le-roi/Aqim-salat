@@ -67,7 +67,7 @@ private fun ServicesGridItem.localizedTitle(lang: String): String {
         "حصن المسلم" -> "Hisn Al-Muslim"
         "الأسئلة الشائعة" -> "FAQ"
         "الدعم الفني" -> "Technical Support"
-        "عن نحن" -> "About Us"
+        "من نحن" -> "About Us"
         "انشر التطبيق" -> "Share App"
         "برامجنا" -> "Our Apps"
         "انشر التفاصيل" -> "Share Details"
@@ -126,7 +126,7 @@ fun MoreScreen(
     val supportServices = listOf(
         ServicesGridItem("FAQ", "الأسئلة الشائعة", Icons.Filled.QuestionMark, Color.Unspecified),
         ServicesGridItem("SUPPORT", "الدعم الفني", Icons.Filled.ContactSupport, Color.Unspecified),
-        ServicesGridItem("ABOUT_US", "عن نحن", Icons.Filled.Info, Color.Unspecified),
+        ServicesGridItem("ABOUT_US", "من نحن", Icons.Filled.Info, Color.Unspecified),
         ServicesGridItem("RATE_SHARE", "انشر التطبيق", Icons.Filled.Share, Color.Unspecified),
         ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color.Unspecified),
         ServicesGridItem("RATE_SHARE", "انشر التفاصيل", Icons.Filled.Share, Color.Unspecified),
