@@ -25,14 +25,15 @@ object AdhanScheduler {
     )
 
     suspend fun schedule(context: Context) {
-        val repository = AppRepository(context.applicationContext)
+        val appContext = context.applicationContext
+        val repository = AppRepository(AppDatabase.getDatabase(appContext), appContext)
         val enabled = repository.notificationsEnabled.first()
         if (!enabled) {
             cancel(context)
             return
         }
 
-        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val alarmManager = appContext.getSystemService(AlarmManager::class.java) ?: return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) return
 
         cancel(context)
@@ -76,13 +77,13 @@ object AdhanScheduler {
                 if (trigger <= System.currentTimeMillis()) return@forEach
 
                 val requestCode = (dateFormat.format(date) + key).hashCode()
-                val intent = Intent(context, AdhanAlarmReceiver::class.java).apply {
+                val intent = Intent(appContext, AdhanAlarmReceiver::class.java).apply {
                     putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY, key)
                     putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, prayers.first { it.first == key }.second)
                     putExtra(AdhanAlarmReceiver.EXTRA_DATE, dateFormat.format(date))
                 }
                 val pending = PendingIntent.getBroadcast(
-                    context, requestCode, intent,
+                    appContext, requestCode, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
@@ -100,20 +101,21 @@ object AdhanScheduler {
             putExtra(AdhanAlarmReceiver.EXTRA_REFRESH, true)
         }
         val refreshPending = PendingIntent.getBroadcast(
-            context, REQUEST_REFRESH, refreshIntent,
+            appContext, REQUEST_REFRESH, refreshIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, refresh, refreshPending)
     }
 
     fun cancel(context: Context) {
-        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val appContext = context.applicationContext
+        val alarmManager = appContext.getSystemService(AlarmManager::class.java) ?: return
         prayers.forEach { (key, _) ->
             for (dayOffset in 0..1) {
                 val day = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, dayOffset) }
                 val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(day.time)
                 val requestCode = (date + key).hashCode()
-                val intent = Intent(context, AdhanAlarmReceiver::class.java)
+                val intent = Intent(appContext, AdhanAlarmReceiver::class.java)
                 val pending = PendingIntent.getBroadcast(
                     context, requestCode, intent,
                     PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
