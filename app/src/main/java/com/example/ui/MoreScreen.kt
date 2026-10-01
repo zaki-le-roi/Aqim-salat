@@ -94,8 +94,9 @@ fun MoreScreen(
         ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color.Unspecified),
         ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color.Unspecified),
-        ServicesGridItem("HADITH", "الفوائد", Icons.Filled.Lightbulb, Color.Unspecified),
+        ServicesGridItem("HADITH", "الفوائد والحديث", Icons.Filled.Lightbulb, Color.Unspecified),
         ServicesGridItem("ACCOUNTABILITY", "ورد المحاسبة", Icons.Filled.FactCheck, Color.Unspecified),
+        ServicesGridItem("DEEDS", "أعمال اليوم والليلة", Icons.Filled.TaskAlt, Color.Unspecified),
         ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color.Unspecified),
         ServicesGridItem("TRAVEL", "وجهة المسافر", Icons.Filled.Flight, Color.Unspecified),
         ServicesGridItem("WORLD_PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color.Unspecified),
@@ -111,7 +112,7 @@ fun MoreScreen(
 
     val quranDhikrServices = listOf(
         ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color.Unspecified),
-        ServicesGridItem("FAVORITES", "العلامات المحفوظة", Icons.Filled.Bookmark, Color.Unspecified),
+        ServicesGridItem("FAVORITES", "صندوق العلامات", Icons.Filled.Bookmark, Color.Unspecified),
         ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "الأدعية", Icons.Filled.AutoAwesome, Color.Unspecified),
         ServicesGridItem("NAMES", "أسماء الله الحسنى", Icons.Filled.Favorite, Color.Unspecified),
