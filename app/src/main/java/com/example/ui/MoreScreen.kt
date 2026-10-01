@@ -85,54 +85,52 @@ fun MoreScreen(
     onNavigateToFeature: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 1. General Services List
+    // الخدمات المعروضة هنا هي المسارات الفعلية الموجودة في التطبيق.
     val generalServices = listOf(
-        ServicesGridItem("HOME", "الرئيسية", Icons.Filled.Home, Color(0xFF1E88E5)),
-        ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color(0xFFFF9800)),
-        ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color(0xFF009688)),
-        ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color(0xFF0D47A1)),
-        ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color(0xFF00ACC1)),
-        ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color(0xFF29B6F6)),
-        ServicesGridItem("HADITH", "الفوائد", Icons.Filled.Lightbulb, Color(0xFFFFB300)),
-        ServicesGridItem("ACCOUNTABILITY", "ورد المحاسبة", Icons.Filled.FactCheck, Color(0xFF9C27B0)),
-        ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color(0xFFAB47BC)),
-        ServicesGridItem("TRAVEL", "حقيبة المسافر", Icons.Filled.Flight, Color(0xFF42A5F5)),
-        ServicesGridItem("WORLD_PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color(0xFF26A69A)),
-        ServicesGridItem("POLLS", "استطلاعات", Icons.Filled.BarChart, Color(0xFF5C6BC0)),
-        ServicesGridItem("COMPETITION", "استباق", Icons.Filled.Group, Color(0xFF26C6DA)),
-        ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color(0xFF66BB6A)),
-        ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color(0xFF9CCC65)),
-        ServicesGridItem("COMMUNITY", "مجتمع أقم صلاتك", Icons.Filled.Forum, Color(0xFF4CAF50)),
-        ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color(0xFFFF7043)),
-        ServicesGridItem("FAJR_LIST", "قائمة الفجر", Icons.Filled.Cloud, Color(0xFF5C6BC0)),
-        ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color(0xFFFF7043))
+        ServicesGridItem("HOME", "الرئيسية", Icons.Filled.Home, Color.Unspecified),
+        ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color.Unspecified),
+        ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color.Unspecified),
+        ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color.Unspecified),
+        ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color.Unspecified),
+        ServicesGridItem("DONATIONS", "بنك الصلوات", Icons.Filled.VolunteerActivism, Color.Unspecified),
+        ServicesGridItem("HADITH", "الفوائد", Icons.Filled.Lightbulb, Color.Unspecified),
+        ServicesGridItem("ACCOUNTABILITY", "ورد المناسبة", Icons.Filled.FactCheck, Color.Unspecified),
+        ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color.Unspecified),
+        ServicesGridItem("TRAVEL", "وجهة المسافر", Icons.Filled.Flight, Color.Unspecified),
+        ServicesGridItem("WORLD_PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color.Unspecified),
+        ServicesGridItem("POLLS", "الاستطلاعات", Icons.Filled.BarChart, Color.Unspecified),
+        ServicesGridItem("COMPETITION", "أصدقائي", Icons.Filled.Group, Color.Unspecified),
+        ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color.Unspecified),
+        ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color.Unspecified),
+        ServicesGridItem("COMMUNITY", "صحيح أقم صلاتك", Icons.Filled.Forum, Color.Unspecified),
+        ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color.Unspecified),
+        ServicesGridItem("FAJR_LIST", "خاتمة الصبر", Icons.Filled.Cloud, Color.Unspecified),
+        ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color.Unspecified)
     )
 
-    // 2. Quran and Dhikr List
     val quranDhikrServices = listOf(
-        ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color(0xFF4CAF50)),
-        ServicesGridItem("QURAN", "التحفيظ", Icons.Filled.Bookmark, Color(0xFF3F51B5)),
-        ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color(0xFF03A9F4)),
-        ServicesGridItem("HADITH", "كنوز", Icons.Filled.AutoAwesome, Color(0xFFFF9800)),
-        ServicesGridItem("TASBIH", "السبحة", Icons.Filled.FormatListNumbered, Color(0xFF1E3A5F)),
-        ServicesGridItem("DEEDS", "طاعاتك", Icons.Filled.WorkspacePremium, Color(0xFF673AB7)),
-        ServicesGridItem("RATE_SHARE", "الأجر بالنشر", Icons.Filled.Spa, Color(0xFFE91E63)),
-        ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color(0xFF00BCD4)),
-        ServicesGridItem("KHATMAH", "الختمة", Icons.Filled.LibraryBooks, Color(0xFFE65100)),
-        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color(0xFF4E342E))
+        ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color.Unspecified),
+        ServicesGridItem("QURAN", "السهولة", Icons.Filled.Bookmark, Color.Unspecified),
+        ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color.Unspecified),
+        ServicesGridItem("DAILY_DUA", "أدعية", Icons.Filled.AutoAwesome, Color.Unspecified),
+        ServicesGridItem("NAMES", "أقيموا", Icons.Filled.Church, Color.Unspecified),
+        ServicesGridItem("HADITH", "قاداك", Icons.Filled.MenuBook, Color.Unspecified),
+        ServicesGridItem("DEEDS", "الأمر بالمعروف", Icons.Filled.VolunteerActivism, Color.Unspecified),
+        ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color.Unspecified),
+        ServicesGridItem("DAILY_DUA", "الدعوة", Icons.Filled.Campaign, Color.Unspecified),
+        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color.Unspecified)
     )
 
-    // 3. Support and Interaction List
     val supportServices = listOf(
-        ServicesGridItem("FAQ", "الأسئلة الشائعة", Icons.Filled.QuestionMark, Color(0xFF78909C)),
-        ServicesGridItem("SUPPORT", "الدعم الفني", Icons.Filled.ContactSupport, Color(0xFF455A64)),
-        ServicesGridItem("ABOUT_US", "من نحن", Icons.Filled.Info, Color(0xFF37474F)),
-        ServicesGridItem("PARTNERS", "اعلن معنا", Icons.Filled.Campaign, Color(0xFF546E7A)),
-        ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color(0xFF5E35B1)),
-        ServicesGridItem("RATE_SHARE", "انشر التطبيق", Icons.Filled.Share, Color(0xFF039BE5)),
-        ServicesGridItem("RATE_SHARE", "قيم التطبيق", Icons.Filled.ThumbUp, Color(0xFFFFB300)),
-        ServicesGridItem("RATE_SHARE", "تابعنا", Icons.Filled.AlternateEmail, Color(0xFF26A69A)),
-        ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color(0xFF8D6E63))
+        ServicesGridItem("FAQ", "الأسئلة الشائعة", Icons.Filled.QuestionMark, Color.Unspecified),
+        ServicesGridItem("SUPPORT", "الدعم الفني", Icons.Filled.ContactSupport, Color.Unspecified),
+        ServicesGridItem("ABOUT_US", "عن نحن", Icons.Filled.Info, Color.Unspecified),
+        ServicesGridItem("RATE_SHARE", "انشر التطبيق", Icons.Filled.Share, Color.Unspecified),
+        ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color.Unspecified),
+        ServicesGridItem("RATE_SHARE", "انشر التفاصيل", Icons.Filled.Share, Color.Unspecified),
+        ServicesGridItem("RATE_SHARE", "قيم التطبيق", Icons.Filled.ThumbUp, Color.Unspecified),
+        ServicesGridItem("RATE_SHARE", "تابعنا", Icons.Filled.AlternateEmail, Color.Unspecified),
+        ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color.Unspecified)
     )
 
     val currentLanguage by viewModel.language.collectAsState()
