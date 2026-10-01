@@ -486,6 +486,7 @@ fun AuthScreen(
                                         } else {
                                             viewModel.loginMember(
                                                 email = emailInput,
+                                                password = passwordInput,
                                                 onSuccess = {
                                                     Toast.makeText(context, "تم تسجيل دخولك بنجاح. مرحباً بعودتك!", Toast.LENGTH_SHORT).show()
                                                 },
