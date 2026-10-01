@@ -91,13 +91,13 @@ fun MoreScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F5F8))
+            .background(Color(0xFFF5F8F6))
     ) {
         // --- IMMERSIVE SOLID DEEP BLUE HEADER ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF0A1E33))
+                .background(Color(0xFF0D4F3A))
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
@@ -116,13 +116,7 @@ fun MoreScreen(
                             .size(24.dp)
                             .clickable { onNavigateToFeature("HOME") }
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Icon(
-                        imageVector = Icons.Filled.Mail,
-                        contentDescription = "الرسائل",
-                        tint = Color(0xFFFFCA28),
-                        modifier = Modifier.size(22.dp)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
 
                 val loggedInMember by viewModel.loggedInMember.collectAsState()
@@ -305,49 +299,49 @@ fun ServicesSectionCard(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Render items in groups of 4 (4-column grid layout)
-            val chunked = items.chunked(4)
+            // Render items in a clean 3-column grid.
+            val chunked = items.chunked(3)
             chunked.forEach { rowItems ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.Top
                 ) {
-                    for (i in 0 until 4) {
+                    for (i in 0 until 3) {
                         val item = rowItems.getOrNull(i)
                         if (item != null) {
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clickable { onItemClick(item.key) }
-                                    .testTag("more_grid_item_${item.key}"),
+                                    .testTag("more_grid_item_" + item.key),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(42.dp)
+                                        .size(46.dp)
                                         .clip(CircleShape)
-                                        .background(item.tint.copy(alpha = 0.12f))
-                                        .border(0.5.dp, item.tint.copy(alpha = 0.25f), CircleShape),
+                                        .background(Color(0xFF0D5E34).copy(alpha = 0.08f)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = item.icon,
                                         contentDescription = item.titleAr,
-                                        tint = item.tint,
-                                        modifier = Modifier.size(20.dp)
+                                        tint = Color(0xFF0D5E34),
+                                        modifier = Modifier.size(21.dp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(7.dp))
                                 Text(
                                     text = item.titleAr,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF444444),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF20352B),
                                     textAlign = TextAlign.Center,
-                                    maxLines = 1,
+                                    maxLines = 2,
+                                    minLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
