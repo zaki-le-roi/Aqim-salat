@@ -255,7 +255,7 @@ fun AuthScreen(
                                             prayerRewardClaimed = true
                                             Toast.makeText(context, if (lang == "ar") "تم تسجيل الورد اليومي وإضافة 50 نقطة داخل التطبيق لهذا اليوم." else "Daily prayer log recorded and 50 in-app points added for today.", Toast.LENGTH_LONG).show()
                                         } else {
-                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل مكافأة الصلوات لهذا اليوم بالفعل." else "Today's prayer reward has already been recorded.", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل نقاط الصلوات داخل التطبيق لهذا اليوم بالفعل." else "Today's in-app prayer points have already been recorded.", Toast.LENGTH_SHORT).show()
                                         }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -304,7 +304,7 @@ fun AuthScreen(
                                             adhkarRewardClaimed = true
                                             Toast.makeText(context, if (lang == "ar") "تم تسجيل ورد الأذكار وإضافة 30 نقطة داخل التطبيق لهذا اليوم." else "Daily adhkar log recorded and 30 in-app points added for today.", Toast.LENGTH_LONG).show()
                                         } else {
-                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل مكافأة الأذكار لهذا اليوم بالفعل." else "Today's adhkar reward has already been recorded.", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل نقاط الأذكار داخل التطبيق لهذا اليوم بالفعل." else "Today's in-app adhkar points have already been recorded.", Toast.LENGTH_SHORT).show()
                                         }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
