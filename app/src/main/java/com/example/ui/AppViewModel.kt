@@ -1000,6 +1000,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     val loggedInMember = MutableStateFlow<AppMember?>(null)
 
+    private val _adminRole = MutableStateFlow<String?>(null)
+    val adminRole: StateFlow<String?> = _adminRole.asStateFlow()
+    private val _adminPermissions = MutableStateFlow<Set<String>>(emptySet())
+    val adminPermissions: StateFlow<Set<String>> = _adminPermissions.asStateFlow()
+
+    private fun hasAdminPermission(permission: String): Boolean =
+        _adminPermissions.value.contains("ALL") || _adminPermissions.value.contains(permission)
+
     fun registerMember(
         name: String, 
         email: String, 
@@ -1068,10 +1076,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteMember(id: Int) = viewModelScope.launch {
+        if (!hasAdminPermission("ALL")) return@launch
         repo.deleteMember(id)
     }
 
     fun setMemberActiveState(id: Int, isActive: Boolean) = viewModelScope.launch {
+        if (!hasAdminPermission("ALL")) return@launch
         val matched = allMembers.value.find { it.id == id }
         if (matched != null) {
             repo.insertMember(matched.copy(isActive = isActive))
@@ -1125,6 +1135,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 return@addOnSuccessListener
                             }
 
+                            _adminRole.value = role
+                            _adminPermissions.value = permissions.split(",").map { it.trim() }.filter { it.isNotBlank() }.toSet()
                             onSuccess(role, permissions)
                         }
                         .addOnFailureListener {
@@ -1138,21 +1150,26 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun insertAdminAccount(email: String, role: String, permissions: String) = viewModelScope.launch {
-        repo.insertAdminAccount(AdminAccount(email = email, role = role, permissions = permissions))
+        if (!hasAdminPermission("ALL")) return@launch
+        val normalizedEmail = email.trim().lowercase()
+        if (normalizedEmail.isBlank() || role.isBlank() || permissions.isBlank()) return@launch
+        repo.insertAdminAccount(AdminAccount(email = normalizedEmail, role = role, permissions = permissions))
         try {
             val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
             val data = mapOf(
-                "email" to email.trim().lowercase(),
+                "email" to normalizedEmail,
                 "role" to role,
                 "permissions" to permissions
             )
-            db.collection("admins").document(email.trim().lowercase()).set(data)
+            db.collection("admins").document(normalizedEmail).set(data)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
     fun deleteAdminAccount(id: Int, email: String) = viewModelScope.launch {
+        if (!hasAdminPermission("ALL")) return@launch
+        if (email.trim().lowercase() == com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email?.trim()?.lowercase()) return@launch
         repo.deleteAdminAccount(id)
         try {
             val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
