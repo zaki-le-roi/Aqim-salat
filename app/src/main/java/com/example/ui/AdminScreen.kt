@@ -80,7 +80,7 @@ fun AdminScreen(
                             else -> permissions
                         }
                         isAuthenticated = true
-                        Toast.makeText(context, "تم تأكيد الهوية الرقمية بنجاح بنظام الإدارة!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "تم التحقق من حساب الإدارة وصلاحياته بنجاح.", Toast.LENGTH_SHORT).show()
                     },
                     onFailure = { error ->
                         isAuthenticating = false
@@ -588,31 +588,31 @@ fun ContentTab(viewModel: AppViewModel) {
                             if (contentType == "HADITH") {
                                 if (arabicInput.isNotBlank()) {
                                     viewModel.insertAdminHadith(AdminHadith(collection = categoryInput, number = numberInput, arabic = arabicInput, english = translationInput, reference = referenceInput))
-                                    Toast.makeText(context, "تم حفظ وتوثيق الحديث الشريف بقاعدة البيانات بنجاح!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ الحديث في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else if (contentType == "ADHKAR") {
                                 if (arabicInput.isNotBlank()) {
                                     viewModel.insertAdminAdhkar(AdminAdhkar(category = categoryInput, title = titleInput, arabic = arabicInput, english = translationInput, countGoal = numberInput.toIntOrNull() ?: 33))
-                                    Toast.makeText(context, "تم تسجيل الذكر وتثبيته في مستودع الأذكار!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ الذكر في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else if (contentType == "DUA") {
                                 if (arabicInput.isNotBlank()) {
                                     viewModel.insertAdminDua(AdminDua(category = categoryInput, arabic = arabicInput, translation = translationInput, transliteration = titleInput, source = referenceInput))
-                                    Toast.makeText(context, "تم حفظ وتسجيل الدعاء المبارك بنجاح في النظام!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ الدعاء في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else if (contentType == "ARTICLE") {
                                 if (titleInput.isNotBlank()) {
                                     viewModel.insertAdminArticle(AdminArticle(title = titleInput, content = translationInput, category = categoryInput, imageUri = referenceInput))
-                                    Toast.makeText(context, "تم نشر وتوثيق المقال العلمي بقاعدة البيانات بنجاح!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ المقال في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else {
                                 if (titleInput.isNotBlank()) {
                                     viewModel.insertAdminBannerReminder(AdminBannerReminder(type = contentType, title = titleInput, content = translationInput, imageUrl = referenceInput))
-                                    Toast.makeText(context, "تم نشر التنبيه وتفعيله بنجاح للمستخدمين!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ التنبيه في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             }
@@ -1199,7 +1199,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                                     "Moderator" -> "مراقب عام"
                                     else -> "محرر محتوى"
                                 }
-                                Toast.makeText(context, "تم منح وتفويض حساب المشرف بمرتبة: $arabicRoleLabel!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم حفظ إعدادات حساب المشرف بمرتبة: $arabicRoleLabel.", Toast.LENGTH_SHORT).show()
                                 newEmail = ""
                             }
                         },
