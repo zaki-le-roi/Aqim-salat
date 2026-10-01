@@ -90,7 +90,7 @@ fun PrayerTimesScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (onBack != null) {
                         IconButton(onClick = onBack, modifier = Modifier.testTag("prayer_back_button")) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "ar") "رجوع" else "Back")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                     }
@@ -109,7 +109,7 @@ fun PrayerTimesScreen(
                             .clip(CircleShape)
                             .background(if (showQazaTracker) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
                     ) {
-                        Icon(Icons.Filled.EventRepeat, contentDescription = "Qaza Tracker", tint = Color(0xFFD4AF37))
+                        Icon(Icons.Filled.EventRepeat, contentDescription = if (lang == "ar") "سجل القضاء" else "Qaza Tracker", tint = Color(0xFFD4AF37))
                     }
                     IconButton(
                         onClick = { showMonthlyTimes = !showMonthlyTimes; showQazaTracker = false },
@@ -117,7 +117,7 @@ fun PrayerTimesScreen(
                             .clip(CircleShape)
                             .background(if (showMonthlyTimes) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
                     ) {
-                        Icon(Icons.Filled.CalendarMonth, contentDescription = "Monthly", tint = Color(0xFFD4AF37))
+                        Icon(Icons.Filled.CalendarMonth, contentDescription = if (lang == "ar") "شهري" else "Monthly", tint = Color(0xFFD4AF37))
                     }
                 }
             }
@@ -173,7 +173,7 @@ fun PrayerTimesScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Icon(Icons.Filled.History, contentDescription = "Qaza", tint = Color(0xFFD4AF37))
+                            Icon(Icons.Filled.History, contentDescription = if (lang == "ar") "القضاء" else "Qaza", tint = Color(0xFFD4AF37))
                         }
                         Text(
                             text = if (lang == "ar") "تتبع صلواتك الفائتة التي تعتزم قضاءها واجعل ذمتك تبرأ تدريجياً." else "Keep track of outstanding makeup prayers to systematically complete them.",
@@ -218,7 +218,7 @@ fun PrayerTimesScreen(
                                         },
                                         modifier = Modifier.size(32.dp)
                                     ) {
-                                        Icon(Icons.Filled.Remove, contentDescription = "Minus", tint = MaterialTheme.colorScheme.primary)
+                                        Icon(Icons.Filled.Remove, contentDescription = if (lang == "ar") "إنقاص" else "Minus", tint = MaterialTheme.colorScheme.primary)
                                     }
 
                                     Text(
@@ -232,7 +232,7 @@ fun PrayerTimesScreen(
                                         onClick = { qaza.onPlus() },
                                         modifier = Modifier.size(32.dp)
                                     ) {
-                                        Icon(Icons.Filled.Add, contentDescription = "Plus", tint = Color(0xFFD4AF37))
+                                        Icon(Icons.Filled.Add, contentDescription = if (lang == "ar") "إضافة" else "Plus", tint = Color(0xFFD4AF37))
                                     }
                                 }
                             }
@@ -260,7 +260,7 @@ fun PrayerTimesScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Icon(Icons.Filled.CalendarMonth, contentDescription = "Month", tint = Color(0xFFD4AF37))
+                            Icon(Icons.Filled.CalendarMonth, contentDescription = if (lang == "ar") "الشهر" else "Month", tint = Color(0xFFD4AF37))
                         }
                         Text(
                             text = if (lang == "ar") "مواقيت الصلاة المقدرة لشهر رمضان والأيام القادمة بموقعك الحالي." else "Prayer timetables predicted for Ramadan and coming weeks at your current location.",
@@ -451,7 +451,7 @@ fun PrayerTimesScreen(
                                     horizontalArrangement = Arrangement.Center,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                                 ) {
-                                    Icon(Icons.Filled.LocationOn, contentDescription = "Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Filled.LocationOn, contentDescription = if (lang == "ar") "الموقع" else "Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = locationName,
@@ -460,7 +460,7 @@ fun PrayerTimesScreen(
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Icon(Icons.Filled.Edit, contentDescription = "Edit Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(12.dp))
+                                    Icon(Icons.Filled.Edit, contentDescription = if (lang == "ar") "تعديل الموقع" else "Edit Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(12.dp))
                                 }
                             }
                         }
@@ -584,7 +584,7 @@ fun PrayerTimesScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Filled.MyLocation, contentDescription = "GPS", tint = Color.White)
+                                Icon(Icons.Filled.MyLocation, contentDescription = if (lang == "ar") "الموقع الجغرافي" else "GPS", tint = Color.White)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (lang == "ar") "تحديد تلقائي عبر GPS" else if (lang == "tr") "Otomatik GPS Konumu" else "Auto Detect (GPS)",
@@ -687,7 +687,7 @@ fun PrayerTimesScreen(
                             value = customLatitude,
                             onValueChange = { customLatitude = it },
                             label = { Text(if (lang == "ar") "خط العرض (Latitude)" else "Latitude") },
-                            placeholder = { Text("e.g. 36.75") },
+                            placeholder = { Text(if (lang == "ar") "مثال: 36.75" else "e.g. 36.75") },
                             modifier = Modifier.fillMaxWidth().testTag("custom_lat_input"),
                             singleLine = true
                         )
@@ -699,7 +699,7 @@ fun PrayerTimesScreen(
                             value = customLongitude,
                             onValueChange = { customLongitude = it },
                             label = { Text(if (lang == "ar") "خط الطول (Longitude)" else "Longitude") },
-                            placeholder = { Text("e.g. 3.05") },
+                            placeholder = { Text(if (lang == "ar") "مثال: 3.05" else "e.g. 3.05") },
                             modifier = Modifier.fillMaxWidth().testTag("custom_lng_input"),
                             singleLine = true
                         )
