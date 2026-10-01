@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,7 +204,7 @@ fun CommunityPollsScreen(
                                                 }
                                             }
                                             Text(
-                                                text = if (lang == "ar") "في هذه الجلسة" else "In this session",
+                                                text = if (lang == "ar") "الساعة " + SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(post.timestamp)) else SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(post.timestamp)),
                                                 fontSize = 11.sp,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                             )
