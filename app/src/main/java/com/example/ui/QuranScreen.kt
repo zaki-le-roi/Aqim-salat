@@ -1181,22 +1181,22 @@ fun SurahReader(
                                             HorizontalDivider(color = Color(0xFFEEEEEE))
                                             Spacer(modifier = Modifier.height(10.dp))
 
-                                            Text(
-                                                text = "التفسير الميسر:",
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = goldAccent
-                                            )
-
-                                            Spacer(modifier = Modifier.height(4.dp))
-
-                                            Text(
-                                                text = ayah.translationText,
-                                                fontSize = 14.sp,
-                                                color = Color.DarkGray,
-                                                lineHeight = 22.sp,
-                                                textAlign = TextAlign.Justify
-                                            )
+                                            if (ayah.translationText.isNotBlank()) {
+                                                Text(
+                                                    text = "التفسير الميسر:",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = goldAccent
+                                                )
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = ayah.translationText,
+                                                    fontSize = 14.sp,
+                                                    color = Color.DarkGray,
+                                                    lineHeight = 24.sp,
+                                                    textAlign = TextAlign.Right
+                                                )
+                                            }
                                         }
                                     }
                                 }
