@@ -62,10 +62,9 @@ fun HomeScreen(
         }
     }
 
-    // Interactive onboarding state
-    var showOnboarding by remember { mutableStateOf(true) }
-    // Interactive "What's New" state
-    var showWhatsNew by remember { mutableStateOf(true) }
+    val homePrefs = remember { context.getSharedPreferences("home_ui_state", android.content.Context.MODE_PRIVATE) }
+    var showOnboarding by remember { mutableStateOf(!homePrefs.getBoolean("onboarding_dismissed", false) && loggedInMember == null) }
+    var showWhatsNew by remember { mutableStateOf(!homePrefs.getBoolean("whats_new_dismissed", false)) }
 
     LazyColumn(
         modifier = modifier
@@ -724,7 +723,7 @@ fun HomeScreen(
                                 .size(28.dp)
                                 .clip(CircleShape)
                                 .background(Color(0xFFF5F5F5))
-                                .clickable { showOnboarding = false },
+                                .clickable { showOnboarding = false; homePrefs.edit().putBoolean("onboarding_dismissed", true).apply() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -746,7 +745,7 @@ fun HomeScreen(
                                 color = Color(0xFF333333)
                             )
                             Text(
-                                text = if (lang == "ar") "استكمل بياناتك الشخصية الآن" else "Complete your personal details now",
+                                text = if (lang == "ar") "سجّل الدخول أو أكمل بياناتك الشخصية الآن" else "Sign in or complete your personal details now",
                                 fontSize = 12.sp,
                                 color = Color(0xFFFF9800),
                                 fontWeight = FontWeight.SemiBold
@@ -871,7 +870,7 @@ fun HomeScreen(
                                     .size(26.dp)
                                     .clip(CircleShape)
                                     .background(Color.White.copy(alpha = 0.15f))
-                                    .clickable { showWhatsNew = false },
+                                    .clickable { showWhatsNew = false; homePrefs.edit().putBoolean("whats_new_dismissed", true).apply() },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
