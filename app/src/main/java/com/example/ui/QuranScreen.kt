@@ -1171,6 +1171,7 @@ fun SurahReader(
                                             Text(
                                                 text = ayah.arabicText,
                                                 fontSize = 26.sp,
+                                                fontFamily = FontFamily.Serif,
                                                 color = Color(0xFF042B1D),
                                                 textAlign = TextAlign.Right,
                                                 modifier = Modifier.fillMaxWidth(),
@@ -1413,7 +1414,8 @@ fun SurahReader(
 
                 Text(
                     text = details.arabicText,
-                    fontSize = 24.sp,
+                    fontSize = 26.sp,
+                    fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF042B1D),
                     lineHeight = 38.sp,
