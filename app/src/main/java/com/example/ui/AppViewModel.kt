@@ -49,6 +49,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(context)
     private val repo = AppRepository(db, context)
     private val pollsPrefs = context.getSharedPreferences("local_polls", Context.MODE_PRIVATE)
+    private val audioPrefs = context.getSharedPreferences("audio_preferences", Context.MODE_PRIVATE)
+    private val _defaultReciter = MutableStateFlow(
+        audioPrefs.getString("default_reciter", "Mishary Al-Afasy") ?: "Mishary Al-Afasy"
+    )
+    val defaultReciter: StateFlow<String> = _defaultReciter.asStateFlow()
 
     // --- State Observables ---
     val language: StateFlow<String> = repo.appLanguage.stateIn(viewModelScope, SharingStarted.Eagerly, "ar")
@@ -908,6 +913,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
         mediaPlayer = null
         _isAthanPlaying.value = false
+    }
+
+    fun setDefaultReciter(reciter: String) {
+        _defaultReciter.value = reciter
+        audioPrefs.edit().putString("default_reciter", reciter).apply()
     }
 
     // --- Haptic Feedback Utility ---
