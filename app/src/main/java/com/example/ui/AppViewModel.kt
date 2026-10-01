@@ -53,6 +53,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val accessibilityPrefs = context.getSharedPreferences("accessibility_preferences", Context.MODE_PRIVATE)
     private val _hapticsEnabled = MutableStateFlow(accessibilityPrefs.getBoolean("haptics_enabled", true))
     val hapticsEnabled: StateFlow<Boolean> = _hapticsEnabled.asStateFlow()
+    private val _fontScale = MutableStateFlow(accessibilityPrefs.getFloat("font_scale", 1.0f))
+    val fontScale: StateFlow<Float> = _fontScale.asStateFlow()
+
+    fun setFontScale(scale: Float) {
+        val normalized = scale.coerceIn(0.8f, 1.6f)
+        _fontScale.value = normalized
+        accessibilityPrefs.edit().putFloat("font_scale", normalized).apply()
+    }
 
     fun setHapticsEnabled(enabled: Boolean) {
         _hapticsEnabled.value = enabled
