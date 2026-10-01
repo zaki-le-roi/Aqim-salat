@@ -35,6 +35,7 @@ fun SettingsScreen(
     val notificationsVal by viewModel.notificationsEnabled.collectAsState()
     val activeThemeVal by viewModel.themeMode.collectAsState()
     val defaultReciterVal by viewModel.defaultReciter.collectAsState()
+    val hapticsVal by viewModel.hapticsEnabled.collectAsState()
 
     // Dialog state controllers
     var activeDialog by remember { mutableStateOf<String?>(null) } // "THEME", "LANG", "CALC", "AUDIO", "DOWNLOADS", "BACKUP", "PRIVACY", "ACCESSIBILITY"
@@ -53,7 +54,7 @@ fun SettingsScreen(
 
     // Accessibility state
     var fontSizeZoom by remember { mutableFloatStateOf(1.0f) }
-    var hapticsEnabled by remember { mutableStateOf(true) }
+    var hapticsEnabled by remember(hapticsVal) { mutableStateOf(hapticsVal) }
 
     LazyColumn(
         modifier = modifier
@@ -479,6 +480,7 @@ fun SettingsScreen(
                     onClick = {
                         fontSizeZoom = zoomScale
                         hapticsEnabled = currentHaptics
+                        viewModel.setHapticsEnabled(currentHaptics)
                         activeDialog = null
                         Toast.makeText(context, if (lang == "ar") "تم تطبيق إعدادات سهولة الاستخدام" else "Accessibility changes applied", Toast.LENGTH_SHORT).show()
                     },
