@@ -321,7 +321,7 @@ fun SearchScreen(
 }
 
 @Composable
-fun NoResultsFound() {
+fun NoResultsFound(lang: String) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
