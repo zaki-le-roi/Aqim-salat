@@ -101,19 +101,19 @@ class AppRepository(
     }
 
     val appCalcMethod: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_CALC_METHOD] ?: "MWL"
+        pref[KEY_CALC_METHOD] ?: "ALGERIA"
     }
 
     val appLatitude: Flow<Double> = context.dataStore.data.map { pref ->
-        pref[KEY_LATITUDE] ?: 21.4225
+        pref[KEY_LATITUDE] ?: 36.7538
     }
 
     val appLongitude: Flow<Double> = context.dataStore.data.map { pref ->
-        pref[KEY_LONGITUDE] ?: 39.8262
+        pref[KEY_LONGITUDE] ?: 3.0588
     }
 
     val appLocationName: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_LOCATION_NAME] ?: "Makkah, Saudi Arabia"
+        pref[KEY_LOCATION_NAME] ?: "الجزائر العاصمة، الجزائر"
     }
 
     val appAthanFajrVoice: Flow<String> = context.dataStore.data.map { pref ->
