@@ -1215,7 +1215,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("تسجيل الصلاحيات محليًا", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("حفظ الصلاحيات محليًا وفي Firestore", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
@@ -1292,7 +1292,7 @@ fun MembersTab(viewModel: AppViewModel) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "التحكم في العضويات، تعديل نقاط بركة لمكافأتهم أو تجميد وتفعيل الحسابات.",
+                text = "التحكم في العضويات، تعديل نقاط داخل التطبيق، وتجميد أو تفعيل سجل العضوية. لا تمثل النقاط رصيدًا ماليًا أو مكافأة خارج التطبيق.",
                 fontSize = 11.sp,
                 color = Color.LightGray.copy(alpha = 0.7f)
             )
@@ -1439,7 +1439,7 @@ fun MembersTab(viewModel: AppViewModel) {
                             // Delete Member
                             IconButton(onClick = {
                                 viewModel.deleteMember(member.id)
-                                Toast.makeText(context, "تم حذف عضوية المشترك بالكامل", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم حذف سجل العضوية من بيانات التطبيق. لا يُحذف حساب Firebase تلقائيًا.", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.Filled.Delete, contentDescription = "حذف العضوية", tint = Color(0xFFCF6679))
                             }
