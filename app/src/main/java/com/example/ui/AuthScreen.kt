@@ -54,20 +54,20 @@ fun AuthScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides if (lang == "ar") LayoutDirection.Rtl else LayoutDirection.Ltr) {
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = {
                         Text(
-                            text = if (loggedInMember != null) "بطاقة العضوية الرقمية" else "بوابة العضوية والإدارة",
+                            text = if (lang == "ar") { if (loggedInMember != null) "بطاقة العضوية الرقمية" else "بوابة العضوية والإدارة" } else { if (loggedInMember != null) "Digital Membership Card" else "Membership & Administration" },
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFD4AF37)
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.Filled.ArrowForward, contentDescription = "Back")
+                            Icon(Icons.Filled.ArrowForward, contentDescription = if (lang == "ar") "رجوع" else "Back")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -124,14 +124,14 @@ fun AuthScreen(
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
-                                            text = "عضوية البركة الرقمية",
+                                            text = if (lang == "ar") "عضوية البركة الرقمية" else "Digital Barakah Membership",
                                             color = Color.White.copy(alpha = 0.6f),
                                             fontSize = 11.sp
                                         )
                                     }
                                     Icon(
                                         imageVector = Icons.Filled.Star,
-                                        contentDescription = "Gold Star",
+                                        contentDescription = if (lang == "ar") "نجمة ذهبية" else "Gold Star",
                                         tint = Color(0xFFD4AF37),
                                         modifier = Modifier.size(32.dp)
                                     )
@@ -163,7 +163,7 @@ fun AuthScreen(
                                 ) {
                                     Column {
                                         Text(
-                                            text = "البلد والمدينة",
+                                            text = if (lang == "ar") "البلد والمدينة" else "Country & City",
                                             color = Color.White.copy(alpha = 0.5f),
                                             fontSize = 11.sp
                                         )
@@ -176,7 +176,7 @@ fun AuthScreen(
                                     }
                                     Column(horizontalAlignment = Alignment.End) {
                                         Text(
-                                            text = "مجموع نقاط البركة",
+                                            text = if (lang == "ar") "مجموع نقاط البركة" else "Total Barakah Points",
                                             color = Color.White.copy(alpha = 0.5f),
                                             fontSize = 11.sp
                                         )
@@ -189,7 +189,7 @@ fun AuthScreen(
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = "${member.points} نقطة",
+                                                text = if (lang == "ar") "${member.points} نقطة" else "${member.points} points",
                                                 color = Color(0xFFD4AF37),
                                                 fontSize = 16.sp,
                                                 fontWeight = FontWeight.Bold
@@ -202,7 +202,7 @@ fun AuthScreen(
 
                         // Welcome back messages and details
                         Text(
-                            text = "تقبل الله طاعاتكم وزادكم من فضله ونعيمه!",
+                            text = if (lang == "ar") "تقبل الله طاعاتكم وزادكم من فضله ونعيمه!" else "May Allah accept your deeds and increase you in His grace.",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.White,
@@ -227,13 +227,13 @@ fun AuthScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "الورد اليومي للصلوات",
+                                        text = if (lang == "ar") "الورد اليومي للصلوات" else "Daily Prayer Log",
                                         color = Color(0xFF81C784),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp
                                     )
                                     Text(
-                                        text = "قم بتوثيق محافظتك على صلوات اليوم جماعة في المسجد ونل مكافأة +50 نقطة بركة!",
+                                        text = if (lang == "ar") "قم بتوثيق محافظتك على صلوات اليوم جماعة في المسجد ونل مكافأة +50 نقطة بركة!" else "Record your daily congregational prayers and earn +50 Barakah points!",
                                         color = Color.White.copy(alpha = 0.8f),
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
@@ -243,12 +243,12 @@ fun AuthScreen(
                                 Button(
                                     onClick = {
                                         viewModel.updateMemberPoints(member.id, 50)
-                                        Toast.makeText(context, "تم تسجيل صلواتك بنجاح! نلت +50 نقطة بركة 🎉", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, if (lang == "ar") "تم تسجيل صلواتك بنجاح! نلت +50 نقطة بركة 🎉" else "Your prayers were recorded! You earned +50 Barakah points 🎉", Toast.LENGTH_LONG).show()
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
-                                    Text("تسجيل", fontWeight = FontWeight.Bold)
+                                    Text(if (lang == "ar") "تسجيل" else "Record", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -270,13 +270,13 @@ fun AuthScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "تحدي الأذكار والسبحة",
+                                        text = if (lang == "ar") "تحدي الأذكار والسبحة" else "Adhkar & Tasbih Challenge",
                                         color = Color(0xFFFFB74D),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp
                                     )
                                     Text(
-                                        text = "أكمل ورد الأذكار أو التسبيح الصباحي والمسائي لنيل +30 نقطة بركة فورية لحسابك!",
+                                        text = if (lang == "ar") "أكمل ورد الأذكار أو التسبيح الصباحي والمسائي لنيل +30 نقطة بركة فورية لحسابك!" else "Complete your morning/evening adhkar or tasbih to earn +30 Barakah points!",
                                         color = Color.White.copy(alpha = 0.8f),
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
@@ -286,7 +286,7 @@ fun AuthScreen(
                                 Button(
                                     onClick = {
                                         viewModel.updateMemberPoints(member.id, 30)
-                                        Toast.makeText(context, "تم توثيق الذكر بنجاح! نلت +30 نقطة بركة 🌟", Toast.LENGTH_LONG).show()
+                                        Toast.makeText(context, if (lang == "ar") "تم توثيق الذكر بنجاح! نلت +30 نقطة بركة 🌟" else "Adhkar recorded! You earned +30 Barakah points 🌟", Toast.LENGTH_LONG).show()
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                                     shape = RoundedCornerShape(12.dp)
@@ -302,7 +302,7 @@ fun AuthScreen(
                         OutlinedButton(
                             onClick = {
                                 viewModel.logoutMember()
-                                Toast.makeText(context, "تم تسجيل الخروج بنجاح.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, if (lang == "ar") "تم تسجيل الخروج بنجاح." else "Signed out successfully.", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.fillMaxWidth().height(52.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFE57373)),
@@ -311,7 +311,7 @@ fun AuthScreen(
                         ) {
                             Icon(Icons.Filled.Logout, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("تسجيل الخروج من العضوية", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(if (lang == "ar") "تسجيل الخروج من العضوية" else "Sign out of membership", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                         }
                     }
                 } else {
@@ -335,7 +335,7 @@ fun AuthScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.AccountCircle,
-                                contentDescription = "عضوية",
+                                contentDescription = if (lang == "ar") "عضوية" else "Membership",
                                 tint = Color(0xFFD4AF37),
                                 modifier = Modifier.size(44.dp)
                             )
@@ -344,13 +344,13 @@ fun AuthScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = if (isRegisterMode) "عضوية البركة الرقمية" else "دخول الأعضاء للمنصة",
+                            text = if (lang == "ar") { if (isRegisterMode) "عضوية البركة الرقمية" else "دخول الأعضاء للمنصة" } else { if (isRegisterMode) "Digital Barakah Membership" else "Member Sign In" },
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFD4AF37)
                         )
                         Text(
-                            text = if (isRegisterMode) "سجل مجاناً لتسجيل صلواتك ومتابعة تقدمك ونيل الجوائز!" else "أدخل بريدك الإلكتروني المعتمد للدخول الآمن لملفك الشخصي",
+                            text = if (lang == "ar") { if (isRegisterMode) "سجل مجاناً لتسجيل صلواتك ومتابعة تقدمك ونيل الجوائز!" else "أدخل بريدك الإلكتروني المعتمد للدخول الآمن لملفك الشخصي" } else { if (isRegisterMode) "Register free to track your prayers, progress and rewards!" else "Enter your verified email to securely access your profile." },
                             fontSize = 13.sp,
                             color = Color.White.copy(alpha = 0.6f),
                             textAlign = TextAlign.Center,
@@ -389,7 +389,7 @@ fun AuthScreen(
                                     OutlinedTextField(
                                         value = nameInput,
                                         onValueChange = { nameInput = it },
-                                        label = { Text("الاسم الكريم") },
+                                        label = { Text(if (lang == "ar") "الاسم الكريم" else "Full name") },
                                         leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = Color(0xFFD4AF37)) },
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(12.dp),
@@ -410,7 +410,7 @@ fun AuthScreen(
                                 OutlinedTextField(
                                     value = emailInput,
                                     onValueChange = { emailInput = it },
-                                    label = { Text("البريد الإلكتروني") },
+                                    label = { Text(if (lang == "ar") "البريد الإلكتروني" else "Email") },
                                     leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null, tint = Color(0xFFD4AF37)) },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
@@ -429,7 +429,7 @@ fun AuthScreen(
                                 OutlinedTextField(
                                     value = passwordInput,
                                     onValueChange = { passwordInput = it },
-                                    label = { Text("كلمة المرور (8 أحرف على الأقل)") },
+                                    label = { Text(if (lang == "ar") "كلمة المرور (8 أحرف على الأقل)" else "Password (at least 8 characters)") },
                                     leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null, tint = Color(0xFFD4AF37)) },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
@@ -451,7 +451,7 @@ fun AuthScreen(
                                     OutlinedTextField(
                                         value = countryInput,
                                         onValueChange = { countryInput = it },
-                                        label = { Text("الدولة") },
+                                        label = { Text(if (lang == "ar") "الدولة" else "Country") },
                                         leadingIcon = { Icon(Icons.Filled.Public, contentDescription = null, tint = Color(0xFFD4AF37)) },
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(12.dp),
@@ -471,7 +471,7 @@ fun AuthScreen(
                                     OutlinedTextField(
                                         value = cityInput,
                                         onValueChange = { cityInput = it },
-                                        label = { Text("المدينة (لتعديل المواقيت تلقائياً)") },
+                                        label = { Text(if (lang == "ar") "المدينة (لتعديل المواقيت تلقائياً)" else "City (for prayer-time adjustment)") },
                                         leadingIcon = { Icon(Icons.Filled.Place, contentDescription = null, tint = Color(0xFFD4AF37)) },
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(12.dp),
@@ -500,7 +500,7 @@ fun AuthScreen(
                                                 country = countryInput,
                                                 city = cityInput,
                                                 onSuccess = {
-                                                    Toast.makeText(context, "أهلاً بك! تم إنشاء عضويتك المباركة والحصول على 150 نقطة هدية 🎁", Toast.LENGTH_LONG).show()
+                                                    Toast.makeText(context, if (lang == "ar") "أهلاً بك! تم إنشاء عضويتك المباركة والحصول على 150 نقطة هدية 🎁" else "Welcome! Your membership was created with 150 bonus points 🎁", Toast.LENGTH_LONG).show()
                                                 },
                                                 onFailure = { err -> errorMessage = err }
                                             )
@@ -509,7 +509,7 @@ fun AuthScreen(
                                                 email = emailInput,
                                                 password = passwordInput,
                                                 onSuccess = {
-                                                    Toast.makeText(context, "تم تسجيل دخولك بنجاح. مرحباً بعودتك!", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, if (lang == "ar") "تم تسجيل دخولك بنجاح. مرحباً بعودتك!" else "Signed in successfully. Welcome back!", Toast.LENGTH_SHORT).show()
                                                 },
                                                 onFailure = { err -> errorMessage = err }
                                             )
@@ -520,7 +520,7 @@ fun AuthScreen(
                                     shape = RoundedCornerShape(12.dp)
                                 ) {
                                     Text(
-                                        text = if (isRegisterMode) "إنشاء عضوية جديدة بنيل 150 نقطة" else "دخول العضوية الآمن",
+                                        text = if (lang == "ar") { if (isRegisterMode) "إنشاء عضوية جديدة بنيل 150 نقطة" else "دخول العضوية الآمن" } else { if (isRegisterMode) "Create membership & get 150 points" else "Secure member sign in" },
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 15.sp,
                                         color = Color.White
@@ -534,7 +534,7 @@ fun AuthScreen(
                                     onClick = { isRegisterMode = !isRegisterMode }
                                 ) {
                                     Text(
-                                        text = if (isRegisterMode) "لديك عضوية بالفعل؟ سجل دخولك" else "ليس لديك عضوية؟ سجل عضواً جديداً مجاناً",
+                                        text = if (lang == "ar") { if (isRegisterMode) "لديك عضوية بالفعل؟ سجل دخولك" else "ليس لديك عضوية؟ سجل عضواً جديداً مجاناً" } else { if (isRegisterMode) "Already a member? Sign in" else "No membership? Register for free" },
                                         color = Color(0xFFD4AF37),
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold
@@ -561,12 +561,12 @@ fun AuthScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.AdminPanelSettings,
-                                    contentDescription = "Admin",
+                                    contentDescription = if (lang == "ar") "الإدارة" else "Admin",
                                     tint = Color(0xFFCF6679)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "بوابة المشرفين والإدارة والتحكم (للمدراء فقط)",
+                                    text = if (lang == "ar") "بوابة المشرفين والإدارة والتحكم (للمدراء فقط)" else "Admin & Management Portal (authorized users only)",
                                     color = Color(0xFFCF6679),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp
