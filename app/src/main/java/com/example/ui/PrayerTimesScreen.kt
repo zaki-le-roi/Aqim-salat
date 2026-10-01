@@ -319,7 +319,8 @@ fun PrayerTimesScreen(
                             val targetDate = calendar.time
                             val dayStr = sdfDay.format(targetDate)
 
-                            // Compute actual times for that specific day
+                            // Compute actual times for that specific day.
+                            // If calculation fails, show an unavailable value rather than fabricated times.
                             val t = try {
                                 PrayerCalculator.calculateTimes(
                                     latitude = lat,
@@ -329,19 +330,17 @@ fun PrayerTimesScreen(
                                     method = calculationMethod,
                                     madhab = calculationMadhab
                                 )
-                            } catch (e: Exception) {
-                                times ?: PrayerCalculator.PrayerTimes(
-                                    "04:12", "05:45", "12:22", "15:44", "18:59", "20:25", "04:00", "19:05", "23:30", "01:00"
-                                )
+                            } catch (_: Exception) {
+                                null
                             }
                             
                             val dayTimes = listOf(
                                 dayStr,
-                                t.fajr,
-                                t.dhuhr,
-                                t.asr,
-                                t.maghrib,
-                                t.isha
+                                t?.fajr ?: "--:--",
+                                t?.dhuhr ?: "--:--",
+                                t?.asr ?: "--:--",
+                                t?.maghrib ?: "--:--",
+                                t?.isha ?: "--:--"
                             )
 
                             Row(
