@@ -292,17 +292,12 @@ fun HomeScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "Options",
-                            tint = Color(0xFF555555),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Icon(
-                            imageVector = Icons.Filled.ChevronLeft,
-                            contentDescription = "Previous Day",
+                            imageVector = Icons.Filled.DateRange,
+                            contentDescription = if (lang == "ar") "التقويم" else "Calendar",
                             tint = Color(0xFF4A90E2),
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clickable { onNavigateToFeature("CALENDAR") }
                         )
                     }
 
