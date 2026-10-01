@@ -842,6 +842,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val qazaPrefs by lazy { context.getSharedPreferences("qaza_prayers", Context.MODE_PRIVATE) }
+
+    fun getQazaCount(key: String): Int = qazaPrefs.getInt(key, 0)
+
+    fun changeQazaCount(key: String, delta: Int) {
+        val current = getQazaCount(key)
+        val updated = (current + delta).coerceAtLeast(0)
+        qazaPrefs.edit().putInt(key, updated).apply()
+        triggerHapticFeedback()
+    }
+
     fun toggleFastingToday() {
         val key = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         val prefs = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE)
