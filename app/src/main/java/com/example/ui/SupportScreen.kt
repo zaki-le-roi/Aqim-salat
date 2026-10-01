@@ -1,5 +1,8 @@
 package com.example.ui
 
+import android.content.Intent
+import android.net.Uri
+
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -626,7 +629,7 @@ fun SupportScreen(
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Button(
                                             onClick = {
-                                                val shareText = "تطبيق أقم صلاتك الإسلامي المتميز - مواقيت الصلاة والأذان، القرآن الكريم كاملاً، الأذكار وحصن المسلم، حاسبة الزكاة وبنك الصدقة والمجتمع التفاعلي! حمله الآن مجاناً: https://play.google.com/store/apps/details?id=com.aistudio.aqimsalah"
+                                                val shareText = "تطبيق أقم صلاتك الإسلامي المتميز - مواقيت الصلاة والأذان، القرآن الكريم كاملاً، الأذكار وحصن المسلم، حاسبة الزكاة وبنك الصدقة والمجتمع التفاعلي! حمله الآن مجاناً: https://play.google.com/store/apps/details?id=" + context.packageName
                                                 clipboardManager.setText(AnnotatedString(shareText))
                                                 Toast.makeText(context, if (lang == "ar") "تم نسخ رابط وتفاصيل المشاركة إلى الحافظة!" else "App share details copied to clipboard!", Toast.LENGTH_SHORT).show()
                                             },
