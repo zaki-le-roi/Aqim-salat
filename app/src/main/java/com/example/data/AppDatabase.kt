@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import androidx.room.Dao
@@ -403,7 +405,7 @@ interface AdminDao {
         AdminAccount::class,
         AppMember::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -417,6 +419,19 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun adminDao(): AdminDao
 
     companion object {
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DELETE FROM prayer_logs WHERE id NOT IN (SELECT MAX(id) FROM prayer_logs GROUP BY date, prayerName)")
+                db.execSQL("DELETE FROM bookmarks WHERE id NOT IN (SELECT MAX(id) FROM bookmarks GROUP BY type, referenceId)")
+                db.execSQL("DELETE FROM admin_accounts WHERE id NOT IN (SELECT MAX(id) FROM admin_accounts GROUP BY lower(trim(email)))")
+                db.execSQL("DELETE FROM app_members WHERE id NOT IN (SELECT MAX(id) FROM app_members GROUP BY lower(trim(email)))")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_prayer_logs_date_prayerName ON prayer_logs(date, prayerName)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_bookmarks_type_referenceId ON bookmarks(type, referenceId)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_admin_accounts_email ON admin_accounts(email)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_app_members_email ON app_members(email)")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -426,7 +441,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "aqim_salah_db"
-                ).fallbackToDestructiveMigration().build()
+                ).addMigrations(MIGRATION_4_5).build()
                 INSTANCE = instance
                 instance
             }
