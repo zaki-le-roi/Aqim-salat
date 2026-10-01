@@ -22,6 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
 
 data class ServicesGridItem(
     val key: String,
@@ -33,16 +36,44 @@ data class ServicesGridItem(
 private fun ServicesGridItem.localizedTitle(lang: String): String {
     if (lang == "ar") return titleAr
     return when (titleAr) {
-        "العلامات المحفوظة" -> "Saved Bookmarks"
+        "الرئيسية" -> "Home"
+        "الإعدادات" -> "Settings"
+        "القبلة" -> "Qibla"
+        "حاسبة الزكاة" -> "Zakat Calculator"
+        "عمل اليوم والليلة" -> "Daily Deeds"
         "بنك الصدقات" -> "Sadaqah Bank"
+        "الفوائد" -> "Benefits"
         "ورد المحاسبة" -> "Daily Accountability"
+        "التقويم" -> "Calendar"
+        "وجهة المسافر" -> "Travel Companion"
+        "الصلاة حول العالم" -> "Prayer Times Worldwide"
+        "الاستطلاعات" -> "Polls"
+        "أصدقائي" -> "My Friends"
+        "مساجد" -> "Mosques"
+        "المطاعم الحلال" -> "Halal Food"
+        "صحيح أقم صلاتك" -> "Aqim Salat Community"
+        "حدث في مثل هذا اليوم" -> "On This Day"
         "متابعة الفجر" -> "Fajr Tracker"
+        "رمضان" -> "Ramadan"
+        "المصحف" -> "Quran"
+        "العلامات المحفوظة" -> "Saved Bookmarks"
+        "الأذكار" -> "Adhkar"
+        "الأدعية" -> "Duas"
         "أسماء الله الحسنى" -> "Names of Allah"
         "الحديث" -> "Hadith"
         "طاعاتك" -> "Your Deeds"
-        "الأدعية" -> "Duas"
         "الدعاء" -> "Dua"
         "السيرة" -> "Seerah"
+        "حصن المسلم" -> "Hisn Al-Muslim"
+        "الأسئلة الشائعة" -> "FAQ"
+        "الدعم الفني" -> "Technical Support"
+        "عن نحن" -> "About Us"
+        "انشر التطبيق" -> "Share App"
+        "برامجنا" -> "Our Apps"
+        "انشر التفاصيل" -> "Share Details"
+        "قيم التطبيق" -> "Rate App"
+        "تابعنا" -> "Follow Us"
+        "شركاؤنا" -> "Partners"
         else -> titleAr
     }
 }
@@ -106,11 +137,14 @@ fun MoreScreen(
     val currentLanguage by viewModel.language.collectAsState()
     var showLanguageMenu by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F8F6))
+    CompositionLocalProvider(
+        LocalLayoutDirection provides if (currentLanguage == "ar") LayoutDirection.Rtl else LayoutDirection.Ltr
     ) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F8F6))
+        ) {
         // --- IMMERSIVE SOLID DEEP BLUE HEADER ---
         Box(
             modifier = Modifier
@@ -266,20 +300,20 @@ fun MoreScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Shield,
-                                contentDescription = "مميز",
+                                contentDescription = if (currentLanguage == "ar") "مميز" else "Premium",
                                 tint = Color(0xFFFFD700),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = "أقم صلاتك المميز",
+                                    text = if (currentLanguage == "ar") "أقم صلاتك المميز" else "Aqim Salat Premium",
                                     color = Color(0xFFFFD700),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "ميزات حصرية",
+                                    text = if (currentLanguage == "ar") "ميزات حصرية" else "Exclusive features",
                                     color = Color.White.copy(alpha = 0.7f),
                                     fontSize = 9.sp
                                 )
@@ -287,11 +321,11 @@ fun MoreScreen(
                         }
                     }
 
-                    // Right Card: Salah Challenge (تحدي إقامة الصلاة)
+                    // Right Card: Saved Bookmarks صندوق العلامات
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { onNavigateToFeature("DEEDS") },
+                            .clickable { onNavigateToFeature("FAVORITES") },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
@@ -302,21 +336,21 @@ fun MoreScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.EmojiEvents,
-                                contentDescription = "تحدي",
-                                tint = Color(0xFFFF9800),
+                                imageVector = Icons.Filled.Bookmark,
+                                contentDescription = if (currentLanguage == "ar") "صندوق العلامات" else "Saved Bookmarks",
+                                tint = Color(0xFF0D6B4B),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = "تحدي الطاعات",
+                                    text = if (currentLanguage == "ar") "صندوق العلامات" else "Saved Bookmarks",
                                     color = Color(0xFF333333),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "حافظ على صلاتك",
+                                    text = if (currentLanguage == "ar") "العلامات المحفوظة" else "Your saved items",
                                     color = Color.Gray,
                                     fontSize = 9.sp
                                 )
@@ -384,7 +418,7 @@ fun ServicesSectionCard(
                                 ) {
                                     Icon(
                                         imageVector = item.icon,
-                                        contentDescription = item.titleAr,
+                                        contentDescription = item.localizedTitle(lang),
                                         tint = Color(0xFF0D5E34),
                                         modifier = Modifier.size(21.dp)
                                     )
