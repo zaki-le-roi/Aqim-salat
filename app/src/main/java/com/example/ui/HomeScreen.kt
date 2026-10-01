@@ -736,7 +736,7 @@ fun HomeScreen(
                         // Text and progress bar
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (lang == "ar") "احصل على تجربة استخدام مثالية" else "Get the perfect experience",
+                                text = if (lang == "ar") "إعداد العضوية والبيانات الشخصية" else "Set up your membership and profile",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF333333)
