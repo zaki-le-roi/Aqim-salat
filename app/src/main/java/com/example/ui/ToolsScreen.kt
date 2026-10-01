@@ -38,7 +38,12 @@ import com.example.data.TasbihCounter
 import com.example.data.FavoriteMosque
 import com.example.data.Khatmah
 import android.net.Uri
+import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.annotation.SuppressLint
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
@@ -430,17 +435,38 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
     val qiblaAngle by viewModel.qiblaAngle.collectAsState()
     val distance by viewModel.distanceToKaaba.collectAsState()
 
-    // Smooth compass needle vibration simulation to feel tactile
-    var animatedSensorRotation by remember { mutableStateOf(0f) }
-    LaunchedEffect(Unit) {
-        var base = 0f
-        while (true) {
-            // Gentle random sway of 0.2 degrees to simulate actual dynamic sensor reading
-            val sway = (Math.random() * 0.4 - 0.2).toFloat()
-            animatedSensorRotation = base + sway
-            delay(150)
+    val context = LocalContext.current
+    var deviceAzimuth by remember { mutableFloatStateOf(0f) }
+    var sensorAvailable by remember { mutableStateOf(false) }
+
+    DisposableEffect(Unit) {
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val rotationSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        sensorAvailable = rotationSensor != null
+
+        if (sensorManager == null || rotationSensor == null) {
+            onDispose { }
+        } else {
+            val listener = object : SensorEventListener {
+                private val rotationMatrix = FloatArray(9)
+                private val orientation = FloatArray(3)
+
+                override fun onSensorChanged(event: SensorEvent) {
+                    SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                    SensorManager.getOrientation(rotationMatrix, orientation)
+                    var azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                    if (azimuth < 0f) azimuth += 360f
+                    deviceAzimuth = azimuth
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+            }
+            sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+            onDispose { sensorManager.unregisterListener(listener) }
         }
     }
+
+    val compassRotation = ((qiblaAngle.toFloat() - deviceAzimuth) + 360f) % 360f
 
     Column(
         modifier = Modifier
@@ -451,7 +477,10 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = Translations.get("qibla_desc", lang),
+            text = if (sensorAvailable) Translations.get("qibla_desc", lang)
+            else if (lang == "ar") "لا يتوفر مستشعر اتجاه الجهاز. ستظهر جهة القبلة محسوبة من موقعك دون تدوير حي مع حركة الهاتف."
+            else "A device orientation sensor is unavailable. The Qibla bearing is calculated from your location without live phone rotation.",
+
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             textAlign = TextAlign.Center
@@ -476,7 +505,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        rotationZ = -qiblaAngle.toFloat() + animatedSensorRotation
+                        rotationZ = compassRotation
                     },
                 contentAlignment = Alignment.Center
             ) {
