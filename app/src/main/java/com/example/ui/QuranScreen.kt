@@ -521,7 +521,7 @@ fun QuranScreen(
                                         }
 
                                         // Offline availability indicator
-                                        val isOffline = surah.id in listOf(1, 112, 113, 114)
+                                        val isOffline = surah.id in QuranData.localAyahs.keys
                                         if (isOffline) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
