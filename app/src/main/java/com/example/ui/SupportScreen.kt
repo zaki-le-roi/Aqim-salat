@@ -1,7 +1,6 @@
 package com.example.ui
 import android.net.Uri
 import android.content.Intent
-import android.net.Uri
 
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -402,11 +401,27 @@ fun SupportScreen(
                                 )
                             }
 
-                            val partners = listOf(
-                                Pair(if (lang == "ar") "مؤسسة الأوقاف الخيرية" else "Islamic Waqf Foundation", if (lang == "ar") "الداعم الرئيسي للخدمات السحابية ونشر مصحف التلاوة المجاني." else "Main sponsor for cloud servers and digital Quran publishing."),
-                                Pair(if (lang == "ar") "جمعية البر بالمدينة المنورة" else "Al-Bir Charity Association", if (lang == "ar") "تنظيم وتوثيق كفالات الأيتام وبنوك الصدقة داخل التطبيق." else "Handling food aid and orphan support campaigns in the application."),
-                                Pair(if (lang == "ar") "الهيئة العالمية للتعريف بالإسلام" else "Global Islamic Outreach", if (lang == "ar") "توفير التراجم بلغات متعددة والمحتوى الدعوي المعتمد." else "Providing authentic translations and verified educational booklets.")
-                            )
+                            item {
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            if (lang == "ar") "لا توجد حالياً قائمة منشورة لشركاء موثقين داخل التطبيق." else "There is currently no published list of verified partners in the app.",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            if (lang == "ar") "للاستفسار عن الشراكات أو الإعلان، استخدم عنوان التواصل الظاهر أدناه." else "For partnership or advertising inquiries, use the contact address shown below.",
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                        )
+                                    }
+                                }
+                            }
 
                             items(partners) { (name, desc) ->
                                 Card(
