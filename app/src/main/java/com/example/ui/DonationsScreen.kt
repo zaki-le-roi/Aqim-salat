@@ -221,21 +221,11 @@ fun DonationsScreen(
                     confirmButton = {
                         Button(
                             onClick = {
-                                val amt = contributionAmountInput.toDoubleOrNull()
-                                if (amt != null && amt > 0) {
-                                    val updatedCampaign = campaign.copy(
-                                        currentProgress = campaign.currentProgress + amt
-                                    )
-                                    viewModel.insertDonationCampaign(updatedCampaign)
-                                    Toast.makeText(context, if (lang == "ar") "جزاكم الله خيرًا على مساهمتكم بمبلغ $amt!" else "Jazakum Allahu Khairan for your contribution of $amt!", Toast.LENGTH_LONG).show()
-                                    showContributionSheet = null
-                                } else {
-                                    Toast.makeText(context, if (lang == "ar") "أدخل مبلغًا صحيحًا للصدقة." else "Please enter a valid donation amount.", Toast.LENGTH_SHORT).show()
-                                }
+                                Toast.makeText(context, if (lang == "ar") "الدفع الإلكتروني للصدقات غير مفعّل حالياً. لم يتم تسجيل أي تبرع أو زيادة في الحملة." else "Online donation payment is not enabled. No donation or campaign progress was recorded.", Toast.LENGTH_LONG).show()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E5E3A))
                         ) {
-                            Text(if (lang == "ar") "تأكيد الصدقة" else "Confirm Sadaqah", color = Color.White)
+                            Text(if (lang == "ar") "الدفع غير متاح حالياً" else "Payment Unavailable", color = Color.White)
                         }
                     },
                     dismissButton = {
