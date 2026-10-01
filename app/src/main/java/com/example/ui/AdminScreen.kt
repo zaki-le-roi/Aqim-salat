@@ -621,7 +621,7 @@ fun ContentTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("تثبيت وحفظ البيانات في النظام", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("حفظ البيانات", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
@@ -862,7 +862,7 @@ fun DonationsTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("نشر المشروع وتفعيل شريط التبرع", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("حفظ الحملة", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
@@ -1005,7 +1005,7 @@ fun BroadcastsTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("إطلاق وإرسال إشعار البث العاجل الآن", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("تسجيل الإشعار", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
