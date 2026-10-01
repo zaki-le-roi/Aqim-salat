@@ -69,7 +69,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF2F5F8)), // Match clean grey/blue background of the screenshot
+            .background(Color(0xFFF5F8F6)),
         contentPadding = PaddingValues(top = 0.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -83,7 +83,7 @@ fun HomeScreen(
                 // Mosque sky background
                 Image(
                     painter = painterResource(id = R.drawable.img_home_banner_1783073765742),
-                    contentDescription = "Mosque background",
+                    contentDescription = if (lang == "ar") "خلفية المسجد" else "Mosque background",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -130,7 +130,7 @@ fun HomeScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.GridView,
-                                    contentDescription = "Menu",
+                                    contentDescription = if (lang == "ar") "القائمة" else "Menu",
                                     tint = Color(0xFF333333),
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -148,7 +148,7 @@ fun HomeScreen(
                             ) {
                                 Icon(
                                     imageVector = if (loggedInMember != null) Icons.Filled.AccountCircle else Icons.Filled.Person,
-                                    contentDescription = "Profile",
+                                    contentDescription = if (lang == "ar") "الملف الشخصي" else "Profile",
                                     tint = if (loggedInMember != null) Color(0xFF1B5E20) else Color(0xFF666666),
                                     modifier = Modifier.size(22.dp)
                                 )
@@ -195,7 +195,7 @@ fun HomeScreen(
                             ) {
                                 Icon(
                                     imageVector = if (isPlaying) Icons.Filled.VolumeUp else Icons.Filled.Notifications,
-                                    contentDescription = "Notifications",
+                                    contentDescription = if (lang == "ar") "الإشعارات" else "Notifications",
                                     tint = Color(0xFFD4AF37),
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -260,7 +260,7 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Icon(
                                 imageVector = Icons.Filled.LocationOn,
-                                contentDescription = "Location",
+                                contentDescription = if (lang == "ar") "الموقع" else "Location",
                                 tint = Color(0xFFD4AF37),
                                 modifier = Modifier.size(14.dp)
                             )
@@ -716,7 +716,7 @@ fun HomeScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
-                                contentDescription = "Close",
+                                contentDescription = if (lang == "ar") "إغلاق" else "Close",
                                 tint = Color(0xFF888888),
                                 modifier = Modifier.size(14.dp)
                             )
@@ -895,7 +895,7 @@ fun HomeScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.CardGiftcard,
-                                        contentDescription = "New",
+                                        contentDescription = if (lang == "ar") "جديد" else "New",
                                         tint = Color(0xFFFFCA28),
                                         modifier = Modifier.size(18.dp)
                                     )
