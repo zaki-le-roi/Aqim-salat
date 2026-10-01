@@ -167,18 +167,7 @@ fun SettingsScreen(
             )
         }
 
-        // 6. Cached Downloads Manager
-        item {
-            SettingsItemCard(
-                icon = Icons.Filled.CloudDownload,
-                title = if (lang == "ar") "إدارة التنزيلات" else "Downloads Manager",
-                subtitle = if (lang == "ar") "إدارة الملفات الصوتية المخزنة" else "Manage cached audio and storage",
-                tag = "setting_downloads",
-                onClick = { activeDialog = "DOWNLOADS" }
-            )
-        }
-
-        // 7. Data Backup & Cloud Sync
+        // 6. Data Backup & Cloud Sync
         item {
             SettingsItemCard(
                 icon = Icons.Filled.Backup,
@@ -394,37 +383,7 @@ fun SettingsScreen(
         )
     }
 
-    // E. Cache Downloads Dialog
-    if (activeDialog == "DOWNLOADS") {
-        AlertDialog(
-            onDismissRequest = { activeDialog = null },
-            title = { Text(if (lang == "ar") "إدارة التنزيلات والكاش" else "Cache Downloads", fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    Text("Total Cached Audio: 12.4 MB", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text("Surah Al-Fatihah, Ya-Sin and popular adhkar items are currently cached offline for rapid play without requiring Internet.", fontSize = 12.sp, color = Color.Gray)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            Toast.makeText(context, "Cache successfully cleared!", Toast.LENGTH_SHORT).show()
-                            activeDialog = null
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (lang == "ar") "مسح الذاكرة المؤقتة" else "Clear Cache Files")
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { activeDialog = null }) {
-                    Text("Done")
-                }
-            }
-        )
-    }
-
-    // F. Backup Dialog
+    // E. Backup Dialog
     if (activeDialog == "BACKUP") {
         AlertDialog(
             onDismissRequest = { activeDialog = null },
