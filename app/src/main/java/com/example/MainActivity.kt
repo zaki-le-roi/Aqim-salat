@@ -58,6 +58,8 @@ class MainActivity : ComponentActivity() {
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == true
             if (granted) {
                 locationViewModel?.startLocationTracking()
+            } else {
+                locationViewModel?.detectLocationByIp()
             }
         }
 
