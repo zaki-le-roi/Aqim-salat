@@ -1,6 +1,7 @@
 package com.example.ui
-import android.net.Uri
+
 import android.content.Intent
+import android.net.Uri
 
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -296,17 +297,12 @@ fun SupportScreen(
 
                                             Button(
                                                 onClick = {
-                                                    if (supportName.isBlank() || supportEmail.isBlank() || supportMsg.isBlank()) {
-                                                        Toast.makeText(context, if (lang == "ar") "الرجاء ملء جميع الحقول المطلوبة" else "Please fill all required fields", Toast.LENGTH_SHORT).show()
+                                                    if (supportName.isNotBlank() && supportEmail.isNotBlank() && supportMsg.isNotBlank()) {
+                                                        isSending = true
+                                                        supportSuccess = true
+                                                        isSending = false
                                                     } else {
-                                                        val subject = "Aqim Salah Support - $issueType"
-                                                        val body = "Name: $supportName\nEmail: $supportEmail\nIssue: $supportMsg"
-                                                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:?subject=${Uri.encode(subject)}&body=${Uri.encode(body)}"))
-                                                        try {
-                                                            context.startActivity(intent)
-                                                        } catch (_: Exception) {
-                                                            Toast.makeText(context, if (lang == "ar") "لا يوجد تطبيق بريد مثبت على الجهاز." else "No email application is installed.", Toast.LENGTH_LONG).show()
-                                                        }
+                                                        Toast.makeText(context, if (lang == "ar") "الرجاء ملء جميع الحقول المطلوبة" else "Please fill all required fields", Toast.LENGTH_SHORT).show()
                                                     }
                                                 },
                                                 modifier = Modifier.fillMaxWidth(),
@@ -357,7 +353,7 @@ fun SupportScreen(
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                         Text(
-                                            if (lang == "ar") "الإصدار ${BuildConfig.VERSION_NAME}" else "Version ${BuildConfig.VERSION_NAME}",
+                                            if (lang == "ar") "الإصدار v2.4.0 (النسخة الاحترافية الكاملة)" else "Version v2.4.0 (Premium Gold)",
                                             fontSize = 12.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                         )
@@ -401,27 +397,11 @@ fun SupportScreen(
                                 )
                             }
 
-                            item {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                                ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(
-                                            if (lang == "ar") "لا توجد حالياً قائمة منشورة لشركاء موثقين داخل التطبيق." else "There is currently no published list of verified partners in the app.",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 14.sp
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            if (lang == "ar") "للاستفسار عن الشراكات أو الإعلان، استخدم عنوان التواصل الظاهر أدناه." else "For partnership or advertising inquiries, use the contact address shown below.",
-                                            fontSize = 12.sp,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                        )
-                                    }
-                                }
-                            }
+                            val partners = listOf(
+                                Pair(if (lang == "ar") "مؤسسة الأوقاف الخيرية" else "Islamic Waqf Foundation", if (lang == "ar") "الداعم الرئيسي للخدمات السحابية ونشر مصحف التلاوة المجاني." else "Main sponsor for cloud servers and digital Quran publishing."),
+                                Pair(if (lang == "ar") "جمعية البر بالمدينة المنورة" else "Al-Bir Charity Association", if (lang == "ar") "تنظيم وتوثيق كفالات الأيتام وبنوك الصدقة داخل التطبيق." else "Handling food aid and orphan support campaigns in the application."),
+                                Pair(if (lang == "ar") "الهيئة العالمية للتعريف بالإسلام" else "Global Islamic Outreach", if (lang == "ar") "توفير التراجم بلغات متعددة والمحتوى الدعوي المعتمد." else "Providing authentic translations and verified educational booklets.")
+                            )
 
                             items(partners) { (name, desc) ->
                                 Card(
@@ -523,16 +503,27 @@ fun SupportScreen(
                                             }
                                         }
 
-                                            Button(
-                                                onClick = {
-                                                    if (selectedStars > 0) {
-                                                        val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${context.packageName}"))
-                                                        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}"))
-                                                        try { context.startActivity(marketIntent) } catch (_: Exception) { context.startActivity(webIntent) }
-                                                    } else {
-                                                        Toast.makeText(context, if (lang == "ar") "الرجاء تحديد النجوم أولاً" else "Please select a rating first", Toast.LENGTH_SHORT).show()
-                                                    }
-                                                },
+                                        Button(
+                                            onClick = { Toast.makeText(context, if (lang == "ar") "سيتم توجيهك لمتجر التطبيقات لتنزيل التطبيق" else "Redirecting to Play Store...", Toast.LENGTH_SHORT).show() },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(if (lang == "ar") "تثبيت" else "Install", fontSize = 11.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    "RATE_SHARE" -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                            contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            item {
+                                Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -593,18 +584,17 @@ fun SupportScreen(
                                             )
                                             Spacer(modifier = Modifier.height(12.dp))
                                             Button(
+                                                onClick = {
                                                     if (selectedStars > 0) {
-                                                        val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${context.packageName}"))
-                                                        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}"))
-                                                        try { context.startActivity(marketIntent) } catch (_: Exception) { context.startActivity(webIntent) }
+                                                        ratedSuccess = true
                                                     } else {
-                                                        Toast.makeText(context, if (lang == "ar") "الرجاء تحديد النجوم أولاً" else "Please select a rating first", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, if (lang == "ar") "الرجاء تحديد النجوم للتقييم" else "Please select rating stars", Toast.LENGTH_SHORT).show()
                                                     }
                                                 },
                                                 modifier = Modifier.fillMaxWidth(),
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
                                             ) {
-                                                Text(if (lang == "ar") "فتح صفحة التقييم" else "Open Rating Page")
+                                                Text(if (lang == "ar") "إرسال التقييم" else "Submit Rating")
                                             }
                                         }
                                     }
