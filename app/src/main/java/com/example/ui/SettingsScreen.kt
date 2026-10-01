@@ -377,7 +377,7 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("OK")
+                    Text(if (lang == "ar") "موافق" else "OK")
                 }
             }
         )
