@@ -158,7 +158,7 @@ fun MoreScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.ChevronLeft,
-                        contentDescription = "الرجوع",
+                        contentDescription = if (currentLanguage == "ar") "الرجوع" else "Back",
                         tint = Color.White,
                         modifier = Modifier
                             .size(24.dp)
@@ -205,7 +205,7 @@ fun MoreScreen(
 
                 // Centered User greeting or Login
                 Text(
-                    text = loggedInMember?.let { "أهلاً، ${it.name}" } ?: "تسجيل الدخول / التسجيل",
+                    text = if (currentLanguage == "ar") { loggedInMember?.let { "أهلاً، ${it.name}" } ?: "تسجيل الدخول / التسجيل" } else { loggedInMember?.let { "Welcome, ${it.name}" } ?: "Sign in / Register" },
                     color = Color.White,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
