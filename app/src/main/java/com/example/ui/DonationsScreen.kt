@@ -53,7 +53,7 @@ fun DonationsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("donations_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "ar") "رجوع" else "Back")
                     }
                 }
             )
@@ -81,7 +81,7 @@ fun DonationsScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Filled.VolunteerActivism,
-                                    contentDescription = "Donation",
+                                    contentDescription = if (lang == "ar") "صدقة" else "Donation",
                                     tint = Color(0xFFD4AF37),
                                     modifier = Modifier.size(28.dp)
                                 )
@@ -123,7 +123,7 @@ fun DonationsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "No donation campaigns are active at the moment.",
+                                text = if (lang == "ar") "لا توجد حملات صدقة نشطة حاليًا." else "No donation campaigns are active at the moment.",
                                 color = Color.Gray,
                                 fontSize = 14.sp
                             )
@@ -163,13 +163,13 @@ fun DonationsScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = "Raised: $${String.format("%.2f", campaign.currentProgress)}",
+                                        text = if (lang == "ar") "المجموع: ${String.format("%.2f", campaign.currentProgress)}" else "Raised: ${String.format("%.2f", campaign.currentProgress)}",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF1E5E3A)
                                     )
                                     Text(
-                                        text = "Goal: $${String.format("%.2f", campaign.targetAmount)} (${String.format("%.0f", progressPct * 100)}%)",
+                                        text = if (lang == "ar") "الهدف: ${String.format("%.2f", campaign.targetAmount)} (${String.format("%.0f", progressPct * 100)}%)" else "Goal: ${String.format("%.2f", campaign.targetAmount)} (${String.format("%.0f", progressPct * 100)}%)",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFFD4AF37)
@@ -193,7 +193,7 @@ fun DonationsScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Ends: ${campaign.endDate}",
+                                        text = if (lang == "ar") "تنتهي: ${campaign.endDate}" else "Ends: ${campaign.endDate}",
                                         fontSize = 11.sp,
                                         color = Color.Gray
                                     )
@@ -204,7 +204,7 @@ fun DonationsScreen(
                                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Contribute", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.Black)
+                                        Text(if (lang == "ar") "ساهم" else "Contribute", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.Black)
                                     }
                                 }
                             }
@@ -227,31 +227,31 @@ fun DonationsScreen(
                                         currentProgress = campaign.currentProgress + amt
                                     )
                                     viewModel.insertDonationCampaign(updatedCampaign)
-                                    Toast.makeText(context, "Jazakum Allahu Khairan for your contribution of $$amt!", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, if (lang == "ar") "جزاكم الله خيرًا على مساهمتكم بمبلغ $amt!" else "Jazakum Allahu Khairan for your contribution of $amt!", Toast.LENGTH_LONG).show()
                                     showContributionSheet = null
                                 } else {
-                                    Toast.makeText(context, "Please enter a valid donation amount.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, if (lang == "ar") "أدخل مبلغًا صحيحًا للصدقة." else "Please enter a valid donation amount.", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E5E3A))
                         ) {
-                            Text("Confirm Sadaqah", color = Color.White)
+                            Text(if (lang == "ar") "تأكيد الصدقة" else "Confirm Sadaqah", color = Color.White)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showContributionSheet = null }) {
-                            Text("Cancel", color = Color.Gray)
+                            Text(if (lang == "ar") "إلغاء" else "Cancel", color = Color.Gray)
                         }
                     },
-                    title = { Text("Contribute to Campaign", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
+                    title = { Text(if (lang == "ar") "المساهمة في الحملة" else "Contribute to Campaign", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) },
                     text = {
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(campaign.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                            Text("Enter donation amount in USD ($):", fontSize = 12.sp)
+                            Text(if (lang == "ar") "أدخل مبلغ الصدقة بالدولار ($):" else "Enter donation amount in USD ($):", fontSize = 12.sp)
                             OutlinedTextField(
                                 value = contributionAmountInput,
                                 onValueChange = { contributionAmountInput = it },
-                                label = { Text("Amount ($)") },
+                                label = { Text(if (lang == "ar") "المبلغ ($)" else "Amount ($)") },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true
                             )
