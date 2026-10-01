@@ -37,7 +37,8 @@ data class LocalMosque(
     val lat: Double,
     val lng: Double,
     val addressAr: String,
-    val addressEn: String
+    val addressEn: String,
+    val distanceKm: Double = 0.0
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -142,6 +143,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     
     private val _nearbyRealMosques = MutableStateFlow<List<LocalMosque>>(emptyList())
     val nearbyRealMosques: StateFlow<List<LocalMosque>> = _nearbyRealMosques.asStateFlow()
+    val nearestRealMosque: StateFlow<LocalMosque?> = nearbyRealMosques.map { it.firstOrNull() }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     
     private val _isTrackingLocation = MutableStateFlow(false)
     val isTrackingLocation: StateFlow<Boolean> = _isTrackingLocation.asStateFlow()
@@ -418,6 +420,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
+    fun openMosqueNavigation(mosque: LocalMosque) {
+        val uri = Uri.parse("geo:${mosque.lat},${mosque.lng}?q=${Uri.encode(mosque.nameAr)}")
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri).apply {
+            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { context.startActivity(intent) }
+    }
+
     fun fetchRealNearbyMosques(lat: Double, lng: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             // Exclusively query OpenStreetMap Overpass API for nearby mosques
@@ -474,6 +484,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     
                     _nearbyRealMosques.value = loadedList
+                        .map { mosque -> mosque.copy(distanceKm = calculateDist(lat, lng, mosque.lat, mosque.lng)) }
+                        .sortedBy { it.distanceKm }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
