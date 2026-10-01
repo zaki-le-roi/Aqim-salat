@@ -33,12 +33,17 @@ fun CalendarScreen(
 ) {
     val hijriString by viewModel.hijriDateString.collectAsState()
 
-    var gregDay by remember { mutableStateOf("03") }
-    var gregMonth by remember { mutableStateOf("07") }
-    var gregYear by remember { mutableStateOf("2026") }
+    val today = remember { Date() }
+    val dateInputFormat = remember { SimpleDateFormat("dd-MM-yyyy", Locale.US) }
+    val todayParts = remember { dateInputFormat.format(today).split("-") }
+
+    var gregDay by remember { mutableStateOf(todayParts.getOrNull(0) ?: "01") }
+    var gregMonth by remember { mutableStateOf(todayParts.getOrNull(1) ?: "01") }
+    var gregYear by remember { mutableStateOf(todayParts.getOrNull(2) ?: "2026") }
     var convertedHijriResult by remember { mutableStateOf("") }
 
-    val daysInMonth = (1..30).toList()
+    val currentHijri = PrayerCalculator.getHijriDate(today, lang)
+    val daysInCurrentHijriMonth = (1..30).toList()
 
     val islamicEvents = listOf(
         Triple("1 Ramadan", if (lang == "ar") "بداية صيام شهر رمضان المبارك" else "1st of Ramadan - Beginning of Fasting", "01 Ramadan"),
@@ -131,7 +136,7 @@ fun CalendarScreen(
             }
         }
 
-        // Calendar Month Grid mockup representation
+        // Current Hijri month grid — derived from the live Hijri date, not hard-coded sample data.
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -140,7 +145,11 @@ fun CalendarScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = if (lang == "ar") "شهر ذي الحجة ١٤٤٧ هـ" else "Month of Dhu al-Hijjah 1447 AH",
+                        text = if (lang == "ar") {
+                            "شهر ${currentHijri.monthName} ${currentHijri.year} هـ"
+                        } else {
+                            "${currentHijri.monthName} ${currentHijri.year} AH"
+                        },
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.primary,
@@ -171,44 +180,40 @@ fun CalendarScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 5 Rows of numbers
-                    var curNum = 1
-                    for (row in 0..4) {
+                    // Render the current Hijri month as a real 30-day calendar.
+                    daysInCurrentHijriMonth.chunked(7).forEach { week ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            for (col in 0..6) {
-                                if (row == 0 && col < 3) {
-                                    // Empty cells for alignment
-                                    Box(modifier = Modifier.weight(1f).aspectRatio(1f))
-                                } else if (curNum <= 30) {
-                                    val isToday = curNum == 15 // Mock today highlight
-                                    val cellNum = curNum
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .aspectRatio(1f)
-                                            .padding(2.dp)
-                                            .clip(CircleShape)
-                                            .background(
-                                                if (isToday) Color(0xFFD4AF37)
-                                                else Color.Transparent
-                                            )
-                                            .clickable { },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = cellNum.toString(),
-                                            fontSize = 13.sp,
-                                            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isToday) Color.Black else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                    curNum++
-                                } else {
-                                    Box(modifier = Modifier.weight(1f).aspectRatio(1f))
+                            week.forEach { cellNum ->
+                                val isToday = cellNum == currentHijri.day
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(1f)
+                                        .padding(2.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isToday) Color(0xFFD4AF37)
+                                            else Color.Transparent
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = cellNum.toString(),
+                                        fontSize = 13.sp,
+                                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isToday) Color.Black else MaterialTheme.colorScheme.onSurface
+                                    )
                                 }
+                            }
+                            repeat(7 - week.size) {
+                                Spacer(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .aspectRatio(1f)
+                                )
                             }
                         }
                     }
