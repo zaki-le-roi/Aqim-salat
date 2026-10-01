@@ -932,48 +932,48 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminHadith(hadith: AdminHadith) = viewModelScope.launch { repo.insertAdminHadith(hadith) }
-    fun deleteAdminHadith(id: Int) = viewModelScope.launch { repo.deleteAdminHadith(id) }
+    fun insertAdminHadith(hadith: AdminHadith) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminHadith(hadith) }
+    fun deleteAdminHadith(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminHadith(id) }
 
     val adminAdhkars = repo.allAdminAdhkars.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminAdhkar(adhkar: AdminAdhkar) = viewModelScope.launch { repo.insertAdminAdhkar(adhkar) }
-    fun deleteAdminAdhkar(id: Int) = viewModelScope.launch { repo.deleteAdminAdhkar(id) }
+    fun insertAdminAdhkar(adhkar: AdminAdhkar) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminAdhkar(adhkar) }
+    fun deleteAdminAdhkar(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminAdhkar(id) }
 
     val adminDuas = repo.allAdminDuas.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminDua(dua: AdminDua) = viewModelScope.launch { repo.insertAdminDua(dua) }
-    fun deleteAdminDua(id: Int) = viewModelScope.launch { repo.deleteAdminDua(id) }
+    fun insertAdminDua(dua: AdminDua) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminDua(dua) }
+    fun deleteAdminDua(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminDua(id) }
 
     val adminArticles = repo.allAdminArticles.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminArticle(article: AdminArticle) = viewModelScope.launch { repo.insertAdminArticle(article) }
-    fun deleteAdminArticle(id: Int) = viewModelScope.launch { repo.deleteAdminArticle(id) }
+    fun insertAdminArticle(article: AdminArticle) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminArticle(article) }
+    fun deleteAdminArticle(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminArticle(id) }
 
     val adminBannersReminders = repo.allAdminBannersReminders.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertAdminBannerReminder(br: AdminBannerReminder) = viewModelScope.launch { repo.insertAdminBannerReminder(br) }
-    fun deleteAdminBannerReminder(id: Int) = viewModelScope.launch { repo.deleteAdminBannerReminder(id) }
+    fun insertAdminBannerReminder(br: AdminBannerReminder) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.insertAdminBannerReminder(br) }
+    fun deleteAdminBannerReminder(id: Int) = viewModelScope.launch { if (hasAdminPermission("EDIT_CONTENT")) repo.deleteAdminBannerReminder(id) }
 
     val donationCampaigns = repo.allDonationCampaigns.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-    fun insertDonationCampaign(campaign: DonationCampaign) = viewModelScope.launch { repo.insertDonationCampaign(campaign) }
-    fun deleteDonationCampaign(id: Int) = viewModelScope.launch { repo.deleteDonationCampaign(id) }
+    fun insertDonationCampaign(campaign: DonationCampaign) = viewModelScope.launch { if (hasAdminPermission("MANAGE_DONATIONS")) repo.insertDonationCampaign(campaign) }
+    fun deleteDonationCampaign(id: Int) = viewModelScope.launch { if (hasAdminPermission("MANAGE_DONATIONS")) repo.deleteDonationCampaign(id) }
 
     val notificationLogs = repo.allNotificationLogs.stateIn(
         scope = viewModelScope,
@@ -981,6 +981,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         initialValue = emptyList()
     )
     fun insertNotificationLog(title: String, body: String, audience: String) = viewModelScope.launch {
+        if (!hasAdminPermission("SEND_ALERTS")) return@launch
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
         repo.insertNotificationLog(NotificationLog(title = title, body = body, audience = audience, sentTime = sdf.format(java.util.Date())))
     }
@@ -1089,6 +1090,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateMemberPoints(memberId: Int, pointsToAdd: Int) {
+        if (loggedInMember.value?.id != memberId && !hasAdminPermission("ALL")) return
         viewModelScope.launch {
             val matched = allMembers.value.find { it.id == memberId }
             if (matched != null) {
