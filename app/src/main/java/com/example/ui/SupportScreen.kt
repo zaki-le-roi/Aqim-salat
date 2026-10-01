@@ -588,7 +588,7 @@ fun SupportScreen(
                                             OutlinedTextField(
                                                 value = feedbackText,
                                                 onValueChange = { feedbackText = it },
-                                                placeholder = { Text(if (lang == "ar") "أضف كلمتك الطيبة أو ملاحظاتك هنا..." else "Add your feedback here...") },
+                                                placeholder = { Text(if (lang == "ar") "ملاحظة اختيارية لك عند تقييم التطبيق في المتجر" else "Optional note to use when rating the app in the store") },
                                                 modifier = Modifier.fillMaxWidth().height(80.dp),
                                                 shape = RoundedCornerShape(10.dp)
                                             )
@@ -606,7 +606,7 @@ fun SupportScreen(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
                                             ) {
-                                                Text(if (lang == "ar") "إرسال التقييم" else "Submit Rating")
+                                                Text(if (lang == "ar") "فتح صفحة التقييم" else "Open Rating Page")
                                             }
                                         }
                                     }
