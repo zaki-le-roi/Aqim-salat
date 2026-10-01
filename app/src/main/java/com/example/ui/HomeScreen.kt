@@ -782,7 +782,7 @@ fun HomeScreen(
                     Triple("HISN_AL_MUSLIM", if (lang == "ar") "حصن المسلم" else "Hisn Al-Muslim", Color(0xFF2E7D32)),
                     Triple("CALENDAR", if (lang == "ar") "التقويم" else "Calendar", Color(0xFF6A1B9A)),
                     Triple("QIBLA", if (lang == "ar") "القبلة" else "Qibla", Color(0xFF00897B)),
-                    Triple("HADITH", if (lang == "ar") "السيرة" else "Seerah", Color(0xFF795548)),
+                    Triple("ON_THIS_DAY", if (lang == "ar") "السيرة" else "Seerah", Color(0xFF795548)),
                     Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Color(0xFF1565C0)),
                     Triple("QURAN", if (lang == "ar") "المصحف" else "Quran", Color(0xFF2E7D32)),
                     Triple("MORE_MENU", if (lang == "ar") "المزيد" else "More", Color(0xFF455A64)),
