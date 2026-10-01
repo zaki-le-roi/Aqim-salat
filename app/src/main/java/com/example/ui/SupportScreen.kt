@@ -631,8 +631,8 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            if (lang == "ar") "قال محمد صلى الله عليه وسلم: 'من دلّ على خير فله مثل أجر فاعله'. انشر رابط تطبيق أقم صلاتك الإسلامي لأهلك وأصحابك واكسب مثل أجور صلاتهم وقراءتهم دون أن ينقص من أجورهم شيء."
-                                            else "Muhammad, peace and blessings be upon him, said: 'Whoever guides to good has a reward like that of its doer.' Share this application with family and friends.",
+                                            if (lang == "ar") "قال محمد صلى الله عليه وسلم: «من دلّ على خير فله مثل أجر فاعله». يمكنك مشاركة التطبيق مع أهلك وأصحابك بنية الدلالة على الخير."
+                                            else "Share the application with family and friends as a way to encourage good.",
                                             fontSize = 12.sp,
                                             lineHeight = 18.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
