@@ -43,14 +43,14 @@ fun MoreScreen(
         ServicesGridItem("HOME", "الرئيسة", Icons.Filled.Home, Color(0xFF1E88E5)),
         ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color(0xFFFF9800)),
         ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color(0xFF009688)),
-        ServicesGridItem("DONATIONS", "حاسبة الزكاة", Icons.Filled.Percent, Color(0xFF0D47A1)),
+        ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color(0xFF0D47A1)),
         ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color(0xFF00ACC1)),
         ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color(0xFF29B6F6)),
         ServicesGridItem("HADITH", "الفوائد", Icons.Filled.Lightbulb, Color(0xFFFFB300)),
-        ServicesGridItem("RAMADAN", "ورد المحاسبة", Icons.Filled.FactCheck, Color(0xFF9C27B0)),
+        ServicesGridItem("ACCOUNTABILITY", "ورد المحاسبة", Icons.Filled.FactCheck, Color(0xFF9C27B0)),
         ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color(0xFFAB47BC)),
         ServicesGridItem("TRAVEL", "حقيبة المسافر", Icons.Filled.Flight, Color(0xFF42A5F5)),
-        ServicesGridItem("PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color(0xFF26A69A)),
+        ServicesGridItem("WORLD_PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color(0xFF26A69A)),
         ServicesGridItem("POLLS", "استطلاعات", Icons.Filled.BarChart, Color(0xFF5C6BC0)),
         ServicesGridItem("COMPETITION", "استباق", Icons.Filled.Group, Color(0xFF26C6DA)),
         ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color(0xFF66BB6A)),
@@ -68,7 +68,7 @@ fun MoreScreen(
         ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color(0xFF03A9F4)),
         ServicesGridItem("HADITH", "كنوز", Icons.Filled.AutoAwesome, Color(0xFFFF9800)),
         ServicesGridItem("TASBIH", "السبحة", Icons.Filled.FormatListNumbered, Color(0xFF1E3A5F)),
-        ServicesGridItem("RAMADAN", "طاعاتك", Icons.Filled.WorkspacePremium, Color(0xFF673AB7)),
+        ServicesGridItem("DEEDS", "طاعاتك", Icons.Filled.WorkspacePremium, Color(0xFF673AB7)),
         ServicesGridItem("RATE_SHARE", "الأجر بالنشر", Icons.Filled.Spa, Color(0xFFE91E63)),
         ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color(0xFF00BCD4)),
         ServicesGridItem("KHATMAH", "الختمة", Icons.Filled.LibraryBooks, Color(0xFFE65100)),
@@ -205,7 +205,7 @@ fun MoreScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { onNavigateToFeature("SETTINGS") },
+                            .clickable { onNavigateToFeature("PREMIUM") },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF0D253F)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700))
@@ -242,7 +242,7 @@ fun MoreScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { onNavigateToFeature("RAMADAN") },
+                            .clickable { onNavigateToFeature("DEEDS") },
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
