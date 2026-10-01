@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
         checkForUpdates()
         setContent {
             val appViewModel: AppViewModel = viewModel()
-            val activeLanguage = "ar"
+            val activeLanguage by appViewModel.language.collectAsState()
             val activeThemeMode by appViewModel.themeMode.collectAsState()
             val nextPrayerName by appViewModel.nextPrayerName.collectAsState()
 
