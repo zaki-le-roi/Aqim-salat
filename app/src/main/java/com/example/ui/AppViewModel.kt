@@ -48,6 +48,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val context = application.applicationContext
     private val db = AppDatabase.getDatabase(context)
     private val repo = AppRepository(db, context)
+    private val pollsPrefs = context.getSharedPreferences("local_polls", Context.MODE_PRIVATE)
 
     // --- State Observables ---
     val language: StateFlow<String> = repo.appLanguage.stateIn(viewModelScope, SharingStarted.Eagerly, "ar")
@@ -1290,8 +1291,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         // Never fabricate community members, posts, votes, or prayer history.
         _communityPosts.value = emptyList()
 
-        // Poll questions are app content; all vote counters start at zero.
-        _communityPolls.value = listOf(
+        // Poll questions are app content; vote state is persisted locally on this device.
+        val basePolls = listOf(
             CommunityPoll(
                 id = 1,
                 questionAr = "ما هو أنسب وقت تفضله لقراءة وردك اليومي من القرآن الكريم؟",
@@ -1323,6 +1324,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 votedOptionIndex = null
             )
         )
+        _communityPolls.value = basePolls.map { poll ->
+            val voted = pollsPrefs.getInt("poll_${poll.id}_voted", -1).takeIf { it >= 0 }
+            val storedVotes = poll.optionsAr.indices.map { index ->
+                pollsPrefs.getInt("poll_${poll.id}_votes_$index", 0)
+            }
+            val hasStoredVotes = storedVotes.any { it > 0 }
+            poll.copy(
+                votes = if (hasStoredVotes) storedVotes else poll.votes,
+                totalVotes = if (hasStoredVotes) storedVotes.sum() else poll.totalVotes,
+                votedOptionIndex = voted
+            )
+        }
 
         loadFajrRecords()
     }
@@ -1401,7 +1414,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     votes = newVotes,
                     totalVotes = poll.totalVotes + 1,
                     votedOptionIndex = optionIndex
-                )
+                ).also {
+                    val editor = pollsPrefs.edit()
+                        .putInt("poll_${poll.id}_voted", optionIndex)
+                    newVotes.forEachIndexed { index, value ->
+                        editor.putInt("poll_${poll.id}_votes_$index", value)
+                    }
+                    editor.apply()
+                }
             } else {
                 poll
             }
