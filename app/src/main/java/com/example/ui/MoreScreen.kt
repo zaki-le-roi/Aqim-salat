@@ -30,6 +30,51 @@ data class ServicesGridItem(
     val tint: Color
 )
 
+private fun ServicesGridItem.localizedTitle(lang: String): String {
+    if (lang == "ar") return titleAr
+    return when (titleAr) {
+        "الرئيسة", "الرئيسية" -> "Home"
+        "الإعدادات" -> "Settings"
+        "القبلة" -> "Qibla"
+        "حاسبة الزكاة" -> "Zakat Calculator"
+        "عمل اليوم والليلة" -> "Daily Dua"
+        "بنك الصدقات" -> "Sadaqah"
+        "الفوائد" -> "Benefits"
+        "ورد المحاسبة" -> "Daily Accountability"
+        "التقويم" -> "Calendar"
+        "حقيبة المسافر" -> "Travel Companion"
+        "الصلاة حول العالم" -> "Prayer Times Worldwide"
+        "استطلاعات" -> "Polls"
+        "استباق" -> "Al-Istibaq"
+        "مساجد" -> "Nearby Mosques"
+        "المطاعم الحلال" -> "Halal Food"
+        "مجتمع أقم صلاتك" -> "Community"
+        "حدث في مثل هذا اليوم" -> "On This Day"
+        "قائمة الفجر" -> "Fajr Tracker"
+        "رمضان" -> "Ramadan"
+        "المصحف" -> "Quran"
+        "التحفيظ" -> "Memorization"
+        "الأذكار" -> "Adhkar"
+        "كنوز" -> "Hadith"
+        "السبحة" -> "Tasbih"
+        "طاعاتك" -> "Good Deeds"
+        "الأجر بالنشر" -> "Share for Reward"
+        "الدعاء" -> "Dua"
+        "الختمة" -> "Quran Khatmah"
+        "حصن المسلم" -> "Hisn Al-Muslim"
+        "الأسئلة الشائعة" -> "FAQ"
+        "الدعم الفني" -> "Support"
+        "من نحن" -> "About Us"
+        "اعلن معنا" -> "Advertise With Us"
+        "برامجنا" -> "Our Apps"
+        "انشر التطبيق" -> "Share App"
+        "قيم التطبيق" -> "Rate App"
+        "تابعنا" -> "Follow Us"
+        "شركاؤنا" -> "Partners"
+        else -> titleAr
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoreScreen(
@@ -40,7 +85,7 @@ fun MoreScreen(
 ) {
     // 1. General Services List
     val generalServices = listOf(
-        ServicesGridItem("HOME", "الرئيسة", Icons.Filled.Home, Color(0xFF1E88E5)),
+        ServicesGridItem("HOME", "الرئيسية", Icons.Filled.Home, Color(0xFF1E88E5)),
         ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color(0xFFFF9800)),
         ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color(0xFF009688)),
         ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color(0xFF0D47A1)),
@@ -372,7 +417,7 @@ fun ServicesSectionCard(
                                 }
                                 Spacer(modifier = Modifier.height(7.dp))
                                 Text(
-                                    text = item.titleAr,
+                                    text = item.localizedTitle(currentLanguage),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF20352B),
