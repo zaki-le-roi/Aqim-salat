@@ -153,8 +153,8 @@ fun SupportScreen(
                             ),
                             Pair(
                                 if (lang == "ar") "هل يعمل تطبيق أقم صلاتك دون اتصال بالإنترنت؟" else "Does Aqim Salah work offline?",
-                                if (lang == "ar") "نعم، كافة المميزات الأساسية كالأذان ومواقيت الصلاة والمصحف الشريف وقراءة الأذكار وحساب القبلة تعمل دون إنترنت بنسبة 100%. الإنترنت مطلوب فقط لتحديث موقعك لأول مرة وتصفح خرائط المساجد."
-                                else "Yes, all core capabilities like prayer calculation, Athan, full Quran reading, Adhkar, and Qibla compass run 100% offline. Internet is only needed initially for location queries and loading live map."
+                                if (lang == "ar") "تعمل بعض الميزات الأساسية دون إنترنت، أما المحتوى غير المضمّن والخرائط والمصادر الحية فتحتاج إلى الإنترنت."
+                                else "Some core capabilities work offline, while non-bundled content, maps, and live sources require an internet connection."
                             ),
                             Pair(
                                 if (lang == "ar") "كيف يمكنني تغيير صوت الأذان؟" else "How can I change the Athan voice?",
