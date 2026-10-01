@@ -33,44 +33,16 @@ data class ServicesGridItem(
 private fun ServicesGridItem.localizedTitle(lang: String): String {
     if (lang == "ar") return titleAr
     return when (titleAr) {
-        "الرئيسة", "الرئيسية" -> "Home"
-        "الإعدادات" -> "Settings"
-        "القبلة" -> "Qibla"
-        "حاسبة الزكاة" -> "Zakat Calculator"
-        "عمل اليوم والليلة" -> "Daily Dua"
-        "بنك الصدقات" -> "Sadaqah"
-        "الفوائد" -> "Benefits"
+        "العلامات المحفوظة" -> "Saved Bookmarks"
+        "بنك الصدقات" -> "Sadaqah Bank"
         "ورد المحاسبة" -> "Daily Accountability"
-        "التقويم" -> "Calendar"
-        "حقيبة المسافر" -> "Travel Companion"
-        "الصلاة حول العالم" -> "Prayer Times Worldwide"
-        "استطلاعات" -> "Polls"
-        "استباق" -> "Al-Istibaq"
-        "مساجد" -> "Nearby Mosques"
-        "المطاعم الحلال" -> "Halal Food"
-        "مجتمع أقم صلاتك" -> "Community"
-        "حدث في مثل هذا اليوم" -> "On This Day"
-        "قائمة الفجر" -> "Fajr Tracker"
-        "رمضان" -> "Ramadan"
-        "المصحف" -> "Quran"
-        "التحفيظ" -> "Memorization"
-        "الأذكار" -> "Adhkar"
-        "كنوز" -> "Hadith"
-        "السبحة" -> "Tasbih"
-        "طاعاتك" -> "Good Deeds"
-        "الأجر بالنشر" -> "Share for Reward"
+        "متابعة الفجر" -> "Fajr Tracker"
+        "أسماء الله الحسنى" -> "Names of Allah"
+        "الحديث" -> "Hadith"
+        "طاعاتك" -> "Your Deeds"
+        "الأدعية" -> "Duas"
         "الدعاء" -> "Dua"
-        "الختمة" -> "Quran Khatmah"
-        "حصن المسلم" -> "Hisn Al-Muslim"
-        "الأسئلة الشائعة" -> "FAQ"
-        "الدعم الفني" -> "Support"
-        "من نحن" -> "About Us"
-        "اعلن معنا" -> "Advertise With Us"
-        "برامجنا" -> "Our Apps"
-        "انشر التطبيق" -> "Share App"
-        "قيم التطبيق" -> "Rate App"
-        "تابعنا" -> "Follow Us"
-        "شركاؤنا" -> "Partners"
+        "السيرة" -> "Seerah"
         else -> titleAr
     }
 }
@@ -90,9 +62,9 @@ fun MoreScreen(
         ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color.Unspecified),
         ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color.Unspecified),
-        ServicesGridItem("DONATIONS", "بنك الصلوات", Icons.Filled.VolunteerActivism, Color.Unspecified),
+        ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color.Unspecified),
         ServicesGridItem("HADITH", "الفوائد", Icons.Filled.Lightbulb, Color.Unspecified),
-        ServicesGridItem("ACCOUNTABILITY", "ورد المناسبة", Icons.Filled.FactCheck, Color.Unspecified),
+        ServicesGridItem("ACCOUNTABILITY", "ورد المحاسبة", Icons.Filled.FactCheck, Color.Unspecified),
         ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color.Unspecified),
         ServicesGridItem("TRAVEL", "وجهة المسافر", Icons.Filled.Flight, Color.Unspecified),
         ServicesGridItem("WORLD_PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color.Unspecified),
@@ -102,20 +74,20 @@ fun MoreScreen(
         ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color.Unspecified),
         ServicesGridItem("COMMUNITY", "صحيح أقم صلاتك", Icons.Filled.Forum, Color.Unspecified),
         ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color.Unspecified),
-        ServicesGridItem("FAJR_LIST", "خاتمة الصبر", Icons.Filled.Cloud, Color.Unspecified),
+        ServicesGridItem("FAJR_LIST", "متابعة الفجر", Icons.Filled.Cloud, Color.Unspecified),
         ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color.Unspecified)
     )
 
     val quranDhikrServices = listOf(
         ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color.Unspecified),
-        ServicesGridItem("QURAN", "السهولة", Icons.Filled.Bookmark, Color.Unspecified),
+        ServicesGridItem("FAVORITES", "العلامات المحفوظة", Icons.Filled.Bookmark, Color.Unspecified),
         ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color.Unspecified),
-        ServicesGridItem("DAILY_DUA", "أدعية", Icons.Filled.AutoAwesome, Color.Unspecified),
-        ServicesGridItem("NAMES", "أقيموا", Icons.Filled.Favorite, Color.Unspecified),
-        ServicesGridItem("HADITH", "قاداك", Icons.Filled.MenuBook, Color.Unspecified),
-        ServicesGridItem("DEEDS", "الأمر بالمعروف", Icons.Filled.VolunteerActivism, Color.Unspecified),
+        ServicesGridItem("DAILY_DUA", "الأدعية", Icons.Filled.AutoAwesome, Color.Unspecified),
+        ServicesGridItem("NAMES", "أسماء الله الحسنى", Icons.Filled.Favorite, Color.Unspecified),
+        ServicesGridItem("HADITH", "الحديث", Icons.Filled.MenuBook, Color.Unspecified),
+        ServicesGridItem("DEEDS", "طاعاتك", Icons.Filled.VolunteerActivism, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color.Unspecified),
-        ServicesGridItem("DAILY_DUA", "الدعوة", Icons.Filled.Campaign, Color.Unspecified),
+        ServicesGridItem("SEERAH", "السيرة", Icons.Filled.Campaign, Color.Unspecified),
         ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color.Unspecified)
     )
 
@@ -243,7 +215,7 @@ fun MoreScreen(
             // Section 1: General Services Card
             item {
                 ServicesSectionCard(
-                    title = "خدمات التطبيق العامة",
+                    title = if (currentLanguage == "ar") "خدمات التطبيق العامة" else "General Services",
                     items = generalServices,
                     lang = currentLanguage,
                     onItemClick = onNavigateToFeature
@@ -253,7 +225,7 @@ fun MoreScreen(
             // Section 2: Quran and Dhikr Card
             item {
                 ServicesSectionCard(
-                    title = "القرآن والذكر",
+                    title = if (currentLanguage == "ar") "القرآن والأذكار" else "Quran & Adhkar",
                     items = quranDhikrServices,
                     lang = currentLanguage,
                     onItemClick = onNavigateToFeature
@@ -263,7 +235,7 @@ fun MoreScreen(
             // Section 3: Support and Interaction Card
             item {
                 ServicesSectionCard(
-                    title = "الدعم والتفاعل",
+                    title = if (currentLanguage == "ar") "الدعم والتفاعل" else "Support & Community",
                     items = supportServices,
                     lang = currentLanguage,
                     onItemClick = onNavigateToFeature
