@@ -496,6 +496,7 @@ fun AuthScreen(
                                             viewModel.registerMember(
                                                 name = nameInput,
                                                 email = emailInput,
+                                                password = passwordInput,
                                                 country = countryInput,
                                                 city = cityInput,
                                                 onSuccess = {
