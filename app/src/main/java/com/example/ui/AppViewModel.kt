@@ -1399,3 +1399,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 poll.copy(
                     votes = newVotes,
                     totalVotes = poll.totalVotes + 1,
+                poll.copy(
+                    votes = newVotes,
+                    totalVotes = poll.totalVotes + 1,
+                    votedOptionIndex = optionIndex
+                )
+            } else {
+                poll
+            }
+        }
+    }
+
+    fun updateFajrRecord(dateString: String, status: String) {
+        _fajrRecords.value = _fajrRecords.value.map { record ->
+            if (record.dateString == dateString) record.copy(status = status) else record
+        }
+    }
+}
