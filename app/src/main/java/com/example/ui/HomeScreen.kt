@@ -750,28 +750,11 @@ fun HomeScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            // Custom progress tracker nodes
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                repeat(4) { nodeIdx ->
-                                    Box(
-                                        modifier = Modifier
-                                            .size(10.dp)
-                                            .clip(CircleShape)
-                                            .background(if (nodeIdx <= 2) Color(0xFF2196F3) else Color(0xFFE0E0E0))
-                                    )
-                                    if (nodeIdx < 3) {
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(2.dp)
-                                                .background(if (nodeIdx < 2) Color(0xFF2196F3) else Color(0xFFE0E0E0))
-                                        )
-                                    }
-                                }
-                            }
+                            Text(
+                                text = if (lang == "ar") "يمكنك تسجيل الدخول الآن، أو متابعة استخدام التطبيق دون عضوية." else "You can sign in now, or continue using the app without membership.",
+                                fontSize = 12.sp,
+                                color = Color.Gray
+                            )
                         }
                     }
                 }
