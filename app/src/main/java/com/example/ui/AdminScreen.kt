@@ -840,13 +840,17 @@ fun DonationsTab(viewModel: AppViewModel) {
 
                     Button(
                         onClick = {
-                            if (title.isNotBlank()) {
+                            val targetAmount = target.toDoubleOrNull()
+                            val currentProgress = progress.toDoubleOrNull()
+                            if (title.isBlank() || desc.isBlank() || targetAmount == null || targetAmount <= 0.0 || currentProgress == null || currentProgress < 0.0 || start.isBlank() || end.isBlank()) {
+                                Toast.makeText(context, "أكمل بيانات الحملة وأدخل مبلغًا مستهدفًا أكبر من صفر ومبلغًا حاليًا صالحًا.", Toast.LENGTH_LONG).show()
+                            } else {
                                 viewModel.insertDonationCampaign(
                                     DonationCampaign(
                                         title = title,
                                         description = desc,
-                                        targetAmount = target.toDoubleOrNull() ?: 0.0,
-                                        currentProgress = progress.toDoubleOrNull() ?: 0.0,
+                                        targetAmount = targetAmount,
+                                        currentProgress = currentProgress.coerceAtMost(targetAmount),
                                         startDate = start,
                                         endDate = end,
                                         imageUrl = imgUrl
@@ -855,6 +859,10 @@ fun DonationsTab(viewModel: AppViewModel) {
                                 Toast.makeText(context, "تم حفظ الحملة الخيرية في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
                                 title = ""
                                 desc = ""
+                                target = ""
+                                progress = ""
+                                start = ""
+                                end = ""
                                 imgUrl = ""
                             }
                         },
@@ -1199,7 +1207,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                                     "Moderator" -> "مراقب عام"
                                     else -> "محرر محتوى"
                                 }
-                                Toast.makeText(context, "تم حفظ بيانات صلاحية المشرف محليًا بمرتبة: $arabicRoleLabel. لا يتم إنشاء حساب Firebase من هنا.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم حفظ بيانات المشرف وصلاحياته محليًا وتسجيلها في Firestore بمرتبة: $arabicRoleLabel.", Toast.LENGTH_SHORT).show()
                                 newEmail = ""
                             }
                         },
