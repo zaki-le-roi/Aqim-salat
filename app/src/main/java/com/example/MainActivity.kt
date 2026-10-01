@@ -247,7 +247,7 @@ fun AqimSalahApp(
                         Triple("HOME", Translations.get("home", lang), Icons.Filled.Home),
                         Triple("QURAN", Translations.get("quran", lang), Icons.Filled.MenuBook),
                         Triple("PRAYER_TIMES", if (lang == "ar") "المواقيت" else "Prayers", Icons.Filled.AccessTime),
-                        Triple("QIBLA", Translations.get("qibla", lang), Icons.Filled.CompassCalibration),
+                        Triple("ZAKAT", if (lang == "ar") "الزكاة" else "Zakat", Icons.Filled.Percent),
                         Triple("MORE", if (lang == "ar") "المزيد" else "More", Icons.Filled.MoreHoriz)
                     )
 
