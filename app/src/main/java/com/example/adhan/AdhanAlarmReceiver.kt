@@ -30,10 +30,10 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             putExtra(AdhanPlaybackService.EXTRA_PRAYER_NAME, prayerName)
         }
         runCatching { ContextCompat.startForegroundService(context, serviceIntent) }
-            .onFailure { showAdhanNotification(context, prayerName) }
+            .onFailure { showFallbackForService(context, prayerName) }
     }
 
-    private fun showAdhanNotification(context: Context, prayerName: String) {
+    fun showFallbackForService(context: Context, prayerName: String) {
         val manager = context.getSystemService(NotificationManager::class.java)
         val channelId = "adhan"
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -58,7 +58,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(com.example.R.drawable.ic_notification_adhan)
             .setContentTitle("حان وقت صلاة $prayerName")
-            .setContentText("الله أكبر، حي على الصلاة")
+            .setContentText("تعذر تشغيل ملف الأذان، وتم تشغيل تنبيه بديل.")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
