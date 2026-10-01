@@ -36,6 +36,7 @@ fun SettingsScreen(
     val activeThemeVal by viewModel.themeMode.collectAsState()
     val defaultReciterVal by viewModel.defaultReciter.collectAsState()
     val hapticsVal by viewModel.hapticsEnabled.collectAsState()
+    val fontScaleVal by viewModel.fontScale.collectAsState()
 
     // Dialog state controllers
     var activeDialog by remember { mutableStateOf<String?>(null) } // "THEME", "LANG", "CALC", "AUDIO", "DOWNLOADS", "BACKUP", "PRIVACY", "ACCESSIBILITY"
@@ -53,7 +54,7 @@ fun SettingsScreen(
     val recitersList = listOf("Mishary Al-Afasy", "Abdul Basit Abdus Samad", "Saad Al-Ghamdi")
 
     // Accessibility state
-    var fontSizeZoom by remember { mutableFloatStateOf(1.0f) }
+    var fontSizeZoom by remember(fontScaleVal) { mutableFloatStateOf(fontScaleVal) }
     var hapticsEnabled by remember(hapticsVal) { mutableStateOf(hapticsVal) }
 
     LazyColumn(
@@ -479,6 +480,7 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         fontSizeZoom = zoomScale
+                        viewModel.setFontScale(zoomScale)
                         hapticsEnabled = currentHaptics
                         viewModel.setHapticsEnabled(currentHaptics)
                         activeDialog = null
