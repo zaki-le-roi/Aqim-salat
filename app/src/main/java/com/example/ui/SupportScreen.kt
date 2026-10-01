@@ -478,10 +478,7 @@ fun SupportScreen(
                     }
 
                     "OUR_APPS" -> {
-                        val sisterApps = emptyList<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>(),
-                            Triple("مصحف المدينة التفاعلي", "مصحف تفاعلي كامل بالرسم العثماني وسماع كبار القراء.", Icons.Filled.LibraryBooks),
-                            Triple("سبحة الأذكار الذكية", "عداد تسبيح احترافي مع قفل تلقائي وتحديات جماعية.", Icons.Filled.AddCircle)
-                        )
+                        val sisterApps = emptyList<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>()
 
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
