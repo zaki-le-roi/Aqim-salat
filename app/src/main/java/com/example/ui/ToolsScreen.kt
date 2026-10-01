@@ -371,7 +371,7 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
             ) {
                 Icon(Icons.Filled.AddCircle, contentDescription = "No Counter", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("Tap 'Add Counter' to launch your digital Tasbih tracker.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), textAlign = TextAlign.Center)
+                Text(if (lang == "ar") "اضغط على إضافة سبحة لبدء عداد التسبيح." else "Tap Add Counter to launch your digital Tasbih tracker.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), textAlign = TextAlign.Center)
             }
         }
     }
@@ -748,7 +748,7 @@ fun NamesOfAllahTool(viewModel: AppViewModel, lang: String) {
                 .clip(RoundedCornerShape(16.dp))
                 .padding(vertical = 12.dp)
                 .testTag("names_search_bar"),
-            placeholder = { Text("Search Names...") },
+            placeholder = { Text(if (lang == "ar") "ابحث في أسماء الله الحسنى..." else "Search Names...") },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
@@ -919,8 +919,8 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                     ) {
                         Icon(Icons.Filled.VolunteerActivism, contentDescription = "Charity", tint = Color(0xFFD4AF37))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Sadaqah Logged", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                        Text("$charityLogged Times", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(if (lang == "ar") "الصدقات المسجلة" else "Sadaqah Logged", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        Text(if (lang == "ar") "$charityLogged مرة" else "$charityLogged Times", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { charityLogged++ },
@@ -928,7 +928,7 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.testTag("log_charity_button")
                         ) {
-                            Text("+ Log")
+                            Text(if (lang == "ar") "+ تسجيل" else "+ Log")
                         }
                     }
                 }
@@ -947,8 +947,8 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                     ) {
                         Icon(Icons.Filled.MenuBook, contentDescription = "Qiyam", tint = Color(0xFFD4AF37))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Qiyam / Teravih", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                        Text("$qiyamLogged Sessions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(if (lang == "ar") "قيام الليل / التراويح" else "Qiyam / Tarawih", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        Text(if (lang == "ar") "$qiyamLogged جلسة" else "$qiyamLogged Sessions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(12.dp))
                         Button(
                             onClick = { qiyamLogged++ },
@@ -1165,7 +1165,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Lat: %.4f • Lng: %.4f".format(lat, lng),
+                        text = if (lang == "ar") "خط العرض: %.4f • خط الطول: %.4f".format(lat, lng) else "Lat: %.4f • Lng: %.4f".format(lat, lng),
                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
