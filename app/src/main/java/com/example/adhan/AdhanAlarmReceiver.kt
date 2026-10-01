@@ -9,11 +9,11 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.core.content.ContextCompat
 
 class AdhanAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -42,21 +42,21 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build()
-            val channel = NotificationChannel(channelId, "الأذان", NotificationManager.IMPORTANCE_HIGH).apply {
-                setSound(sound, attrs)
-                description = "تنبيهات مواقيت الصلاة"
-                enableVibration(true)
-            }
-            manager?.createNotificationChannel(channel)
+            manager?.createNotificationChannel(
+                NotificationChannel(channelId, "الأذان", NotificationManager.IMPORTANCE_HIGH).apply {
+                    setSound(sound, attrs)
+                    description = "تنبيهات مواقيت الصلاة"
+                    enableVibration(true)
+                }
+            )
         }
 
         val openApp = PendingIntent.getActivity(
-            context, prayerName.hashCode(),
-            Intent(context, MainActivity::class.java),
+            context, prayerName.hashCode(), Intent(context, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(com.example.R.drawable.ic_launcher_foreground)
+            .setSmallIcon(com.example.R.drawable.ic_notification_adhan)
             .setContentTitle("حان وقت صلاة $prayerName")
             .setContentText("الله أكبر، حي على الصلاة")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
