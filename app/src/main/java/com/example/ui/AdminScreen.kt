@@ -1014,7 +1014,7 @@ fun BroadcastsTab(viewModel: AppViewModel) {
         // Analytics Cards
         item {
             Text(
-                text = "مؤشرات أداء البث والإرسال", 
+                text = "إحصاءات محلية متاحة", 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 16.sp, 
                 color = Color(0xFFD4AF37)
@@ -1022,9 +1022,9 @@ fun BroadcastsTab(viewModel: AppViewModel) {
             Spacer(modifier = Modifier.height(6.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 listOf(
-                    Triple("المستخدمون النشطون", "١،٢٤٠", "+١٤٪ نمو فصلي"),
-                    Triple("نسبة نجاح التسليم", "٩٩.٨٪", "تسليم ناجح"),
-                    Triple("معدل تفاعل المصلين", "٨٤.٢٪", "معدل تفاعل ممتاز")
+                    Triple("الإشعارات المسجلة", logs.size.toString(), "محليًا على الجهاز"),
+                    Triple("حالة الإرسال", "غير متاح", "لا يوجد بث فوري حاليًا"),
+                    Triple("التفاعل", "غير متاح", "لا توجد تحليلات خادم حاليًا")
                 ).forEach { (title, valStr, desc) ->
                     Card(
                         modifier = Modifier.weight(1f),
@@ -1047,7 +1047,7 @@ fun BroadcastsTab(viewModel: AppViewModel) {
         // Notification History
         item {
             Text(
-                text = "سجل الرسائل والبث السابق في المنصة", 
+                text = "سجل الإشعارات المسجلة", 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 16.sp, 
                 color = Color(0xFFD4AF37)
@@ -1055,7 +1055,7 @@ fun BroadcastsTab(viewModel: AppViewModel) {
         }
 
         if (logs.isEmpty()) {
-            item { Text("لا يوجد سجلات بث تاريخية في قاعدة البيانات حالياً.", color = Color.Gray) }
+            item { Text("لا توجد إشعارات مسجلة حاليًا.", color = Color.Gray) }
         } else {
             items(logs) { log ->
                 Card(
@@ -1078,7 +1078,7 @@ fun BroadcastsTab(viewModel: AppViewModel) {
                             "Local Mosque" -> "المسجد المحلي"
                             else -> log.audience
                         }
-                        Text("الشريحة المستهدفة: $localAudience • الحالة: تم التسليم بنجاح لكافة المشتركين", fontSize = 11.sp, color = Color(0xFF1E5E3A), fontWeight = FontWeight.Bold)
+                        Text("الشريحة المستهدفة: $localAudience • الحالة: مسجل محليًا فقط", fontSize = 11.sp, color = Color(0xFF1E5E3A), fontWeight = FontWeight.Bold)
                     }
                 }
             }
