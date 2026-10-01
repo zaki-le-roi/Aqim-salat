@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.app.Application
+import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
@@ -799,7 +800,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun toggleNotifications(enabled: Boolean) {
-        viewModelScope.launch { repo.setNotificationsEnabled(enabled); AdhanScheduler.schedule(getApplication()) }
+        val appContext = getApplication<Application>().applicationContext
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = appContext.getSystemService(AlarmManager::class.java)
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                runCatching {
+                    val intent = Intent(
+                        android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                        Uri.parse("package:$appContext.packageName")
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    appContext.startActivity(intent)
+                }
+                return
+            }
+        }
+        viewModelScope.launch {
+            repo.setNotificationsEnabled(enabled)
+            AdhanScheduler.schedule(appContext)
+        }
     }
 
     fun setAthanVoices(fajr: String, other: String) {
