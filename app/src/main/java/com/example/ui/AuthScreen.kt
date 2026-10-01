@@ -519,7 +519,7 @@ fun AuthScreen(
                                                 country = countryInput,
                                                 city = cityInput,
                                                 onSuccess = {
-                                                    Toast.makeText(context, if (lang == "ar") "أهلاً بك! تم إنشاء عضويتك المباركة والحصول على 150 نقطة هدية 🎁" else "Welcome! Your membership was created with 150 bonus points 🎁", Toast.LENGTH_LONG).show()
+                                                    Toast.makeText(context, if (lang == "ar") "أهلاً بك! تم إنشاء عضويتك، وأضيفت 150 نقطة داخل التطبيق." else "Welcome! Your membership was created, and 150 in-app points were added.", Toast.LENGTH_LONG).show()
                                                 },
                                                 onFailure = { err -> errorMessage = err }
                                             )
