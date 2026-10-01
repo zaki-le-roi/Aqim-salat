@@ -507,28 +507,7 @@ fun SupportScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    if (false) {
-                                        Column(
-                                            modifier = Modifier.padding(24.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Icon(Icons.Filled.Star, contentDescription = if (lang == "ar") "نجمة" else "Star", tint = Color(0xFFFFD700), modifier = Modifier.size(56.dp))
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Text(
-                                                if (lang == "ar") "شكراً جزيلاً لتقييمك الطيب!" else "Thank you for your rating!",
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(6.dp))
-                                            Text(
-                                                if (lang == "ar") "تقييماتكم تساعدنا على البقاء وتطوير التطبيق وخدمة المزيد من المسلمين."
-                                                else "Your kind feedback helps us improve and reach more Muslims worldwide.",
-                                                fontSize = 12.sp,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
-                                    } else {
+                                    
                                         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                             Text(
                                                 if (lang == "ar") "شاركنا تقييمك ودعمك للتطبيق" else "Rate and support Aqim Salah",
