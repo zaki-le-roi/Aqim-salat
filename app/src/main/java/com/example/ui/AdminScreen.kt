@@ -588,31 +588,31 @@ fun ContentTab(viewModel: AppViewModel) {
                             if (contentType == "HADITH") {
                                 if (arabicInput.isNotBlank()) {
                                     viewModel.insertAdminHadith(AdminHadith(collection = categoryInput, number = numberInput, arabic = arabicInput, english = translationInput, reference = referenceInput))
-                                    Toast.makeText(context, "تم حفظ الحديث في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ الحديث في قاعدة بيانات التطبيق المحلية؛ لا يُنشر تلقائيًا في شاشة الأحاديث العامة.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else if (contentType == "ADHKAR") {
                                 if (arabicInput.isNotBlank()) {
                                     viewModel.insertAdminAdhkar(AdminAdhkar(category = categoryInput, title = titleInput, arabic = arabicInput, english = translationInput, countGoal = numberInput.toIntOrNull() ?: 33))
-                                    Toast.makeText(context, "تم حفظ الذكر في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ الذكر في قاعدة بيانات التطبيق المحلية؛ لا يُنشر تلقائيًا في شاشة الأذكار العامة.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else if (contentType == "DUA") {
                                 if (arabicInput.isNotBlank()) {
                                     viewModel.insertAdminDua(AdminDua(category = categoryInput, arabic = arabicInput, translation = translationInput, transliteration = titleInput, source = referenceInput))
-                                    Toast.makeText(context, "تم حفظ الدعاء في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ الدعاء في قاعدة بيانات التطبيق المحلية؛ لا يُنشر تلقائيًا في شاشة الأدعية العامة.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else if (contentType == "ARTICLE") {
                                 if (titleInput.isNotBlank()) {
                                     viewModel.insertAdminArticle(AdminArticle(title = titleInput, content = translationInput, category = categoryInput, imageUri = referenceInput))
-                                    Toast.makeText(context, "تم حفظ المقال في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ المقال في قاعدة بيانات التطبيق المحلية؛ لا يُنشر تلقائيًا في قسم المقالات.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             } else {
                                 if (titleInput.isNotBlank()) {
                                     viewModel.insertAdminBannerReminder(AdminBannerReminder(type = contentType, title = titleInput, content = translationInput, imageUrl = referenceInput))
-                                    Toast.makeText(context, "تم حفظ التنبيه في قاعدة بيانات التطبيق.", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "تم حفظ التنبيه في قاعدة بيانات التطبيق المحلية؛ لا يتم بثه للمستخدمين تلقائيًا.", Toast.LENGTH_SHORT).show()
                                     clearForm()
                                 }
                             }
