@@ -50,6 +50,7 @@ fun HomeScreen(
     val isPlaying by viewModel.isAthanPlaying.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
     val loggedInMember by viewModel.loggedInMember.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     // Clock state
     var liveClockTime by remember { mutableStateOf("") }
@@ -318,9 +319,22 @@ fun HomeScreen(
 
                     Icon(
                         imageVector = Icons.Filled.Share,
-                        contentDescription = "Share",
+                        contentDescription = if (lang == "ar") "مشاركة" else "Share",
                         tint = Color(0xFF333333),
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable {
+                                val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(
+                                        android.content.Intent.EXTRA_TEXT,
+                                        if (lang == "ar") "التاريخ الهجري اليوم: $hijriDate" else "Today's Hijri date: $hijriDate"
+                                    )
+                                }
+                                runCatching {
+                                    context.startActivity(android.content.Intent.createChooser(shareIntent, null))
+                                }
+                            }
                     )
                 }
             }
@@ -782,7 +796,7 @@ fun HomeScreen(
                     Triple("HISN_AL_MUSLIM", if (lang == "ar") "حصن المسلم" else "Hisn Al-Muslim", Color(0xFF2E7D32)),
                     Triple("CALENDAR", if (lang == "ar") "التقويم" else "Calendar", Color(0xFF6A1B9A)),
                     Triple("QIBLA", if (lang == "ar") "القبلة" else "Qibla", Color(0xFF00897B)),
-                    Triple("ON_THIS_DAY", if (lang == "ar") "السيرة" else "Seerah", Color(0xFF795548)),
+                    Triple("SEERAH", if (lang == "ar") "السيرة" else "Seerah", Color(0xFF795548)),
                     Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Color(0xFF1565C0)),
                     Triple("QURAN", if (lang == "ar") "المصحف" else "Quran", Color(0xFF2E7D32)),
                     Triple("MORE_MENU", if (lang == "ar") "المزيد" else "More", Color(0xFF455A64)),
@@ -934,7 +948,7 @@ fun HomeScreen(
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
-                                    .clickable { onNavigateToFeature("DONATIONS") }
+                                    .clickable { onNavigateToFeature("ZAKAT") }
                             )
 
                             // Page dots indicators
