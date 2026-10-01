@@ -47,6 +47,7 @@ fun AuthScreen(
     // Form Inputs
     var nameInput by remember { mutableStateOf("") }
     var emailInput by remember { mutableStateOf("") }
+    var passwordInput by remember { mutableStateOf("") }
     var countryInput by remember { mutableStateOf("مصر") }
     var cityInput by remember { mutableStateOf("القاهرة") }
     
