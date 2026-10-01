@@ -195,8 +195,8 @@ fun HomeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = if (isPlaying) Icons.Filled.VolumeUp else Icons.Filled.Notifications,
-                                    contentDescription = if (lang == "ar") "الإشعارات" else "Notifications",
+                                    imageVector = if (isPlaying) Icons.Filled.VolumeUp else Icons.Filled.Settings,
+                                    contentDescription = if (lang == "ar") "الإعدادات" else "Settings",
                                     tint = Color(0xFFD4AF37),
                                     modifier = Modifier.size(20.dp)
                                 )
