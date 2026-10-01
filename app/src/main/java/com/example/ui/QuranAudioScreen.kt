@@ -261,7 +261,10 @@ fun QuranAudioScreen(
 
                 Slider(
                     value = sliderPosition,
-                    onValueChange = { sliderPosition = it },
+                    onValueChange = {
+                        sliderPosition = it
+                        mediaPlayer?.seekTo((it * 1000).toInt())
+                    },
                     valueRange = 0f..totalDurationSeconds.toFloat(),
                     colors = SliderDefaults.colors(
                         thumbColor = Color(0xFFD4AF37),
