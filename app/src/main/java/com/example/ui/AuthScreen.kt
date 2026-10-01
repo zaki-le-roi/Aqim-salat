@@ -240,7 +240,7 @@ fun AuthScreen(
                                         fontSize = 15.sp
                                     )
                                     Text(
-                                        text = if (lang == "ar") "سجّل محافظتك على صلوات اليوم لنفسك، وتحصل على +50 نقطة بركة مرة واحدة يوميًا." else "Log your daily prayers for your own tracking and earn +50 Barakah points once per day.",
+                                        text = if (lang == "ar") "سجّل محافظتك على صلوات اليوم لنفسك، وتحصل على +50 نقطة داخل التطبيق مرة واحدة يوميًا." else "Log your daily prayers for your own tracking and earn +50 in-app points once per day.",
                                         color = Color.White.copy(alpha = 0.8f),
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
@@ -253,7 +253,7 @@ fun AuthScreen(
                                             viewModel.updateMemberPoints(member.id, 50)
                                             rewardPrefs.edit().putBoolean("prayer_$rewardDay", true).apply()
                                             prayerRewardClaimed = true
-                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل الورد اليومي وإضافة 50 نقطة بركة لهذا اليوم." else "Daily prayer log recorded and 50 Barakah points added for today.", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل الورد اليومي وإضافة 50 نقطة داخل التطبيق لهذا اليوم." else "Daily prayer log recorded and 50 in-app points added for today.", Toast.LENGTH_LONG).show()
                                         } else {
                                             Toast.makeText(context, if (lang == "ar") "تم تسجيل مكافأة الصلوات لهذا اليوم بالفعل." else "Today's prayer reward has already been recorded.", Toast.LENGTH_SHORT).show()
                                         }
