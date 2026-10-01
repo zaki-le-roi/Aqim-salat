@@ -289,7 +289,7 @@ fun AuthScreen(
                                         fontSize = 15.sp
                                     )
                                     Text(
-                                        text = if (lang == "ar") "سجّل إكمالك لورد الأذكار أو التسبيح الصباحي والمسائي لتحصل على +30 نقطة بركة مرة واحدة يوميًا." else "Log your completed morning/evening adhkar or tasbih to earn +30 Barakah points once per day.",
+                                        text = if (lang == "ar") "سجّل إكمالك لورد الأذكار أو التسبيح الصباحي والمسائي لتحصل على +30 نقطة داخل التطبيق مرة واحدة يوميًا." else "Log your completed morning/evening adhkar or tasbih to earn +30 in-app points once per day.",
                                         color = Color.White.copy(alpha = 0.8f),
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
@@ -302,7 +302,7 @@ fun AuthScreen(
                                             viewModel.updateMemberPoints(member.id, 30)
                                             rewardPrefs.edit().putBoolean("adhkar_$rewardDay", true).apply()
                                             adhkarRewardClaimed = true
-                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل ورد الأذكار وإضافة 30 نقطة بركة لهذا اليوم." else "Daily adhkar log recorded and 30 Barakah points added for today.", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل ورد الأذكار وإضافة 30 نقطة داخل التطبيق لهذا اليوم." else "Daily adhkar log recorded and 30 in-app points added for today.", Toast.LENGTH_LONG).show()
                                         } else {
                                             Toast.makeText(context, if (lang == "ar") "تم تسجيل مكافأة الأذكار لهذا اليوم بالفعل." else "Today's adhkar reward has already been recorded.", Toast.LENGTH_SHORT).show()
                                         }
