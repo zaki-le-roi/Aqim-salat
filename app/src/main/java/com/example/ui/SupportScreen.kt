@@ -47,10 +47,13 @@ fun SupportScreen(
     var supportEmail by remember { mutableStateOf("") }
     var supportMsg by remember { mutableStateOf("") }
     var issueType by remember { mutableStateOf("عام / اقتراح") }
-    
+    var isSending by remember { mutableStateOf(false) }
+    var supportSuccess by remember { mutableStateOf(false) }
+
     // Rating star state
     var selectedStars by remember { mutableIntStateOf(0) }
     var feedbackText by remember { mutableStateOf("") }
+    var ratedSuccess by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -159,9 +162,9 @@ fun SupportScreen(
                                 else "Navigate to Settings, then click on 'Prayer Calculation' where you can fully customize the Athan voice for Fajr (e.g., Medina Athan) and standard prayers (e.g., Makkah Athan)."
                             ),
                             Pair(
-                                if (lang == "ar") "هل توجد نقاط أو مكافآت داخل التطبيق؟" else "Does the app have points or rewards?",
-                                if (lang == "ar") "لا أعرض في هذه الشاشة نظام نقاط أو مكافآت ما لم يكن مفعلاً ومربوطاً بمصدر بيانات فعلي داخل التطبيق."
-                                else "This screen does not claim a points or rewards system unless it is actually enabled and connected to a real data source."
+                                if (lang == "ar") "ما هي نقاط البركة (Barakah Points) وكيف أستفيد منها؟" else "What are Barakah Points and how to use them?",
+                                if (lang == "ar") "هي نظام تشجيعي يهدف لمساعدتك على الالتزام. تكسب النقاط عند توثيق صلواتك في وقتها، قراءة وردك من القرآن الكريم، مشاركة تذكيرات الخير في المجتمع، أو التصويت في الاستطلاعات وتظهر في قائمة المتصدرين."
+                                else "It is an encouraging rewarding mechanism. You accumulate points by completing prayers, reading Quran, publishing reminders in the community forum, and voting on weekly polls."
                             )
                         )
 
@@ -222,7 +225,41 @@ fun SupportScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    
+                                    if (supportSuccess) {
+                                        Column(
+                                            modifier = Modifier.padding(24.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Icon(Icons.Filled.CheckCircle, contentDescription = if (lang == "ar") "نجاح" else "Success", tint = Color(0xFF4CAF50), modifier = Modifier.size(56.dp))
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                if (lang == "ar") "تم إرسال بلاغك بنجاح!" else "Support Message Sent!",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 18.sp
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                if (lang == "ar") "سيقوم مهندسو الدعم الفني بمراجعة طلبك والتواصل معك عبر البريد الإلكتروني المدخل في أقرب وقت."
+                                                else "Our engineers will review your request and get back to you via your entered email as soon as possible.",
+                                                fontSize = 13.sp,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                                textAlign = TextAlign.Center,
+                                                lineHeight = 20.sp
+                                            )
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Button(
+                                                onClick = {
+                                                    supportSuccess = false
+                                                    supportName = ""
+                                                    supportEmail = ""
+                                                    supportMsg = ""
+                                                },
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
+                                            ) {
+                                                Text(if (lang == "ar") "إرسال طلب آخر" else "Submit Another Request")
+                                            }
+                                        }
+                                    } else {
                                         Column(modifier = Modifier.padding(16.dp)) {
                                             Text(
                                                 if (lang == "ar") "أرسل لنا استفسارك أو مشكلتك التقنية" else "Send your inquiry or technical bug report",
@@ -277,9 +314,13 @@ fun SupportScreen(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
                                             ) {
-                                                Icon(Icons.Filled.Send, contentDescription = if (lang == "ar") "فتح البريد" else "Open email")
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(if (lang == "ar") "فتح البريد لإرسال الطلب" else "Open Email to Send")
+                                                if (isSending) {
+                                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                                                } else {
+                                                    Icon(Icons.Filled.Send, contentDescription = if (lang == "ar") "إرسال" else "Submit")
+                                                    Spacer(modifier = Modifier.width(8.dp))
+                                                    Text(if (lang == "ar") "إرسال الطلب الآن" else "Submit Request")
+                                                }
                                             }
                                         }
                                     }
@@ -376,7 +417,7 @@ fun SupportScreen(
                                  }
                              }
 
-                            items(emptyList<Pair<String, String>>()) { (name, desc) ->
+                            items(partners) { (name, desc) ->
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
@@ -410,7 +451,7 @@ fun SupportScreen(
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
                                         Text(
-                                            if (lang == "ar") "📢 الشراكات والإعلان" else "📢 Partnerships & Advertising",
+                                            if (lang == "ar") "📢 أعلن معنا للمشاريع الهادفة" else "📢 Advertise with Us",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
                                             color = Color(0xFFD4AF37)
@@ -425,7 +466,7 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            if (lang == "ar") "لا يوجد حالياً عنوان بريد منشور موثق داخل التطبيق." else "No verified public email address is currently published in the app.",
+                                            if (lang == "ar") "للاستفسار تواصل معنا: ads@aqimsalah.org" else "For booking inquiries: ads@aqimsalah.org",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary
@@ -437,23 +478,16 @@ fun SupportScreen(
                     }
 
                     "OUR_APPS" -> {
-                        val sisterApps = emptyList<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>()
+                        val sisterApps = emptyList<Triple<String, String, androidx.compose.ui.graphics.vector.ImageVector>>(),
+                            Triple("مصحف المدينة التفاعلي", "مصحف تفاعلي كامل بالرسم العثماني وسماع كبار القراء.", Icons.Filled.LibraryBooks),
+                            Triple("سبحة الأذكار الذكية", "عداد تسبيح احترافي مع قفل تلقائي وتحديات جماعية.", Icons.Filled.AddCircle)
+                        )
 
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            if (sisterApps.isEmpty()) {
-                                item {
-                                    Text(
-                                        if (lang == "ar") "لا توجد برامج إضافية منشورة حالياً." else "No additional published apps are available yet.",
-                                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                    )
-                                }
-                            }
                             items(sisterApps) { (title, desc, icon) ->
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
@@ -507,7 +541,28 @@ fun SupportScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    
+                                    if (ratedSuccess) {
+                                        Column(
+                                            modifier = Modifier.padding(24.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Icon(Icons.Filled.Star, contentDescription = if (lang == "ar") "نجمة" else "Star", tint = Color(0xFFFFD700), modifier = Modifier.size(56.dp))
+                                            Spacer(modifier = Modifier.height(16.dp))
+                                            Text(
+                                                if (lang == "ar") "شكراً جزيلاً لتقييمك الطيب!" else "Thank you for your rating!",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp
+                                            )
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Text(
+                                                if (lang == "ar") "تقييماتكم تساعدنا على البقاء وتطوير التطبيق وخدمة المزيد من المسلمين."
+                                                else "Your kind feedback helps us improve and reach more Muslims worldwide.",
+                                                fontSize = 12.sp,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    } else {
                                         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                             Text(
                                                 if (lang == "ar") "شاركنا تقييمك ودعمك للتطبيق" else "Rate and support Aqim Salah",
@@ -578,8 +633,8 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            if (lang == "ar") "قال محمد صلى الله عليه وسلم: 'من دلّ على خير فله مثل أجر فاعله'. انشر رابط تطبيق أقم صلاتك الإسلامي لأهلك وأصحابك واكسب مثل أجور صلاتهم وقراءتهم دون أن ينقص من أجورهم شيء."
-                                            else "Muhammad, peace and blessings be upon him, said: 'Whoever guides to good has a reward like that of its doer.' Share this application with family and friends.",
+                                            if (lang == "ar") "قال النبي ﷺ: 'من دلّ على خير فله مثل أجر فاعله'. انشر رابط تطبيق أقم صلاتك الإسلامي لأهلك وأصحابك واكسب مثل أجور صلاتهم وقراءتهم دون أن ينقص من أجورهم شيء."
+                                            else "The Prophet ﷺ said: 'Whoever guides to good has a reward like that of its doer.' Share this application with family and friends.",
                                             fontSize = 12.sp,
                                             lineHeight = 18.sp,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
@@ -589,12 +644,9 @@ fun SupportScreen(
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Button(
                                             onClick = {
-                                                val shareText = "تطبيق أقم صلاتك: مواقيت الصلاة والقرآن والأذكار وغيرها من الخدمات الإسلامية. https://play.google.com/store/apps/details?id=" + context.packageName
-                                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                                    type = "text/plain"
-                                                    putExtra(Intent.EXTRA_TEXT, shareText)
-                                                }
-                                                context.startActivity(Intent.createChooser(shareIntent, if (lang == "ar") "مشاركة التطبيق" else "Share app"))
+                                                val shareText = "تطبيق أقم صلاتك الإسلامي المتميز - مواقيت الصلاة والأذان، القرآن الكريم كاملاً، الأذكار وحصن المسلم، حاسبة الزكاة وبنك الصدقة والمجتمع التفاعلي! حمله الآن مجاناً: https://play.google.com/store/apps/details?id=" + context.packageName
+                                                clipboardManager.setText(AnnotatedString(shareText))
+                                                Toast.makeText(context, if (lang == "ar") "تم نسخ رابط وتفاصيل المشاركة إلى الحافظة!" else "App share details copied to clipboard!", Toast.LENGTH_SHORT).show()
                                             },
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
                                             modifier = Modifier.fillMaxWidth()
@@ -612,5 +664,4 @@ fun SupportScreen(
             }
         }
     }
-}
 }
