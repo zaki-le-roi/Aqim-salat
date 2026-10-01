@@ -77,13 +77,24 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.Palette,
                 title = if (lang == "ar") "سمة التطبيق" else "Theme Configuration",
-                subtitle = "Active: $activeThemeVal Mode",
+                subtitle = if (lang == "ar") "الوضع الحالي: " + when(activeThemeVal) { "LIGHT" -> "فاتح"; "DARK" -> "داكن"; "AMOLED" -> "أسود عميق"; else -> "تلقائي" } else "Current: $activeThemeVal",
                 tag = "setting_theme",
                 onClick = { activeDialog = "THEME" }
             )
         }
 
 
+
+        // 2. Language
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.Language,
+                title = Translations.get("language", lang),
+                subtitle = if (lang == "ar") "العربية" else "English",
+                tag = "setting_language",
+                onClick = { activeDialog = "LANG" }
+            )
+        }
 
         // 3. Notifications Manager
         item {
@@ -139,7 +150,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.SettingsInputComponent,
                 title = if (lang == "ar") "حساب المواقيت والمذهب" else "Prayer Calculation",
-                subtitle = "Method: $methodVal • Madhab: $madhabVal",
+                subtitle = if (lang == "ar") "الطريقة: $methodVal • المذهب: $madhabVal" else "Method: $methodVal • Madhab: $madhabVal",
                 tag = "setting_calculation",
                 onClick = { activeDialog = "CALC" }
             )
@@ -150,7 +161,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.RecordVoiceOver,
                 title = if (lang == "ar") "قارئ القرآن الافتراضي" else "Audio Settings",
-                subtitle = "Choose recitation audio preferences",
+                subtitle = if (lang == "ar") "اختر إعدادات الاستماع إلى التلاوة" else "Choose recitation audio preferences",
                 tag = "setting_audio",
                 onClick = { activeDialog = "AUDIO" }
             )
@@ -161,7 +172,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.CloudDownload,
                 title = if (lang == "ar") "إدارة التنزيلات" else "Downloads Manager",
-                subtitle = "Manage cached audio, offline files & storage",
+                subtitle = if (lang == "ar") "إدارة الملفات الصوتية المخزنة" else "Manage cached audio and storage",
                 tag = "setting_downloads",
                 onClick = { activeDialog = "DOWNLOADS" }
             )
@@ -172,7 +183,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.Backup,
                 title = if (lang == "ar") "النسخ الاحتياطي والمزامنة" else "Backup & Sync",
-                subtitle = "Secure local statistics, logs & bookmarked lists",
+                subtitle = if (lang == "ar") "حماية الإحصاءات والسجلات والمحفوظات" else "Secure local statistics, logs & bookmarks",
                 tag = "setting_backup",
                 onClick = { activeDialog = "BACKUP" }
             )
@@ -183,7 +194,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.Security,
                 title = if (lang == "ar") "الخصوصية والأذونات" else "Privacy & Security",
-                subtitle = "GPS location, terms, and conditions of use",
+                subtitle = if (lang == "ar") "أذونات الموقع وشروط الاستخدام" else "Location permissions and terms",
                 tag = "setting_privacy",
                 onClick = { activeDialog = "PRIVACY" }
             )
@@ -194,7 +205,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.Accessibility,
                 title = if (lang == "ar") "سهولة الاستخدام" else "Accessibility",
-                subtitle = "Customize font sizes, haptics & zoom levels",
+                subtitle = if (lang == "ar") "تخصيص حجم الخط والاهتزاز والتكبير" else "Customize font size, haptics and zoom",
                 tag = "setting_accessibility",
                 onClick = { activeDialog = "ACCESSIBILITY" }
             )
@@ -202,6 +213,40 @@ fun SettingsScreen(
     }
 
     // --- Interactive Dialogue Handlers ---
+
+    // B. Language Selector
+    if (activeDialog == "LANG") {
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "لغة التطبيق" else "App language", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    languages.forEach { (code, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setAppLanguage(code)
+                                    activeDialog = null
+                                }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = lang == code, onClick = {
+                                viewModel.setAppLanguage(code)
+                                activeDialog = null
+                            })
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(if (code == "ar") "العربية" else "English", fontSize = 16.sp)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { activeDialog = null }) { Text(if (lang == "ar") "إغلاق" else "Close") }
+            }
+        )
+    }
 
     // A. Theme Selector Dialog
     if (activeDialog == "THEME") {
