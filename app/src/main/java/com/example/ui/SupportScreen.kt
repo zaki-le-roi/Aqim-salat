@@ -233,7 +233,7 @@ fun SupportScreen(
                                             Icon(Icons.Filled.CheckCircle, contentDescription = if (lang == "ar") "نجاح" else "Success", tint = Color(0xFF4CAF50), modifier = Modifier.size(56.dp))
                                             Spacer(modifier = Modifier.height(16.dp))
                                             Text(
-                                                if (lang == "ar") "تم إرسال بلاغك بنجاح!" else "Support Message Sent!",
+                                                if (lang == "ar") "تم فتح تطبيق البريد لإرسال طلب الدعم." else "Email app opened for your support request.",
                                                 fontWeight = FontWeight.Bold,
                                                 fontSize = 18.sp
                                             )
