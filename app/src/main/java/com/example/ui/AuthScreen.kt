@@ -29,6 +29,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.AppMember
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +43,10 @@ fun AuthScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val rewardPrefs = remember { context.getSharedPreferences("member_daily_rewards", android.content.Context.MODE_PRIVATE) }
+    val rewardDay = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
+    var prayerRewardClaimed by remember { mutableStateOf(rewardPrefs.getBoolean("prayer_$rewardDay", false)) }
+    var adhkarRewardClaimed by remember { mutableStateOf(rewardPrefs.getBoolean("adhkar_$rewardDay", false)) }
     val loggedInMember by viewModel.loggedInMember.collectAsState()
     
     var isRegisterMode by remember { mutableStateOf(true) }
@@ -242,8 +249,14 @@ fun AuthScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Button(
                                     onClick = {
-                                        viewModel.updateMemberPoints(member.id, 50)
-                                        Toast.makeText(context, if (lang == "ar") "تم تسجيل صلواتك بنجاح! نلت +50 نقطة بركة 🎉" else "Your prayers were recorded! You earned +50 Barakah points 🎉", Toast.LENGTH_LONG).show()
+                                        if (!prayerRewardClaimed) {
+                                            viewModel.updateMemberPoints(member.id, 50)
+                                            rewardPrefs.edit().putBoolean("prayer_$rewardDay", true).apply()
+                                            prayerRewardClaimed = true
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل الورد اليومي وإضافة 50 نقطة بركة لهذا اليوم." else "Daily prayer log recorded and 50 Barakah points added for today.", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل مكافأة الصلوات لهذا اليوم بالفعل." else "Today's prayer reward has already been recorded.", Toast.LENGTH_SHORT).show()
+                                        }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                                     shape = RoundedCornerShape(12.dp)
@@ -285,8 +298,14 @@ fun AuthScreen(
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Button(
                                     onClick = {
-                                        viewModel.updateMemberPoints(member.id, 30)
-                                        Toast.makeText(context, if (lang == "ar") "تم توثيق الذكر بنجاح! نلت +30 نقطة بركة 🌟" else "Adhkar recorded! You earned +30 Barakah points 🌟", Toast.LENGTH_LONG).show()
+                                        if (!adhkarRewardClaimed) {
+                                            viewModel.updateMemberPoints(member.id, 30)
+                                            rewardPrefs.edit().putBoolean("adhkar_$rewardDay", true).apply()
+                                            adhkarRewardClaimed = true
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل ورد الأذكار وإضافة 30 نقطة بركة لهذا اليوم." else "Daily adhkar log recorded and 30 Barakah points added for today.", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            Toast.makeText(context, if (lang == "ar") "تم تسجيل مكافأة الأذكار لهذا اليوم بالفعل." else "Today's adhkar reward has already been recorded.", Toast.LENGTH_SHORT).show()
+                                        }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
                                     shape = RoundedCornerShape(12.dp)
