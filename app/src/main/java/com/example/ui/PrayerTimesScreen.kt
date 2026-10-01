@@ -258,7 +258,7 @@ fun PrayerTimesScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = if (lang == "ar") "مواقيت الشهر الفضيل" else if (lang == "tr") "Aylık Vakitler" else "Monthly Timetable",
+                                text = if (lang == "ar") "مواقيت الشهر" else if (lang == "tr") "Aylık Vakitler" else "Monthly Timetable",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -444,9 +444,7 @@ fun PrayerTimesScreen(
                                 onClick = { showLocationDialog = true },
                                 shape = RoundedCornerShape(16.dp),
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                                modifier = Modifier
-                                    .testTag("change_location_button")
-                                    .clickable { showLocationDialog = true }
+                                modifier = Modifier.testTag("change_location_button")
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
