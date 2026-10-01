@@ -50,6 +50,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = AppRepository(db, context)
     private val pollsPrefs = context.getSharedPreferences("local_polls", Context.MODE_PRIVATE)
     private val audioPrefs = context.getSharedPreferences("audio_preferences", Context.MODE_PRIVATE)
+    private val accessibilityPrefs = context.getSharedPreferences("accessibility_preferences", Context.MODE_PRIVATE)
+    private val _hapticsEnabled = MutableStateFlow(accessibilityPrefs.getBoolean("haptics_enabled", true))
+    val hapticsEnabled: StateFlow<Boolean> = _hapticsEnabled.asStateFlow()
+
+    fun setHapticsEnabled(enabled: Boolean) {
+        _hapticsEnabled.value = enabled
+        accessibilityPrefs.edit().putBoolean("haptics_enabled", enabled).apply()
+    }
     private val _defaultReciter = MutableStateFlow(
         audioPrefs.getString("default_reciter", "Mishary Al-Afasy") ?: "Mishary Al-Afasy"
     )
@@ -922,6 +930,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     // --- Haptic Feedback Utility ---
     private fun triggerHapticFeedback(long: Boolean = false) {
+        if (!_hapticsEnabled.value) return
         try {
             val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
