@@ -24,14 +24,16 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Make Gradle executable
-        run: chmod +x gradlew
+      - name: Set up Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.3.1"
 
       - name: Unit tests
-        run: ./gradlew test
+        run: gradle test
 
       - name: Debug APK
-        run: ./gradlew assembleDebug
+        run: gradle assembleDebug
 
       - name: Release AAB compile check
-        run: ./gradlew bundleRelease
+        run: gradle bundleRelease
