@@ -1100,17 +1100,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
         }
     }
 
-    // High quality fallback local list in case GPS or API connectivity is limited (Never display blank state!)
-    val fallbackBaseMosques = listOf(
-        LocalMosque(1L, "المسجد الحرام", "Al-Masjid al-Haram", 21.4225, 39.8262, "مكة المكرمة، المملكة العربية السعودية", "Makkah, Saudi Arabia"),
-        LocalMosque(2L, "مسجد عائشة الراجحي", "Aisha Al Rajhi Mosque", 21.3780, 39.8950, "مكة المكرمة، النسيم", "Makkah, Al Naseem"),
-        LocalMosque(3L, "مسجد التنعيم (مسجد عائشة)", "Al Taneem Mosque", 21.4880, 39.7990, "مكة المكرمة، التنعيم", "Makkah, Al Taneem"),
-        LocalMosque(4L, "المسجد النبوي", "Al-Masjid an-Nabawi", 24.4672, 39.6111, "المدينة المنورة، المملكة العربية السعودية", "Medina, Saudi Arabia"),
-        LocalMosque(5L, "مسجد قباء", "Quba Mosque", 24.4392, 39.6172, "المدينة المنورة، طريق الهجرة", "Medina, Hijrah Rd"),
-        LocalMosque(6L, "جامع السلطان أحمد (المسجد الأزرق)", "Sultan Ahmed Mosque", 41.0054, 28.9768, "إسطنبول، تركيا", "Istanbul, Turkey")
-    )
-
-    val baseMosques = if (realNearbyMosques.isNotEmpty()) realNearbyMosques else fallbackBaseMosques
+    val baseMosques = realNearbyMosques
 
     // Calculate distance helper
     fun calculateDist(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
