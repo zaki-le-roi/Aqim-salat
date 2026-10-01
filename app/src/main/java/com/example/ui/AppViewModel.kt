@@ -1191,18 +1191,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
             
-            // Seed a default Super Admin account
-            repo.allAdminAccounts.first().let { currentAdmins ->
-                if (currentAdmins.isEmpty()) {
-                    repo.insertAdminAccount(
-                        AdminAccount(
-                            email = "zakidj181@gmail.com",
-                            role = "Super Admin",
-                            permissions = "ALL"
-                        )
-                    )
-                }
-            }
         }
     }
 
