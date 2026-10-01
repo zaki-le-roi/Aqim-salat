@@ -169,6 +169,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         // Initialize Today's Prayer logs
         loadTodayLogs()
         calculateRamadanCountdown()
+        val fastingKey = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        _isFastingToday.value = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE).getBoolean(fastingKey, false)
         initCommunityAndPolls()
 
         // Fetch initial set of real mosques from Overpass around current coordinates
