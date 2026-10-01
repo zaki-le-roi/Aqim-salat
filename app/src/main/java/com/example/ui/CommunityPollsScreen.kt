@@ -155,7 +155,7 @@ fun CommunityPollsScreen(
                                                 if (postText.isNotBlank()) {
                                                     viewModel.addCommunityPost(postText)
                                                     postText = ""
-                                                    Toast.makeText(context, if (lang == "ar") "تم النشر بنجاح وحصلت على +5 نقاط بركة!" else "Published successfully! +5 Barakah points", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, if (lang == "ar") "تمت إضافة مشاركتك داخل جلسة التطبيق." else "Your post was added to this app session.", Toast.LENGTH_SHORT).show()
                                                 } else {
                                                     Toast.makeText(context, if (lang == "ar") "الرجاء كتابة شيء أولاً" else "Please write something first", Toast.LENGTH_SHORT).show()
                                                 }
@@ -269,7 +269,7 @@ fun CommunityPollsScreen(
                                                 color = Color(0xFFD4AF37)
                                             )
                                             Text(
-                                                if (lang == "ar") "استطلاعات تفاعلية حية، نتائج فورية بعد التصويت." else "Live interactive polls, results update instantly.",
+                                                if (lang == "ar") "استطلاعات محلية تفاعلية، وتُحفظ نتائج تصويتك على هذا الجهاز." else "Interactive local polls; your vote results are saved on this device.",
                                                 fontSize = 12.sp,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                             )
@@ -312,7 +312,7 @@ fun CommunityPollsScreen(
                                                     )
                                                     .clickable(enabled = !hasVoted) {
                                                         viewModel.voteInPoll(poll.id, index)
-                                                        Toast.makeText(context, if (lang == "ar") "شكراً لمشاركتك! +10 نقاط بركة" else "Thank you for voting! +10 points", Toast.LENGTH_SHORT).show()
+                                                        Toast.makeText(context, if (lang == "ar") "شكراً لمشاركتك! تم حفظ تصويتك على هذا الجهاز." else "Thank you for voting! Your vote was saved on this device.", Toast.LENGTH_SHORT).show()
                                                     }
                                             ) {
                                                 // Progress bar overlay when voted
