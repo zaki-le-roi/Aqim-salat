@@ -1427,7 +1427,7 @@ fun MembersTab(viewModel: AppViewModel) {
                             // Freeze/Unfreeze
                             IconButton(onClick = {
                                 viewModel.setMemberActiveState(member.id, !member.isActive)
-                                Toast.makeText(context, if (member.isActive) "تم تجميد حساب العضو بنجاح" else "تم تفعيل حساب العضو بنجاح", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, if (member.isActive) "تم تجميد سجل عضوية العضو بنجاح" else "تم تفعيل سجل عضوية العضو بنجاح", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(
                                     imageVector = if (member.isActive) Icons.Filled.Block else Icons.Filled.CheckCircle,
