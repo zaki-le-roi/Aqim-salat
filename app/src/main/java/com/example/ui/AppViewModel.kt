@@ -268,8 +268,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val hasCoarse = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
         
         if (!hasFine && !hasCoarse) {
-            // No permissions granted! Automatically fall back to IP Geolocation
-            detectLocationByIp()
+            // Exact prayer times and nearby-mosque ranking require device location.
+            // Never silently replace precise GPS with IP geolocation.
+            runCatching {
+                val settingsIntent = Intent(
+                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:$context.packageName")
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(settingsIntent)
+            }
             return
         }
         
@@ -1398,59 +1405,3 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         
-        // Reward user with 10 Barakah points for participating in polls!
-        loggedInMember.value?.let {
-            updateMemberPoints(it.id, 10)
-        }
-    }
-
-    fun updateFajrRecord(dateString: String, newStatus: String) {
-        _fajrRecords.value = _fajrRecords.value.map { rec ->
-            if (rec.dateString == dateString) {
-                rec.copy(status = newStatus)
-            } else {
-                rec
-            }
-        }
-        
-        // Give points for tracking Fajr prayer!
-        val addedPoints = when (newStatus) {
-            "CONGREGATION" -> 25 // 25 points for Congregation!
-            "INDIVIDUAL" -> 10   // 10 points for Individual!
-            else -> 0
-        }
-        if (addedPoints > 0) {
-            loggedInMember.value?.let {
-                updateMemberPoints(it.id, addedPoints)
-            }
-        }
-    }
-}
-
-data class CommunityPost(
-    val id: Int,
-    val authorName: String,
-    val authorCountry: String,
-    val content: String,
-    val likesCount: Int,
-    val isLiked: Boolean,
-    val timestamp: Long
-)
-
-data class CommunityPoll(
-    val id: Int,
-    val questionAr: String,
-    val questionEn: String,
-    val optionsAr: List<String>,
-    val optionsEn: List<String>,
-    val votes: List<Int>,
-    val totalVotes: Int,
-    val votedOptionIndex: Int? // null if not voted yet
-)
-
-data class FajrDayRecord(
-    val dayNameAr: String,
-    val dayNameEn: String,
-    val dateString: String,
-    val status: String // "NOT_SET", "CONGREGATION", "INDIVIDUAL", "MISSED", "EXCUSED"
-)
