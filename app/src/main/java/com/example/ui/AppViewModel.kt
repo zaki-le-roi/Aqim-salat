@@ -1084,84 +1084,56 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         onSuccess: (role: String, permissions: String) -> Unit,
         onFailure: (String) -> Unit
     ) {
-        viewModelScope.launch {
-            try {
-                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-                auth.signInWithEmailAndPassword(emailInput, passwordInput)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val user = auth.currentUser
-                            if (user != null && user.email != null) {
-                                val email = user.email!!.trim().lowercase()
-                                try {
-                                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                                    db.collection("admins").document(email).get()
-                                        .addOnCompleteListener { fsTask ->
-                                            if (fsTask.isSuccessful) {
-                                                val doc = fsTask.result
-                                                if (doc != null && doc.exists()) {
-                                                    val role = doc.getString("role") ?: "Moderator"
-                                                    val permissions = doc.getString("permissions") ?: "EDIT_CONTENT"
-                                                    onSuccess(role, permissions)
-                                                } else {
-                                                    if (email == "zakidj181@gmail.com") {
-                                                        // Auto-provision Super Admin document in Firestore
-                                                        val data = mapOf(
-                                                            "email" to email,
-                                                            "role" to "Super Admin",
-                                                            "permissions" to "ALL"
-                                                        )
-                                                        db.collection("admins").document(email).set(data)
-                                                        onSuccess("Super Admin", "ALL")
-                                                    } else {
-                                                        onFailure("Access denied. No admin record found in Firestore for $email.")
-                                                    }
-                                                }
-                                            } else {
-                                                if (email == "zakidj181@gmail.com") {
-                                                    onSuccess("Super Admin", "ALL")
-                                                } else {
-                                                    onFailure("Firestore query failed: ${fsTask.exception?.message}")
-                                                }
-                                            }
-                                        }
-                                } catch (e: Exception) {
-                                    val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
-                                    if (email == "zakidj181@gmail.com") {
-                                        onSuccess("Super Admin", "ALL")
-                                    } else if (matchedLocal != null) {
-                                        onSuccess(matchedLocal.role, matchedLocal.permissions)
-                                    } else {
-                                        onFailure("Firestore authorization failed: ${e.message}")
-                                    }
-                                }
-                            } else {
-                                onFailure("Authenticated user has no email address.")
-                            }
-                        } else {
-                            val errorMsg = task.exception?.message ?: "Unknown error"
-                            val email = emailInput.trim().lowercase()
-                            val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
-                            if ((email == "zakidj181@gmail.com" && passwordInput == "admin123") || 
-                                (matchedLocal != null && passwordInput == "admin123")) {
-                                onSuccess(if (email == "zakidj181@gmail.com") "Super Admin" else matchedLocal?.role ?: "Moderator", 
-                                          if (email == "zakidj181@gmail.com") "ALL" else matchedLocal?.permissions ?: "EDIT_CONTENT")
-                            } else {
-                                onFailure("Firebase Authentication failed: $errorMsg")
-                            }
-                        }
+        val email = emailInput.trim().lowercase()
+        if (email.isBlank() || passwordInput.isBlank()) {
+            onFailure("البريد الإلكتروني وكلمة المرور مطلوبان.")
+            return
+        }
+
+        try {
+            val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+            auth.signInWithEmailAndPassword(email, passwordInput)
+                .addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        onFailure("تعذر التحقق من بيانات الدخول.")
+                        return@addOnCompleteListener
                     }
-            } catch (e: Exception) {
-                val email = emailInput.trim().lowercase()
-                val matchedLocal = adminAccounts.value.find { it.email.trim().lowercase() == email }
-                if ((email == "zakidj181@gmail.com" && passwordInput == "admin123") || 
-                    (matchedLocal != null && passwordInput == "admin123")) {
-                    onSuccess(if (email == "zakidj181@gmail.com") "Super Admin" else matchedLocal?.role ?: "Moderator", 
-                              if (email == "zakidj181@gmail.com") "ALL" else matchedLocal?.permissions ?: "EDIT_CONTENT")
-                } else {
-                    onFailure("Firebase not initialized: ${e.message}. Testing credentials: zakidj181@gmail.com / admin123")
+
+                    val authenticatedEmail = auth.currentUser?.email?.trim()?.lowercase()
+                    if (authenticatedEmail.isNullOrBlank()) {
+                        auth.signOut()
+                        onFailure("حساب Firebase الموثق لا يحتوي على بريد إلكتروني.")
+                        return@addOnCompleteListener
+                    }
+
+                    val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    db.collection("admins").document(authenticatedEmail).get()
+                        .addOnSuccessListener { doc ->
+                            if (!doc.exists()) {
+                                auth.signOut()
+                                onFailure("هذا الحساب موثق لكنه غير مصرح له بالدخول إلى لوحة الإدارة.")
+                                return@addOnSuccessListener
+                            }
+
+                            val role = doc.getString("role")?.trim()
+                            val permissions = doc.getString("permissions")?.trim()
+                            val active = doc.getBoolean("isActive") ?: true
+
+                            if (!active || role.isNullOrBlank() || permissions.isNullOrBlank()) {
+                                auth.signOut()
+                                onFailure("حساب الإدارة غير نشط أو أن صلاحياته غير مكتملة.")
+                                return@addOnSuccessListener
+                            }
+
+                            onSuccess(role, permissions)
+                        }
+                        .addOnFailureListener {
+                            auth.signOut()
+                            onFailure("تعذر التحقق من صلاحيات الإدارة. حاول لاحقًا.")
+                        }
                 }
-            }
+        } catch (_: Exception) {
+            onFailure("خدمة المصادقة غير متاحة حاليًا.")
         }
     }
 
