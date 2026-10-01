@@ -673,7 +673,7 @@ fun SurahReader(
                 try {
                     isLoading = true
                     errorMsg = null
-                    val apiResult = QuranApiClient.fetchSurah(surah.id)
+                    val apiResult = QuranApiClient.fetchSurah(surah.id, lang)
                     verses = apiResult
                 } catch (e: Exception) {
                     errorMsg = "الرجاء التأكد من الاتصال بالإنترنت لعرض وتخزين السور."
@@ -1191,7 +1191,7 @@ fun SurahReader(
 
                                             if (ayah.translationText.isNotBlank()) {
                                                 Text(
-                                                    text = "التفسير الميسر:",
+                                                    text = if (lang == "ar") "التفسير الميسر:" else "Tafsir / meaning:",
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = goldAccent
