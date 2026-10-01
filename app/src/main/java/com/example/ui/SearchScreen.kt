@@ -198,7 +198,7 @@ fun SearchScreen(
                 when (selectedGroup) {
                     "QURAN" -> {
                         if (quranResults.isEmpty()) {
-                            NoResultsFound()
+                            NoResultsFound(lang)
                         } else {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
@@ -231,7 +231,7 @@ fun SearchScreen(
                     }
                     "HADITH" -> {
                         if (hadithResults.isEmpty()) {
-                            NoResultsFound()
+                            NoResultsFound(lang)
                         } else {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
@@ -277,7 +277,7 @@ fun SearchScreen(
                     }
                     "ADHKAR" -> {
                         if (adhkarResults.isEmpty()) {
-                            NoResultsFound()
+                            NoResultsFound(lang)
                         } else {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
