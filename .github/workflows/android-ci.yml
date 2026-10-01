@@ -1,4 +1,5 @@
 name: Android CI
+# Continuous verification for every main/security-hardening change
 
 on:
   push:
