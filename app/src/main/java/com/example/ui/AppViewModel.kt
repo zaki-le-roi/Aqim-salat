@@ -1399,9 +1399,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 poll.copy(
                     votes = newVotes,
                     totalVotes = poll.totalVotes + 1,
-                poll.copy(
-                    votes = newVotes,
-                    totalVotes = poll.totalVotes + 1,
                     votedOptionIndex = optionIndex
                 )
             } else {
