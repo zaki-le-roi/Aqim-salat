@@ -23,7 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private const val SERVICE_CARD_LANGUAGE = "ar"
+private var SERVICE_CARD_LANGUAGE = "ar"
 
 data class ServicesGridItem(
     val key: String,
