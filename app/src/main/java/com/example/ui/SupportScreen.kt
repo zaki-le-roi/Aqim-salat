@@ -239,8 +239,8 @@ fun SupportScreen(
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Text(
-                                                if (lang == "ar") "سيقوم مهندسو الدعم الفني بمراجعة طلبك والتواصل معك عبر البريد الإلكتروني المدخل في أقرب وقت."
-                                                else "Our engineers will review your request and get back to you via your entered email as soon as possible.",
+                                                if (lang == "ar") "لم يُرسل الطلب من داخل التطبيق. يمكنك مراجعة الرسالة التي أعددناها ثم الضغط على إرسال من تطبيق البريد."
+                                                else "The request was not sent by the app. Review the prepared message and press Send in your email app.",
                                                 fontSize = 13.sp,
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                                 textAlign = TextAlign.Center,
