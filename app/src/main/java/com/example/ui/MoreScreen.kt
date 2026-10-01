@@ -417,7 +417,7 @@ fun ServicesSectionCard(
                                 }
                                 Spacer(modifier = Modifier.height(7.dp))
                                 Text(
-                                    text = item.localizedTitle(currentLanguage),
+                                    text = item.localizedTitle(lang),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF20352B),
