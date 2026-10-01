@@ -1311,49 +1311,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun initCommunityAndPolls() {
-        if (_communityPosts.value.isNotEmpty()) return
-        
-        // Initial community posts
-        _communityPosts.value = listOf(
-            CommunityPost(
-                id = 1,
-                authorName = "عبد الله الأثري",
-                authorCountry = "السعودية",
-                content = "السلام عليكم ورحمة الله وبركاته.. تذكير يا أحبة بصلاة الضحى، فإنها صلاة الأوابين وتجزئ عن صدقة كل سلامى من ابن آدم. وفقنا الله وإياكم لمرضاته.",
-                likesCount = 45,
-                isLiked = false,
-                timestamp = System.currentTimeMillis() - 3600000 * 2
-            ),
-            CommunityPost(
-                id = 2,
-                authorName = "محمد التوركي",
-                authorCountry = "تركيا",
-                content = "اللهم صلّ وسلم وبارك على نبينا ورسولنا محمد وعلى آله وصحبه أجمعين. لا تنسوا كثرة الصلاة على النبي في يوم الجمعة المبارك وفي سائر الأيام.",
-                likesCount = 112,
-                isLiked = false,
-                timestamp = System.currentTimeMillis() - 3600000 * 5
-            ),
-            CommunityPost(
-                id = 3,
-                authorName = "زينب سليم",
-                authorCountry = "مصر",
-                content = "الحمد لله الذي بنعمته تتم الصالحات.. أتممت اليوم وردي من حفظ سورة البقرة، أسأل الله أن يرزقني وإياكم العمل بها والثبات على حفظ كتابه الكريم.",
-                likesCount = 78,
-                isLiked = false,
-                timestamp = System.currentTimeMillis() - 3600000 * 12
-            ),
-            CommunityPost(
-                id = 4,
-                authorName = "أحمد سياح",
-                authorCountry = "الجزائر",
-                content = "نصيحة من القلب: اجعل لك خبيئة من عمل صالح لا يعلمها إلا الله، ركعتين في جوف الليل، أو صدقة خفية، أو تلاوة متدبرة. هذا هو الزاد الحقيقي.",
-                likesCount = 93,
-                isLiked = false,
-                timestamp = System.currentTimeMillis() - 3600000 * 24
-            )
-        )
+        // Never fabricate community members, posts, votes, or prayer history.
+        _communityPosts.value = emptyList()
 
-        // Initial polls
+        // Poll questions are app content; all vote counters start at zero.
         _communityPolls.value = listOf(
             CommunityPoll(
                 id = 1,
@@ -1361,42 +1322,64 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 questionEn = "What is the best time you prefer to read your daily Quran portion?",
                 optionsAr = listOf("بعد صلاة الفجر", "بعد صلاة العصر/المغرب", "قبل النوم في الليل", "في أوقات متفرقة خلال اليوم"),
                 optionsEn = listOf("After Fajr prayer", "After Asr/Maghrib prayer", "Before sleeping at night", "At separate times during the day"),
-                votes = listOf(142, 65, 87, 110),
-                totalVotes = 404,
+                votes = List(4) { 0 },
+                totalVotes = 0,
                 votedOptionIndex = null
             ),
             CommunityPoll(
                 id = 2,
-                questionAr = "هل قمت بتفعيل تنبيهات سنن الأذان والأذكار في التطبيق؟",
-                questionEn = "Have you activated Athan sunnah and Adhkar notifications in the app?",
-                optionsAr = listOf("نعم، مفعلة بالكامل وأستفيد منها", "بعضها مفعل والبعض الآخر لا", "لا، أفضل الاعتماد على نفسي", "سأقوم بتفعيلها الآن"),
-                optionsEn = listOf("Yes, fully enabled & helpful", "Some are enabled, some are not", "No, I prefer doing it manually", "I will enable them now"),
-                votes = listOf(280, 52, 14, 48),
-                totalVotes = 394,
+                questionAr = "هل قمت بتفعيل تنبيهات الأذان والأذكار في التطبيق؟",
+                questionEn = "Have you activated Athan and Adhkar notifications in the app?",
+                optionsAr = listOf("نعم", "بعضها فقط", "لا", "سأفعلها الآن"),
+                optionsEn = listOf("Yes", "Some of them", "No", "I will enable them now"),
+                votes = List(4) { 0 },
+                totalVotes = 0,
                 votedOptionIndex = null
             ),
             CommunityPoll(
                 id = 3,
                 questionAr = "كم جزءاً أو حزباً تخطط لإتمامه في ختمتك الحالية؟",
-                questionEn = "How many portions do you plan to complete in your current Khatmah?",
-                optionsAr = listOf("جزء واحد يومياً", "نصف جزء يومياً", "حزب واحد يومياً", "أكثر من جزء يومياً بفضل الله"),
+                questionEn = "How much do you plan to complete in your current Khatmah?",
+                optionsAr = listOf("جزء واحد يومياً", "نصف جزء يومياً", "حزب واحد يومياً", "أكثر من جزء يومياً"),
                 optionsEn = listOf("One Juz' daily", "Half Juz' daily", "One Hizb daily", "More than one Juz' daily"),
-                votes = listOf(185, 94, 61, 45),
-                totalVotes = 385,
+                votes = List(4) { 0 },
+                totalVotes = 0,
                 votedOptionIndex = null
             )
         )
 
-        // Initial Fajr Tracker (7 days)
-        _fajrRecords.value = listOf(
-            FajrDayRecord("السبت", "Saturday", "07-04", "CONGREGATION"),
-            FajrDayRecord("الأحد", "Sunday", "07-05", "CONGREGATION"),
-            FajrDayRecord("الإثنين", "Monday", "07-06", "INDIVIDUAL"),
-            FajrDayRecord("الثلاثاء", "Tuesday", "07-07", "MISSED"),
-            FajrDayRecord("الأربعاء", "Wednesday", "07-08", "CONGREGATION"),
-            FajrDayRecord("الخميس", "Thursday", "07-09", "NOT_SET"),
-            FajrDayRecord("الجمعة", "Friday", "07-10", "NOT_SET")
-        )
+        loadFajrRecords()
+    }
+
+    private fun loadFajrRecords() {
+        viewModelScope.launch {
+            repo.getAllLogs().collect { logs ->
+                val byDate = logs.filter { it.prayerName == "Fajr" }.associateBy { it.date }
+                val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                val displayFormat = SimpleDateFormat("dd-MM", Locale.US)
+                val calendar = Calendar.getInstance()
+                val records = (6 downTo 0).map { offset ->
+                    val day = Calendar.getInstance().apply {
+                        timeInMillis = calendar.timeInMillis
+                        add(Calendar.DAY_OF_YEAR, -offset)
+                    }
+                    val date = dayFormat.format(day.time)
+                    val status = when (byDate[date]?.status) {
+                        "PRAYED_ON_TIME" -> "PRAYED_ON_TIME"
+                        "PRAYED_LATE" -> "PRAYED_LATE"
+                        "MISSED" -> "MISSED"
+                        else -> "NOT_SET"
+                    }
+                    FajrDayRecord(
+                        dayNameAr = SimpleDateFormat("EEEE", Locale("ar")).format(day.time),
+                        dayNameEn = SimpleDateFormat("EEEE", Locale.ENGLISH).format(day.time),
+                        dateString = displayFormat.format(day.time),
+                        status = status
+                    )
+                }
+                _fajrRecords.value = records
+            }
+        }
     }
 
     fun addCommunityPost(content: String) {
