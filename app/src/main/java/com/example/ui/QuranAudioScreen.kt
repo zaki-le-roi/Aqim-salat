@@ -78,7 +78,7 @@ fun QuranAudioScreen(
         isPlaying = true
         // Simulating loading the stream
         val url = selectedReciter.third + "%03d.mp3".format(index + 1)
-        Toast.makeText(context, "Streaming: ${surahs[index].englishName} by ${selectedReciter.first}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, if (lang == "ar") "تشغيل: ${surahs[index].name} • ${selectedReciter.second}" else "Streaming: ${surahs[index].englishName} by ${selectedReciter.first}", Toast.LENGTH_SHORT).show()
     }
 
     Column(
@@ -95,7 +95,7 @@ fun QuranAudioScreen(
         ) {
             if (onBack != null) {
                 IconButton(onClick = onBack, modifier = Modifier.testTag("audio_back_button")) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "ar") "رجوع" else "Back")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -123,7 +123,7 @@ fun QuranAudioScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.RecordVoiceOver, contentDescription = "Reciter", tint = Color(0xFFD4AF37))
+                    Icon(Icons.Filled.RecordVoiceOver, contentDescription = if (lang == "ar") "القارئ" else "Reciter", tint = Color(0xFFD4AF37))
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
