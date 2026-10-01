@@ -361,6 +361,7 @@ fun MoreScreen(
             }
         }
     }
+    }
 }
 
 @Composable
