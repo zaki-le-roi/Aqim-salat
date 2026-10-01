@@ -2,6 +2,7 @@ package com.example.ui
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
@@ -1398,10 +1399,3 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 poll.copy(
                     votes = newVotes,
                     totalVotes = poll.totalVotes + 1,
-                    votedOptionIndex = optionIndex
-                )
-            } else {
-                poll
-            }
-        }
-        
