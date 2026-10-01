@@ -26,6 +26,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.PrayerCalculator
+import java.util.Date
+import java.util.TimeZone
+
+data class TravelDestination(
+    val name: String,
+    val lat: Double,
+    val lng: Double,
+    val timeZoneId: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +60,22 @@ fun TravelTool(
         Pair("دعاء النزول في مكان", "أعوذ بكلمات الله التامات من شر ما خلق.")
     )
     var currentDhikrCount by remember { mutableStateOf(0) }
+
+    val destinations = remember {
+        listOf(
+            TravelDestination("مكة المكرمة", 21.4225, 39.8262, "Asia/Riyadh"),
+            TravelDestination("المدينة المنورة", 24.4672, 39.6024, "Asia/Riyadh"),
+            TravelDestination("دبي", 25.2048, 55.2708, "Asia/Dubai"),
+            TravelDestination("لندن", 51.5074, -0.1278, "Europe/London"),
+            TravelDestination("كوالالمبور", 3.1390, 101.6869, "Asia/Kuala_Lumpur"),
+            TravelDestination("باريس", 48.8566, 2.3522, "Europe/Paris")
+        )
+    }
+    var selectedDestination by remember { mutableStateOf(destinations.first()) }
+    val travelTimes = remember(selectedDestination) {
+        val offsetHours = TimeZone.getTimeZone(selectedDestination.timeZoneId).getOffset(Date().time) / 3600000.0
+        PrayerCalculator.calculateTimes(selectedDestination.lat, selectedDestination.lng, offsetHours, Date(), PrayerCalculator.CalculationMethod.MWL, PrayerCalculator.Madhab.STANDARD)
+    }
 
     // Fiqh FAQ Accordion States
     var faq1Expanded by remember { mutableStateOf(false) }
@@ -107,7 +133,7 @@ fun TravelTool(
                 }
             }
 
-            // --- 2. GPS LOCATION SIMULATOR (INNOVATIVE WORLDWIDE SYNC) ---
+            // --- 2. TRAVEL DESTINATION PREVIEW ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -116,33 +142,24 @@ fun TravelTool(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "✈️ محاكاة الموقع والبلد والقبلة للمسافر",
+                        text = "✈️ اختيار وجهة السفر ومعاينة المواقيت",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F2C4A)
                     )
                     Text(
-                        text = "اضغط على أي وجهة لمحاكاة وصولك إليها، وسيقوم التطبيق بتعديل مواقيت الصلاة والقبلة تلقائياً:",
+                        text = "اختر وجهة السفر لمعاينة مواقيت الصلاة فيها دون تغيير موقع جهازك الحالي:",
                         fontSize = 11.sp,
                         color = Color.Gray,
                         modifier = Modifier.padding(vertical = 6.dp)
-                    )
-
-                    val cities = listOf(
-                        Triple("مكة المكرمة", 21.3891, 39.8579),
-                        Triple("المدينة المنورة", 24.4672, 39.6112),
-                        Triple("دبي", 25.2048, 55.2708),
-                        Triple("لندن", 51.5074, -0.1278),
-                        Triple("كوالالمبور", 3.1390, 101.6869),
-                        Triple("باريس", 48.8566, 2.3522)
                     )
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        cities.take(3).forEach { (cityName, lat, lng) ->
-                            val isSelected = locationName == cityName
+                        destinations.take(3).forEach { destination ->
+                            val isSelected = selectedDestination.name == destination.name
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -154,11 +171,11 @@ fun TravelTool(
                                         RoundedCornerShape(8.dp)
                                     )
                                     .clickable {
-                                        viewModel.setLocation(cityName, lat, lng)
+                                        selectedDestination = destination
                                         Toast
                                             .makeText(
                                                 context,
-                                                "تم تعديل موقعك بنجاح لـ $cityName وتحديث المواقيت!",
+                                                "تم اختيار وجهة DESTINATION_NAME لمعاينة المواقيت.".replace("DESTINATION_NAME", destination.name),
                                                 Toast.LENGTH_SHORT
                                             )
                                             .show()
@@ -167,7 +184,7 @@ fun TravelTool(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = cityName,
+                                    text = destination.name,
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     color = if (isSelected) Color(0xFF1976D2) else Color.DarkGray
@@ -182,8 +199,8 @@ fun TravelTool(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        cities.drop(3).forEach { (cityName, lat, lng) ->
-                            val isSelected = locationName == cityName
+                        destinations.drop(3).forEach { destination ->
+                            val isSelected = selectedDestination.name == destination.name
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -195,11 +212,11 @@ fun TravelTool(
                                         RoundedCornerShape(8.dp)
                                     )
                                     .clickable {
-                                        viewModel.setLocation(cityName, lat, lng)
+                                        selectedDestination = destination
                                         Toast
                                             .makeText(
                                                 context,
-                                                "تم تعديل موقعك لـ $cityName وتحديث مواقيت الصلاة!",
+                                                "تم اختيار وجهة DESTINATION_NAME لمعاينة المواقيت.".replace("DESTINATION_NAME", destination.name),
                                                 Toast.LENGTH_SHORT
                                             )
                                             .show()
@@ -208,7 +225,7 @@ fun TravelTool(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = cityName,
+                                    text = destination.name,
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     color = if (isSelected) Color(0xFF1976D2) else Color.DarkGray
@@ -226,6 +243,41 @@ fun TravelTool(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "مواقيت DESTINATION_NAME".replace("DESTINATION_NAME", selectedDestination.name),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F2C4A),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        listOf(
+                            "الفجر" to travelTimes.fajr,
+                            "الظهر" to travelTimes.dhuhr,
+                            "العصر" to travelTimes.asr,
+                            "المغرب" to travelTimes.maghrib,
+                            "العشاء" to travelTimes.isha
+                        ).forEach { (name, time) ->
+                            Card(
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(7.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(name, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text(time, fontSize = 10.sp)
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
