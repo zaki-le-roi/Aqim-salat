@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.QuranApiClient
 import com.example.data.QuranData
+import com.example.data.QuranFontLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -160,6 +161,11 @@ fun QuranScreen(
     initialSurahId: Int? = null
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var quranFontFamily by remember { mutableStateOf<FontFamily?>(null) }
+    LaunchedEffect(Unit) {
+        quranFontFamily = QuranFontLoader.load(context)
+    }
     val history by viewModel.quranHistory.collectAsState()
     val bookmarks by viewModel.bookmarks.collectAsState()
 
@@ -1171,7 +1177,7 @@ fun SurahReader(
                                             Text(
                                                 text = ayah.arabicText,
                                                 fontSize = 26.sp,
-                                                fontFamily = FontFamily.Serif,
+                                                fontFamily = quranFontFamily ?: FontFamily.Serif,
                                                 color = Color(0xFF042B1D),
                                                 textAlign = TextAlign.Right,
                                                 modifier = Modifier.fillMaxWidth(),
