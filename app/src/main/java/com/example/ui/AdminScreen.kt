@@ -1307,7 +1307,7 @@ fun MembersTab(viewModel: AppViewModel) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "🎁 مكافأة العضو بالنقاط: ${selectedMemberForPoints!!.name}",
+                            text = "تعديل نقاط العضو داخل التطبيق: ${selectedMemberForPoints!!.name}",
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFD4AF37),
                             fontSize = 14.sp
@@ -1421,7 +1421,7 @@ fun MembersTab(viewModel: AppViewModel) {
                                 selectedMemberForPoints = member
                                 pointsChangeInput = "50"
                             }) {
-                                Icon(Icons.Filled.CardGiftcard, contentDescription = "منح نقاط", tint = Color(0xFF4CAF50))
+                                Icon(Icons.Filled.Edit, contentDescription = "تعديل نقاط داخل التطبيق", tint = Color(0xFF4CAF50))
                             }
 
                             // Freeze/Unfreeze
