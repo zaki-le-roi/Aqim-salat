@@ -1009,51 +1009,77 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _adminPermissions.value.contains("ALL") || _adminPermissions.value.contains(permission)
 
     fun registerMember(
-        name: String, 
-        email: String, 
-        country: String, 
-        city: String, 
-        onSuccess: () -> Unit, 
+        name: String,
+        email: String,
+        password: String,
+        country: String,
+        city: String,
+        onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
         viewModelScope.launch {
-            if (name.isBlank() || email.isBlank()) {
-                onFailure("يرجى ملء جميع الحقول المطلوبة.")
+            if (name.isBlank() || email.isBlank() || password.length < 8) {
+                onFailure("أدخل الاسم والبريد وكلمة مرور من 8 أحرف على الأقل.")
                 return@launch
             }
-            val existing = allMembers.value.find { it.email.trim().lowercase() == email.trim().lowercase() }
-            if (existing != null) {
-                onFailure("البريد الإلكتروني مسجل بالفعل كعضو في أقم صلاتك.")
-            } else {
-                val newMember = AppMember(
-                    name = name,
-                    email = email.trim().lowercase(),
-                    country = country,
-                    city = city,
-                    points = 150, // Starting point gift
-                    registrationDate = System.currentTimeMillis(),
-                    streakDays = 1,
-                    isActive = true
-                )
-                repo.insertMember(newMember)
-                loggedInMember.value = newMember
-                onSuccess()
+            try {
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                auth.createUserWithEmailAndPassword(email.trim().lowercase(), password)
+                    .addOnSuccessListener { result ->
+                        val userEmail = result.user?.email?.trim()?.lowercase()
+                        if (userEmail.isNullOrBlank()) {
+                            onFailure("تعذر إنشاء الحساب.")
+                            return@addOnSuccessListener
+                        }
+                        viewModelScope.launch {
+                            val newMember = AppMember(
+                                name = name.trim(),
+                                email = userEmail,
+                                country = country.trim(),
+                                city = city.trim(),
+                                points = 150,
+                                registrationDate = System.currentTimeMillis(),
+                                streakDays = 1,
+                                isActive = true
+                            )
+                            repo.insertMember(newMember)
+                            loggedInMember.value = newMember
+                            onSuccess()
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        onFailure(error.message ?: "تعذر إنشاء الحساب.")
+                    }
+            } catch (_: Exception) {
+                onFailure("خدمة العضوية غير متاحة حاليًا.")
             }
         }
     }
 
-    fun loginMember(email: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun loginMember(email: String, password: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
         viewModelScope.launch {
-            val matched = allMembers.value.find { it.email.trim().lowercase() == email.trim().lowercase() }
-            if (matched != null) {
-                if (!matched.isActive) {
-                    onFailure("هذا الحساب تم تجميده من قبل الإدارة.")
-                } else {
-                    loggedInMember.value = matched
-                    onSuccess()
-                }
-            } else {
-                onFailure("العضوية غير موجودة. يرجى التسجيل كعضو جديد أولاً.")
+            try {
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                auth.signInWithEmailAndPassword(email.trim().lowercase(), password)
+                    .addOnSuccessListener { result ->
+                        val authenticatedEmail = result.user?.email?.trim()?.lowercase()
+                        val matched = allMembers.value.find { it.email.trim().lowercase() == authenticatedEmail }
+                        if (matched == null) {
+                            auth.signOut()
+                            onFailure("الحساب موثق، لكن ملف العضوية غير موجود.")
+                        } else if (!matched.isActive) {
+                            auth.signOut()
+                            onFailure("هذا الحساب تم تجميده من قبل الإدارة.")
+                        } else {
+                            loggedInMember.value = matched
+                            onSuccess()
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        onFailure(error.message ?: "تعذر تسجيل الدخول.")
+                    }
+            } catch (_: Exception) {
+                onFailure("خدمة العضوية غير متاحة حاليًا.")
             }
         }
     }
