@@ -15,6 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import java.text.SimpleDateFormat
+import java.util.Locale
 import com.example.data.PrayerCalculator
 import java.util.Date
 
@@ -52,7 +55,18 @@ fun ZakatCalculatorScreen(lang: String, onBack: () -> Unit) {
 @Composable
 fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boolean = false) {
     val items = remember(lang) { if (lang == "ar") listOf("الفجر", "الظهر", "العصر", "المغرب", "العشاء", "قراءة القرآن", "أذكار اليوم") else listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha", "Quran reading", "Daily adhkar") }
-    val checked = remember { mutableStateMapOf<String, Boolean>() }
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences("daily_accountability", android.content.Context.MODE_PRIVATE) }
+    val dayKey = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
+    val checked = remember(dayKey, lang, challenge) {
+        mutableStateMapOf<String, Boolean>().apply {
+            items.forEach { item ->
+                if (prefs.getBoolean("${if (challenge) "challenge" else "accountability"}_${dayKey}_${item}", false)) {
+                    this[item] = true
+                }
+            }
+        }
+    }
     val done = items.count { checked[it] == true }
 
     SimpleExtraScaffold(if (challenge) "تحدي الطاعات" else "ورد المحاسبة", onBack) {
@@ -63,7 +77,16 @@ fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boole
         items.forEach { item ->
             Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), shape = RoundedCornerShape(12.dp)) {
                 Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = checked[item] == true, onCheckedChange = { checked[item] = it })
+                    Checkbox(
+                        checked = checked[item] == true,
+                        onCheckedChange = { value ->
+                            checked[item] = value
+                            prefs.edit().putBoolean(
+                                "${if (challenge) "challenge" else "accountability"}_${dayKey}_${item}",
+                                value
+                            ).apply()
+                        }
+                    )
                     Text(item, Modifier.weight(1f), fontSize = 15.sp)
                     if (checked[item] == true) Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF2E7D32))
                 }
