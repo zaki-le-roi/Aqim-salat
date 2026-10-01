@@ -412,7 +412,7 @@ fun SupportScreen(
                                      Column(modifier = Modifier.padding(16.dp)) {
                                          Text(if (lang == "ar") "لا توجد حالياً قائمة منشورة لشركاء موثقين داخل التطبيق." else "There is currently no published list of verified partners in the app.", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                          Spacer(modifier = Modifier.height(8.dp))
-                                         Text(if (lang == "ar") "للاستفسار عن الشراكات أو الإعلان، استخدم عنوان التواصل الظاهر أدناه." else "For partnership or advertising inquiries, use the contact address shown below.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                                         Text(if (lang == "ar") "لا يوجد حاليًا عنوان بريد موثّق منشور داخل التطبيق لإرسال طلبات الشراكة أو الإعلان." else "There is currently no verified public email address in the app for partnership or advertising inquiries.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                                      }
                                  }
                              }
