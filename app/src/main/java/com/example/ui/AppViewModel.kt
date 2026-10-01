@@ -205,6 +205,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         
                         viewModelScope.launch(Dispatchers.Main) {
                             repo.setLocation(addressName, lat, lon)
+                            fetchRealNearbyMosques(lat, lon)
                             if (isAlgeria) {
                                 repo.setCalcMethod("ALGERIA")
                             }
@@ -240,6 +241,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         val addressName = if (country.isNotEmpty()) "$city, $country" else city
                         viewModelScope.launch(Dispatchers.Main) {
                             repo.setLocation(addressName, lat, lon)
+                            fetchRealNearbyMosques(lat, lon)
                             if (isAlgeria) {
                                 repo.setCalcMethod("ALGERIA")
                             }
