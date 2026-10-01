@@ -1278,37 +1278,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Seed defaults if database is empty
-    init {
-        viewModelScope.launch {
-            // Seed default campaigns if none exist
-            repo.allDonationCampaigns.first().let { current ->
-                if (current.isEmpty()) {
-                    repo.insertDonationCampaign(
-                        DonationCampaign(
-                            title = "Build Al-Rahma Community Center",
-                            description = "Support the expansion and construction of a multipurpose youth community center adjacent to Al-Rahma Mosque.",
-                            targetAmount = 75000.0,
-                            currentProgress = 34200.0,
-                            startDate = "2026-06-01",
-                            endDate = "2026-12-31"
-                        )
-                    )
-                    repo.insertDonationCampaign(
-                        DonationCampaign(
-                            title = "Ramadan Iftar Distribution 2026",
-                            description = "Provide hot daily Iftar meals to over 500 needy families during the holy month of Ramadan.",
-                            targetAmount = 15000.0,
-                            currentProgress = 12500.0,
-                            startDate = "2026-01-01",
-                            endDate = "2026-07-31"
-                        )
-                    )
-                }
-            }
-            
-        }
-    }
+    // Donation campaigns are loaded from the configured data source; never seed fabricated campaigns.
 
     override fun onCleared() {
         super.onCleared()
