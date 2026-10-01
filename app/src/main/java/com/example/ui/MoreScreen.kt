@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+private const val SERVICE_CARD_LANGUAGE = "ar"
+
 data class ServicesGridItem(
     val key: String,
     val titleAr: String,
@@ -417,7 +419,7 @@ fun ServicesSectionCard(
                                 }
                                 Spacer(modifier = Modifier.height(7.dp))
                                 Text(
-                                    text = item.localizedTitle(lang),
+                                    text = item.localizedTitle(SERVICE_CARD_LANGUAGE),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF20352B),
