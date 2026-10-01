@@ -405,6 +405,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         } else {
                             repo.setLocation("My Location", lat, lng)
+                            AdhanScheduler.schedule(getApplication())
                         }
                     }
                 } catch (e: Exception) {
