@@ -1188,6 +1188,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun logoutMember() {
+        try {
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+        } catch (_: Exception) {
+        }
         loggedInMember.value = null
     }
 
