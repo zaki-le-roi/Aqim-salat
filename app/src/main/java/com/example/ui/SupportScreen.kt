@@ -636,9 +636,9 @@ fun SupportScreen(
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Icon(Icons.Filled.ContentCopy, contentDescription = if (lang == "ar") "نسخ" else "Copy")
+                                            Icon(Icons.Filled.Share, contentDescription = if (lang == "ar") "مشاركة" else "Share")
                                             Spacer(modifier = Modifier.width(8.dp))
-                                            Text(if (lang == "ar") "نسخ رابط المشاركة" else "Copy Share Link")
+                                            Text(if (lang == "ar") "مشاركة التطبيق" else "Share App")
                                         }
                                     }
                                 }
