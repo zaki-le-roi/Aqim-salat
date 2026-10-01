@@ -11,6 +11,7 @@ import android.os.VibrationEffect
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
+import com.example.adhan.AdhanScheduler
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -745,15 +746,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCalculationMethod(method: String) {
-        viewModelScope.launch { repo.setCalcMethod(method) }
+        viewModelScope.launch { repo.setCalcMethod(method); AdhanScheduler.schedule(getApplication()) }
     }
 
     fun setMadhab(madhabName: String) {
-        viewModelScope.launch { repo.setMadhab(madhabName) }
+        viewModelScope.launch { repo.setMadhab(madhabName); AdhanScheduler.schedule(getApplication()) }
     }
 
     fun toggleNotifications(enabled: Boolean) {
-        viewModelScope.launch { repo.setNotificationsEnabled(enabled) }
+        viewModelScope.launch { repo.setNotificationsEnabled(enabled); AdhanScheduler.schedule(getApplication()) }
     }
 
     fun setAthanVoices(fajr: String, other: String) {
@@ -770,6 +771,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setManualCity(city: String, lat: Double, lng: Double) {
         viewModelScope.launch {
             repo.setLocation(city, lat, lng)
+            AdhanScheduler.schedule(getApplication())
             triggerHapticFeedback()
         }
     }
