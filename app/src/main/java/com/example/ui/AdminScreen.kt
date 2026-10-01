@@ -630,7 +630,7 @@ fun ContentTab(viewModel: AppViewModel) {
         // Listings & Deletion Manager
         item {
             Text(
-                text = "المحتوى النشط المسجل حالياً في النظام", 
+                text = "المحتوى المحفوظ محليًا حاليًا", 
                 fontWeight = FontWeight.Bold, 
                 fontSize = 16.sp, 
                 color = Color(0xFFD4AF37)
