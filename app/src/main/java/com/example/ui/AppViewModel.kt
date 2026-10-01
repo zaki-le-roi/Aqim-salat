@@ -807,7 +807,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 runCatching {
                     val intent = Intent(
                         android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
-                        Uri.parse("package:$appContext.packageName")
+                        Uri.parse("package:${appContext.packageName}")
                     ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     appContext.startActivity(intent)
                 }
