@@ -328,7 +328,7 @@ fun EmptyStatePlaceholder(icon: androidx.compose.ui.graphics.vector.ImageVector,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(icon, contentDescription = "Empty", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+        Icon(icon, contentDescription = if (lang == "ar") "لا توجد محفوظات" else "Empty", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = text,
