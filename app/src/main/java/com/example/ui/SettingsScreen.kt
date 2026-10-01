@@ -34,6 +34,7 @@ fun SettingsScreen(
     val locationVal by viewModel.locationName.collectAsState()
     val notificationsVal by viewModel.notificationsEnabled.collectAsState()
     val activeThemeVal by viewModel.themeMode.collectAsState()
+    val defaultReciterVal by viewModel.defaultReciter.collectAsState()
 
     // Dialog state controllers
     var activeDialog by remember { mutableStateOf<String?>(null) } // "THEME", "LANG", "CALC", "AUDIO", "DOWNLOADS", "BACKUP", "PRIVACY", "ACCESSIBILITY"
@@ -347,7 +348,7 @@ fun SettingsScreen(
 
     // D. Audio Reciter Settings Dialog
     if (activeDialog == "AUDIO") {
-        var selectedReciter by remember { mutableStateOf(recitersList[0]) }
+        var selectedReciter by remember(defaultReciterVal) { mutableStateOf(defaultReciterVal) }
 
         AlertDialog(
             onDismissRequest = { activeDialog = null },
@@ -372,8 +373,9 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        viewModel.setDefaultReciter(selectedReciter)
                         activeDialog = null
-                        Toast.makeText(context, if (lang == "ar") "تم تعيين المقرئ الافتراضي: $selectedReciter" else "Default reciter set to $selectedReciter", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, if (lang == "ar") "تم حفظ المقرئ الافتراضي: $selectedReciter" else "Default reciter saved: $selectedReciter", Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
