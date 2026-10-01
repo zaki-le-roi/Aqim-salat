@@ -306,6 +306,7 @@ fun SupportScreen(
                                                          val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:?subject=${Uri.encode(subject)}&body=${Uri.encode(body)}"))
                                                          try {
                                                              context.startActivity(intent)
+                                                             supportSuccess = true
                                                          } catch (_: Exception) {
                                                              Toast.makeText(context, if (lang == "ar") "لا يوجد تطبيق بريد مثبت على الجهاز." else "No email application is installed.", Toast.LENGTH_LONG).show()
                                                          }
