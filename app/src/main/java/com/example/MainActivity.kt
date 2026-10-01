@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -50,6 +51,17 @@ import com.example.ui.theme.MyApplicationTheme
 class MainActivity : ComponentActivity() {
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    private val locationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            val granted = it[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                it[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            if (granted) {
+                locationViewModel?.startLocationTracking()
+            }
+        }
+
+    private var locationViewModel: AppViewModel? = null
 
     private lateinit var appUpdateManager: AppUpdateManager
     private val updateLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
@@ -68,9 +80,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         appUpdateManager = AppUpdateManagerFactory.create(this)
+        locationViewModel = ViewModelProvider(this)[AppViewModel::class.java]
         appUpdateManager.registerListener(installStateListener)
         checkForUpdates()
         requestNotificationAndAlarmAccess()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
+        } else {
+            locationViewModel?.startLocationTracking()
+        }
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
             AdhanScheduler.schedule(applicationContext)
         }
