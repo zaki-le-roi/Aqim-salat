@@ -424,6 +424,26 @@ fun AuthScreen(
                                     )
                                 )
 
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                OutlinedTextField(
+                                    value = passwordInput,
+                                    onValueChange = { passwordInput = it },
+                                    label = { Text("كلمة المرور (8 أحرف على الأقل)") },
+                                    leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null, tint = Color(0xFFD4AF37)) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = RoundedCornerShape(12.dp),
+                                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color(0xFFD4AF37),
+                                        unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                                        focusedLabelColor = Color(0xFFD4AF37),
+                                        unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+                                        focusedTextColor = Color.White,
+                                        unfocusedTextColor = Color.White
+                                    )
+                                )
+
                                 if (isRegisterMode) {
                                     Spacer(modifier = Modifier.height(14.dp))
 
