@@ -240,7 +240,7 @@ fun AuthScreen(
                                         fontSize = 15.sp
                                     )
                                     Text(
-                                        text = if (lang == "ar") "قم بتوثيق محافظتك على صلوات اليوم جماعة في المسجد ونل مكافأة +50 نقطة بركة!" else "Record your daily congregational prayers and earn +50 Barakah points!",
+                                        text = if (lang == "ar") "سجّل محافظتك على صلوات اليوم لنفسك، وتحصل على +50 نقطة بركة مرة واحدة يوميًا." else "Log your daily prayers for your own tracking and earn +50 Barakah points once per day.",
                                         color = Color.White.copy(alpha = 0.8f),
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
@@ -289,7 +289,7 @@ fun AuthScreen(
                                         fontSize = 15.sp
                                     )
                                     Text(
-                                        text = if (lang == "ar") "أكمل ورد الأذكار أو التسبيح الصباحي والمسائي لنيل +30 نقطة بركة فورية لحسابك!" else "Complete your morning/evening adhkar or tasbih to earn +30 Barakah points!",
+                                        text = if (lang == "ar") "سجّل إكمالك لورد الأذكار أو التسبيح الصباحي والمسائي لتحصل على +30 نقطة بركة مرة واحدة يوميًا." else "Log your completed morning/evening adhkar or tasbih to earn +30 Barakah points once per day.",
                                         color = Color.White.copy(alpha = 0.8f),
                                         fontSize = 12.sp,
                                         lineHeight = 16.sp
