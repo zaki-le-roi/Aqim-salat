@@ -319,7 +319,7 @@ fun SupportScreen(
                                                 } else {
                                                     Icon(Icons.Filled.Send, contentDescription = if (lang == "ar") "إرسال" else "Submit")
                                                     Spacer(modifier = Modifier.width(8.dp))
-                                                    Text(if (lang == "ar") "إرسال الطلب الآن" else "Submit Request")
+                                                    Text(if (lang == "ar") "فتح البريد لإرسال الطلب" else "Open Email to Send")
                                                 }
                                             }
                                         }
