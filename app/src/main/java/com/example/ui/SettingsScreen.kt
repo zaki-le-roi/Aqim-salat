@@ -226,7 +226,7 @@ fun SettingsScreen(
                                 activeDialog = null
                             })
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(if (code == "ar") "العربية" else "English", fontSize = 16.sp)
+                            Text(label, fontSize = 16.sp)
                         }
                     }
                 }
@@ -389,24 +389,20 @@ fun SettingsScreen(
             onDismissRequest = { activeDialog = null },
             title = { Text(if (lang == "ar") "النسخ الاحتياطي والمزامنة" else "Backup & Sync", fontWeight = FontWeight.Bold) },
             text = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        if (lang == "ar") "الحالة: البيانات المحلية محفوظة على هذا الجهاز" else "Status: Data is stored locally on this device",
+                        if (lang == "ar") "الحالة: البيانات المحلية محفوظة على هذا الجهاز"
+                        else "Status: Data is stored locally on this device",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        if (lang == "ar") "النسخ الاحتياطي السحابي غير مفعّل حاليًا. لا يدّعي التطبيق تنفيذ مزامنة خارج الجهاز." else "Cloud backup is not currently connected. The app does not claim to synchronize data outside this device.",
+                        if (lang == "ar") "النسخ الاحتياطي السحابي غير مفعّل حاليًا. لا يدّعي التطبيق تنفيذ مزامنة خارج الجهاز."
+                        else "Cloud backup is not currently connected. The app does not claim to synchronize data outside this device.",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
-                },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (lang == "ar") "مزامنة الآن" else "Backup & Sync Now")
-                    }
                 }
             },
             confirmButton = {
