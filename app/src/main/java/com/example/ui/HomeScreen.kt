@@ -201,14 +201,6 @@ fun HomeScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
-                            // Orange dot badge
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFFF9800))
-                                    .align(Alignment.TopEnd)
-                            )
                         }
                     }
 
