@@ -28,6 +28,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: return
         val serviceIntent = Intent(context, AdhanPlaybackService::class.java).apply {
             putExtra(AdhanPlaybackService.EXTRA_PRAYER_NAME, prayerName)
+            putExtra(AdhanPlaybackService.EXTRA_PRAYER_KEY, intent.getStringExtra(EXTRA_PRAYER_KEY) ?: "")
         }
         runCatching { ContextCompat.startForegroundService(context, serviceIntent) }
             .onFailure { showFallbackForService(context, prayerName) }
