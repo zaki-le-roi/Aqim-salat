@@ -159,8 +159,9 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFF0B3D2E)) // Rich dark blue
+                                .background(Color(0xFF0B3D2E))
                                 .border(1.dp, Color(0xFFD4AF37), RoundedCornerShape(20.dp))
+                                .clickable { onNavigateToFeature("PREMIUM") }
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Row(
@@ -190,7 +191,7 @@ fun HomeScreen(
                                     .size(38.dp)
                                     .clip(CircleShape)
                                     .background(Color.White.copy(alpha = 0.85f))
-                                    .clickable { viewModel.playAthan() },
+                                    .clickable { onNavigateToFeature("SETTINGS") },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -705,7 +706,8 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp)
+                        .clickable { onNavigateToFeature("AUTH") },
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
