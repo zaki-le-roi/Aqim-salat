@@ -159,7 +159,7 @@ fun HomeScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFF0D253F)) // Rich dark blue
+                                .background(Color(0xFF0B3D2E)) // Rich dark blue
                                 .border(1.dp, Color(0xFFD4AF37), RoundedCornerShape(20.dp))
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
@@ -311,7 +311,7 @@ fun HomeScreen(
                         text = hijriDate,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E3A5F),
+                        color = Color(0xFF173C2E),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -376,7 +376,7 @@ fun HomeScreen(
                                     .background(if (isActive) Color(0xFFF0EBF8) else Color.Transparent)
                                     .border(
                                         width = if (isActive) 1.dp else 0.dp,
-                                        color = if (isActive) Color(0xFF9C27B0).copy(alpha = 0.15f) else Color.Transparent,
+                                        color = if (isActive) Color(0xFF0D6B4B).copy(alpha = 0.15f) else Color.Transparent,
                                         shape = RoundedCornerShape(16.dp)
                                     )
                                     .padding(vertical = 10.dp, horizontal = 4.dp),
@@ -390,7 +390,7 @@ fun HomeScreen(
                                         text = title,
                                         fontSize = 11.sp,
                                         fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isActive) Color(0xFF6B3A9E) else Color(0xFF666666)
+                                        color = if (isActive) Color(0xFF0D6B4B) else Color(0xFF666666)
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Icon(
@@ -403,7 +403,7 @@ fun HomeScreen(
                                             else -> Icons.Filled.NightsStay
                                         },
                                         contentDescription = title,
-                                        tint = if (isActive) Color(0xFF6B3A9E) else Color(0xFFFFB300),
+                                        tint = if (isActive) Color(0xFF0D6B4B) else Color(0xFFFFB300),
                                         modifier = Modifier.size(18.dp)
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
@@ -411,7 +411,7 @@ fun HomeScreen(
                                         text = timeStr,
                                         fontSize = 10.5.sp,
                                         fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isActive) Color(0xFF6B3A9E) else Color(0xFF333333)
+                                        color = if (isActive) Color(0xFF0D6B4B) else Color(0xFF333333)
                                     )
                                 }
                             }
@@ -513,7 +513,7 @@ fun HomeScreen(
                                 text = if (lang == "ar") "سجل إقامة الصلاة اليومية" else "Daily Prayer Tracker",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1E3A5F)
+                                color = Color(0xFF173C2E)
                             )
                         }
                         
@@ -570,7 +570,7 @@ fun HomeScreen(
                             CircularProgressIndicator(
                                 progress = { percentage / 100f },
                                 modifier = Modifier.fillMaxSize(),
-                                color = Color(0xFF6B3A9E),
+                                color = Color(0xFF0D6B4B),
                                 strokeWidth = 4.dp,
                                 trackColor = Color(0xFFE2E8F0)
                             )
@@ -578,7 +578,7 @@ fun HomeScreen(
                                 text = "$percentage%",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6B3A9E)
+                                color = Color(0xFF0D6B4B)
                             )
                         }
                     }
@@ -838,7 +838,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0D253F)), // Midnight Dark Blue
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0B3D2E)), // Midnight Dark Blue
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(
@@ -969,7 +969,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Color(0xFF00ACC1), Color(0xFF00796B))
+                                colors = listOf(Color(0xFF2E7D5B), Color(0xFF0D6B4B))
                             )
                         )
                         .clickable { onNavigateToFeature("DAILY_DUA") }
