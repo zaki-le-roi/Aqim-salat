@@ -62,12 +62,12 @@ fun PrayerTimesScreen(
     var showMonthlyTimes by remember { mutableStateOf(false) }
     var showLocationDialog by remember { mutableStateOf(false) }
 
-    // Qaza counter states in remember scope
-    var qazaFajr by remember { mutableStateOf(0) }
-    var qazaDhuhr by remember { mutableStateOf(0) }
-    var qazaAsr by remember { mutableStateOf(0) }
-    var qazaMaghrib by remember { mutableStateOf(0) }
-    var qazaIsha by remember { mutableStateOf(0) }
+    // Qaza counts are persisted by AppViewModel so they survive screen recreation.
+    var qazaFajr by remember { mutableIntStateOf(viewModel.getQazaCount("Fajr")) }
+    var qazaDhuhr by remember { mutableIntStateOf(viewModel.getQazaCount("Dhuhr")) }
+    var qazaAsr by remember { mutableIntStateOf(viewModel.getQazaCount("Asr")) }
+    var qazaMaghrib by remember { mutableIntStateOf(viewModel.getQazaCount("Maghrib")) }
+    var qazaIsha by remember { mutableIntStateOf(viewModel.getQazaCount("Isha")) }
 
     // Local theme colors to prevent @Composable Canvas compile failures
     val baseOnSurfaceColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
@@ -209,11 +209,11 @@ fun PrayerTimesScreen(
                                     IconButton(
                                         onClick = {
                                             when (qaza.key) {
-                                                "Fajr" -> if (qazaFajr > 0) qazaFajr--
-                                                "Dhuhr" -> if (qazaDhuhr > 0) qazaDhuhr--
-                                                "Asr" -> if (qazaAsr > 0) qazaAsr--
-                                                "Maghrib" -> if (qazaMaghrib > 0) qazaMaghrib--
-                                                "Isha" -> if (qazaIsha > 0) qazaIsha--
+                                                "Fajr" -> { if (qazaFajr > 0) qazaFajr--; viewModel.changeQazaCount("Fajr", -1) }
+                                                "Dhuhr" -> { if (qazaDhuhr > 0) qazaDhuhr--; viewModel.changeQazaCount("Dhuhr", -1) }
+                                                "Asr" -> { if (qazaAsr > 0) qazaAsr--; viewModel.changeQazaCount("Asr", -1) }
+                                                "Maghrib" -> { if (qazaMaghrib > 0) qazaMaghrib--; viewModel.changeQazaCount("Maghrib", -1) }
+                                                "Isha" -> { if (qazaIsha > 0) qazaIsha--; viewModel.changeQazaCount("Isha", -1) }
                                             }
                                         },
                                         modifier = Modifier.size(32.dp)
@@ -229,7 +229,10 @@ fun PrayerTimesScreen(
                                     )
 
                                     IconButton(
-                                        onClick = { qaza.onPlus() },
+                                        onClick = {
+                                            qaza.onPlus()
+                                            viewModel.changeQazaCount(qaza.key, 1)
+                                        },
                                         modifier = Modifier.size(32.dp)
                                     ) {
                                         Icon(Icons.Filled.Add, contentDescription = if (lang == "ar") "إضافة" else "Plus", tint = Color(0xFFD4AF37))
