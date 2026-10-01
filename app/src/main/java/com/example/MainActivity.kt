@@ -197,6 +197,10 @@ fun AqimSalahApp(
     // Dynamic routing callback across all dashboard grid cards
     val handleFeatureNavigation: (String) -> Unit = { routeKey ->
         when (routeKey) {
+            "HOME" -> {
+                selectedTab = "HOME"
+                activeDetailScreen = null
+            }
             "PRAYER_TIMES" -> {
                 selectedTab = "PRAYER_TIMES"
                 activeDetailScreen = null
