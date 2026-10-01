@@ -217,8 +217,7 @@ fun HomeScreen(
                     // "Asr since" or active prayer info
                     val currentPrayerName = when (nextName.lowercase()) {
                         "fajr" -> if (lang == "ar") "العشاء" else "Isha"
-                        "shuruq" -> if (lang == "ar") "الفجر" else "Fajr"
-                        "dhuhr" -> if (lang == "ar") "الشروق" else "Shuruq"
+                        "shuruq", "dhuhr" -> if (lang == "ar") "الفجر" else "Fajr"
                         "asr" -> if (lang == "ar") "الظهر" else "Dhuhr"
                         "maghrib" -> if (lang == "ar") "العصر" else "Asr"
                         else -> if (lang == "ar") "المغرب" else "Maghrib"
