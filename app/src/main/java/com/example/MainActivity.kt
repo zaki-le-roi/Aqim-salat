@@ -261,9 +261,13 @@ fun AqimSalahApp(
                         val isSelected = selectedTab == route
                         NavigationBarItem(
                             selected = isSelected,
-                            onClick = { 
-                                selectedTab = route
-                                activeDetailScreen = null
+                            onClick = {
+                                if (route == "ZAKAT") {
+                                    activeDetailScreen = "ZAKAT"
+                                } else {
+                                    selectedTab = route
+                                    activeDetailScreen = null
+                                }
                             },
                             icon = {
                                 Icon(
