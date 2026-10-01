@@ -558,6 +558,14 @@ fun AdhkarTool(viewModel: AppViewModel, lang: String) {
     var searchQuery by remember { mutableStateOf("") }
 
     val categories = listOf("Morning", "Evening", "Sleep", "Travel", "Mosque", "Protection")
+    val categoryLabels = mapOf(
+        "Morning" to if (lang == "ar") "أذكار الصباح" else "Morning",
+        "Evening" to if (lang == "ar") "أذكار المساء" else "Evening",
+        "Sleep" to if (lang == "ar") "أذكار النوم" else "Sleep",
+        "Travel" to if (lang == "ar") "أذكار السفر" else "Travel",
+        "Mosque" to if (lang == "ar") "أذكار المسجد" else "Mosque",
+        "Protection" to if (lang == "ar") "أذكار الحفظ" else "Protection"
+    )
 
     // Dynamic reactive counters for interactive recitation
     val activeCounters = remember { mutableStateMapOf<String, Int>() }
@@ -593,7 +601,7 @@ fun AdhkarTool(viewModel: AppViewModel, lang: String) {
                     onClick = { selectedCategory = cat },
                     text = {
                         Text(
-                            text = cat,
+                            text = categoryLabels[cat] ?: cat,
                             fontSize = 14.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -614,7 +622,7 @@ fun AdhkarTool(viewModel: AppViewModel, lang: String) {
                 .clip(RoundedCornerShape(16.dp))
                 .testTag("adhkar_search_bar"),
             placeholder = { Text(Translations.get("search_dhikr", lang)) },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = if (lang == "ar") "بحث" else "Search") },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -676,7 +684,7 @@ fun AdhkarTool(viewModel: AppViewModel, lang: String) {
                                 modifier = Modifier.testTag("dhikr_counter_${dhikr.id}")
                             ) {
                                 Text(
-                                    text = if (remainingCount == 0) "Completed" else "$remainingCount / ${dhikr.countTarget}",
+                                    text = if (remainingCount == 0) { if (lang == "ar") "تم" else "Completed" } else "$remainingCount / ${dhikr.countTarget}",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
                                     color = Color.Black
