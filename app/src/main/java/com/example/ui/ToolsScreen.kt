@@ -1074,6 +1074,8 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
         val coarseGranted = perms[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
         if (fineGranted || coarseGranted) {
             viewModel.startLocationTracking()
+        } else {
+            viewModel.detectLocationByIp()
         }
     }
 
@@ -1171,21 +1173,33 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     
-                    if (!locationPermissionGranted) {
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = {
-                                permissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (!locationPermissionGranted) {
+                            Button(
+                                onClick = {
+                                    permissionLauncher.launch(
+                                        arrayOf(
+                                            Manifest.permission.ACCESS_FINE_LOCATION,
+                                            Manifest.permission.ACCESS_COARSE_LOCATION
+                                        )
                                     )
-                                )
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(10.dp)
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(if (lang == "ar") "تفعيل الموقع" else "Enable location")
+                            }
+                        }
+                        OutlinedButton(
+                            onClick = { viewModel.fetchRealNearbyMosques(lat, lng) },
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text(if (lang == "ar") "تفعيل تحديد الموقع GPS" else "Enable GPS Location Access")
+                            Icon(Icons.Filled.Refresh, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(if (lang == "ar") "تحديث المساجد" else "Refresh mosques")
                         }
                     }
                 }
