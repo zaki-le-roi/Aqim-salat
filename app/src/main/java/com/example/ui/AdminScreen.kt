@@ -1115,7 +1115,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                 color = Color(0xFFD4AF37)
             )
             Text(
-                text = "تفويض المشرفين والمسؤولين الفرعيين وتعيين مهامهم الرقابية والأذونات الشرعية والأمنية بدقة.",
+                text = "ربط حسابات Firebase الموجودة بصلاحيات الإدارة. هذه الشاشة لا تنشئ حساب Firebase أو كلمة مرور جديدة.",
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 modifier = Modifier.padding(top = 4.dp)
@@ -1132,15 +1132,15 @@ fun SecurityTab(viewModel: AppViewModel) {
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
-                        text = "تفويض واعتماد مشرف فرعي جديد", 
+                        text = "ربط حساب Firebase موجود بصلاحيات مشرف", 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 15.sp, 
                         color = Color(0xFFD4AF37)
                     )
 
-                    OutlinedTextField(value = newEmail, onValueChange = { newEmail = it }, label = { Text("البريد الإلكتروني للشخص المفوض") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(value = newEmail, onValueChange = { newEmail = it }, label = { Text("البريد الإلكتروني لحساب Firebase الموجود") }, modifier = Modifier.fillMaxWidth())
 
-                    Text("بيانات الصلاحية المحلية", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                    Text("بيانات الصلاحية", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         listOf(
                             "Super Admin" to "مدير عام النظام", 
