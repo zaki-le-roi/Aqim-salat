@@ -23,8 +23,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private var SERVICE_CARD_LANGUAGE = "ar"
-
 data class ServicesGridItem(
     val key: String,
     val titleAr: String,
@@ -247,6 +245,7 @@ fun MoreScreen(
                 ServicesSectionCard(
                     title = "خدمات التطبيق العامة",
                     items = generalServices,
+                    lang = currentLanguage,
                     onItemClick = onNavigateToFeature
                 )
             }
@@ -256,6 +255,7 @@ fun MoreScreen(
                 ServicesSectionCard(
                     title = "القرآن والذكر",
                     items = quranDhikrServices,
+                    lang = currentLanguage,
                     onItemClick = onNavigateToFeature
                 )
             }
@@ -265,6 +265,7 @@ fun MoreScreen(
                 ServicesSectionCard(
                     title = "الدعم والتفاعل",
                     items = supportServices,
+                    lang = currentLanguage,
                     onItemClick = onNavigateToFeature
                 )
             }
@@ -360,6 +361,7 @@ fun MoreScreen(
 fun ServicesSectionCard(
     title: String,
     items: List<ServicesGridItem>,
+    lang: String,
     onItemClick: (String) -> Unit
 ) {
     Card(
@@ -417,7 +419,7 @@ fun ServicesSectionCard(
                                 }
                                 Spacer(modifier = Modifier.height(7.dp))
                                 Text(
-                                    text = item.localizedTitle(SERVICE_CARD_LANGUAGE),
+                                    text = item.localizedTitle(lang),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF20352B),
