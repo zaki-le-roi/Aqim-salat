@@ -222,41 +222,7 @@ fun SupportScreen(
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                                 ) {
-                                    if (false) {
-                                        Column(
-                                            modifier = Modifier.padding(24.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Icon(Icons.Filled.CheckCircle, contentDescription = if (lang == "ar") "نجاح" else "Success", tint = Color(0xFF4CAF50), modifier = Modifier.size(56.dp))
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Text(
-                                                if (lang == "ar") "تم فتح تطبيق البريد. أكمل الإرسال من تطبيق البريد." else "Email opened. Complete the send action in your email app.",
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 18.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(8.dp))
-                                            Text(
-                                                if (lang == "ar") "لا نعرض نجاحاً نهائياً لأن عملية الإرسال تتم خارج التطبيق."
-                                                else "The app does not claim final delivery because sending happens outside the app.",
-                                                fontSize = 13.sp,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                                textAlign = TextAlign.Center,
-                                                lineHeight = 20.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Button(
-                                                onClick = {
-                                                    supportSuccess = false
-                                                    supportName = ""
-                                                    supportEmail = ""
-                                                    supportMsg = ""
-                                                },
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
-                                            ) {
-                                                Text(if (lang == "ar") "إرسال طلب آخر" else "Submit Another Request")
-                                            }
-                                        }
-                                    } else {
+                                    
                                         Column(modifier = Modifier.padding(16.dp)) {
                                             Text(
                                                 if (lang == "ar") "أرسل لنا استفسارك أو مشكلتك التقنية" else "Send your inquiry or technical bug report",
