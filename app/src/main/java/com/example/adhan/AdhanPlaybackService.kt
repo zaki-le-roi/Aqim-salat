@@ -16,9 +16,11 @@ import com.example.R
 class AdhanPlaybackService : Service() {
     private var player: MediaPlayer? = null
     private var prayerName: String = "الصلاة"
+    private var prayerKey: String = ""
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         prayerName = intent?.getStringExtra(EXTRA_PRAYER_NAME) ?: "الصلاة"
+        prayerKey = intent?.getStringExtra(EXTRA_PRAYER_KEY) ?: ""
         val channelId = "adhan_playback"
 
         createPlaybackChannel()
@@ -70,11 +72,11 @@ class AdhanPlaybackService : Service() {
         player = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_ALARM)
                     .build()
             )
-            setDataSource(ATHAN_URL)
+            setDataSource(if (prayerKey == "Fajr") FAJR_ATHAN_URL else ATHAN_URL)
             setOnPreparedListener { it.start() }
             setOnCompletionListener { stopSelf() }
             setOnErrorListener { _, _, _ ->
@@ -103,7 +105,11 @@ class AdhanPlaybackService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 9401
-        private const val ATHAN_URL = "https://download.tvquran.com/download/selections/3/570773b064c12.mp3"
+        // Verified tvQuran Adhan selection: Mishary Alafasi / Adhan and Takbir.
+        private const val ATHAN_URL = "https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__04.athan.mp3"
+        // Verified dedicated Fajr Adhan with Dua.
+        private const val FAJR_ATHAN_URL = "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
         const val EXTRA_PRAYER_NAME = "prayer_name"
+        const val EXTRA_PRAYER_KEY = "prayer_key"
     }
 }
