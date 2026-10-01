@@ -18,8 +18,9 @@ object QuranApiClient {
     )
 
     // Fetches Uthmani Arabic Quran text and the Arabic Tafsir al-Muyassar. Audio is streamed; no surah files are downloaded.
-    suspend fun fetchSurah(surahId: Int): List<ApiAyah> = withContext(Dispatchers.IO) {
-        val urlString = "https://api.alquran.cloud/v1/surah/$surahId/editions/quran-uthmani,ar.muyassar"
+    suspend fun fetchSurah(surahId: Int, lang: String = "ar"): List<ApiAyah> = withContext(Dispatchers.IO) {
+        val tafsirEdition = if (lang == "en") "en.asad" else "ar.muyassar"
+        val urlString = "https://api.alquran.cloud/v1/surah/$surahId/editions/quran-uthmani,$tafsirEdition"
         val url = URL(urlString)
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
