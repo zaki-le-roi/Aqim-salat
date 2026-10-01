@@ -74,7 +74,7 @@ fun OnThisDayScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("on_this_day_back")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "ar") "رجوع" else "Back", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -290,7 +290,7 @@ fun OnThisDayScreen(
                                 ) {
                                     Icon(
                                         imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                        contentDescription = "Bookmark",
+                                        contentDescription = if (lang == "ar") "حفظ" else "Bookmark",
                                         tint = if (isBookmarked) Color(0xFFFFB300) else Color.LightGray
                                     )
                                 }
