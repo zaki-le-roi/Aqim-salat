@@ -15,6 +15,7 @@ import java.util.Date
 import java.util.Locale
 
 object AdhanScheduler {
+    // Alarms are rebuilt after boot, timezone changes, permission changes, and settings updates.
     private const val REQUEST_REFRESH = 0x7A11
 
     private val prayers = listOf(
