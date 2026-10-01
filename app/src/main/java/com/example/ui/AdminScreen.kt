@@ -1132,7 +1132,7 @@ fun SecurityTab(viewModel: AppViewModel) {
 
                     OutlinedTextField(value = newEmail, onValueChange = { newEmail = it }, label = { Text("البريد الإلكتروني للشخص المفوض") }, modifier = Modifier.fillMaxWidth())
 
-                    Text("الرتبة والمسؤولية الإدارية", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                    Text("بيانات الصلاحية المحلية", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         listOf(
                             "Super Admin" to "مدير عام النظام", 
@@ -1160,7 +1160,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                         }
                     }
 
-                    Text("نطاق التفويض والأذونات الصارمة", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                    Text("نطاق الصلاحيات المحلية", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         listOf(
                             "ALL" to "كامل الصلاحيات", 
@@ -1199,7 +1199,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                                     "Moderator" -> "مراقب عام"
                                     else -> "محرر محتوى"
                                 }
-                                Toast.makeText(context, "تم حفظ إعدادات حساب المشرف بمرتبة: $arabicRoleLabel.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم حفظ بيانات صلاحية المشرف محليًا بمرتبة: $arabicRoleLabel. لا يتم إنشاء حساب Firebase من هنا.", Toast.LENGTH_SHORT).show()
                                 newEmail = ""
                             }
                         },
@@ -1207,7 +1207,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("تثبيت الصلاحيات وتفويض المسؤول", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("تسجيل الصلاحيات محليًا", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
