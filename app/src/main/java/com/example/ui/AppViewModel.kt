@@ -449,17 +449,33 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     );
                     out center tags;
                 """.trimIndent()
-                val urlStr = "https://overpass-api.de/api/interpreter?data=" +
-                    java.net.URLEncoder.encode(queryStr, "UTF-8")
-                val conn = (java.net.URL(urlStr).openConnection() as java.net.HttpURLConnection).apply {
-                    connectTimeout = 10000
-                    readTimeout = 25000
-                    requestMethod = "GET"
-                    setRequestProperty("User-Agent", "Aqim-Salat/1.1 Android")
+                val encodedQuery = java.net.URLEncoder.encode(queryStr, "UTF-8")
+                val endpoints = listOf(
+                    "https://overpass-api.de/api/interpreter?data=",
+                    "https://overpass.kumi.systems/api/interpreter?data="
+                )
+                var response: String? = null
+                for (endpoint in endpoints) {
+                    try {
+                        val conn = (java.net.URL(endpoint + encodedQuery).openConnection() as java.net.HttpURLConnection).apply {
+                            connectTimeout = 8000
+                            readTimeout = 20000
+                            requestMethod = "GET"
+                            setRequestProperty("User-Agent", "Aqim-Salat/1.2 Android")
+                        }
+                        if (conn.responseCode == 200) {
+                            response = conn.inputStream.bufferedReader().use { it.readText() }
+                            conn.disconnect()
+                            if (!response.isNullOrBlank()) break
+                        } else {
+                            conn.disconnect()
+                        }
+                    } catch (_: Exception) {
+                        // Try the next public Overpass instance.
+                    }
                 }
 
-                if (conn.responseCode == 200) {
-                    val response = conn.inputStream.bufferedReader().use { it.readText() }
+                if (!response.isNullOrBlank()) {
                     val elements = org.json.JSONObject(response).optJSONArray("elements") ?: org.json.JSONArray()
                     val unique = LinkedHashMap<String, LocalMosque>()
 
@@ -502,7 +518,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     _nearbyRealMosques.value = emptyList()
                 }
-                conn.disconnect()
             } catch (e: Exception) {
                 e.printStackTrace()
                 _nearbyRealMosques.value = emptyList()
