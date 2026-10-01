@@ -88,6 +88,9 @@ fun MoreScreen(
         ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color(0xFF8D6E63))
     )
 
+    val currentLanguage by viewModel.language.collectAsState()
+    var showLanguageMenu by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -106,7 +109,7 @@ fun MoreScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left elements: Chevron + Mail
+                // Back + language selector
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.ChevronLeft,
@@ -117,6 +120,40 @@ fun MoreScreen(
                             .clickable { onNavigateToFeature("HOME") }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
+                    Box {
+                        Surface(
+                            onClick = { showLanguageMenu = true },
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color.White.copy(alpha = 0.12f)
+                        ) {
+                            Text(
+                                text = if (currentLanguage == "ar") "العربية" else "English",
+                                color = Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showLanguageMenu,
+                            onDismissRequest = { showLanguageMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("العربية") },
+                                onClick = {
+                                    viewModel.setAppLanguage("ar")
+                                    showLanguageMenu = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("English") },
+                                onClick = {
+                                    viewModel.setAppLanguage("en")
+                                    showLanguageMenu = false
+                                }
+                            )
+                        }
+                    }
                 }
 
                 val loggedInMember by viewModel.loggedInMember.collectAsState()
