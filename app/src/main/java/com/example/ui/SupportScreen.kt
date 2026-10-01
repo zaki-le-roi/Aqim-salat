@@ -1,7 +1,6 @@
 package com.example.ui
 import android.net.Uri
 import android.content.Intent
-import com.example.BuildConfig
 import android.net.Uri
 
 import android.widget.Toast
@@ -297,6 +296,10 @@ fun SupportScreen(
                                             Spacer(modifier = Modifier.height(16.dp))
 
                                             Button(
+                                                onClick = {
+                                                    if (supportName.isBlank() || supportEmail.isBlank() || supportMsg.isBlank()) {
+                                                        Toast.makeText(context, if (lang == "ar") "الرجاء ملء جميع الحقول المطلوبة" else "Please fill all required fields", Toast.LENGTH_SHORT).show()
+                                                    } else {
                                                         val subject = "Aqim Salah Support - $issueType"
                                                         val body = "Name: $supportName\nEmail: $supportEmail\nIssue: $supportMsg"
                                                         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:?subject=${Uri.encode(subject)}&body=${Uri.encode(body)}"))
@@ -305,6 +308,7 @@ fun SupportScreen(
                                                         } catch (_: Exception) {
                                                             Toast.makeText(context, if (lang == "ar") "لا يوجد تطبيق بريد مثبت على الجهاز." else "No email application is installed.", Toast.LENGTH_LONG).show()
                                                         }
+                                                    }
                                                 },
                                                 modifier = Modifier.fillMaxWidth(),
                                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
@@ -504,27 +508,16 @@ fun SupportScreen(
                                             }
                                         }
 
-                                        Button(
-                                            onClick = { Toast.makeText(context, if (lang == "ar") "سيتم توجيهك لمتجر التطبيقات لتنزيل التطبيق" else "Redirecting to Play Store...", Toast.LENGTH_SHORT).show() },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37)),
-                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                                        ) {
-                                            Text(if (lang == "ar") "تثبيت" else "Install", fontSize = 11.sp)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    "RATE_SHARE" -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                            contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            item {
-                                Card(
+                                            Button(
+                                                onClick = {
+                                                    if (selectedStars > 0) {
+                                                        val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${context.packageName}"))
+                                                        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}"))
+                                                        try { context.startActivity(marketIntent) } catch (_: Exception) { context.startActivity(webIntent) }
+                                                    } else {
+                                                        Toast.makeText(context, if (lang == "ar") "الرجاء تحديد النجوم أولاً" else "Please select a rating first", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                },
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
