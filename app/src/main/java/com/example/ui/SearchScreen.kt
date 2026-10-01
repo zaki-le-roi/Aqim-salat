@@ -85,7 +85,7 @@ fun SearchScreen(
         ) {
             if (onBack != null) {
                 IconButton(onClick = onBack, modifier = Modifier.testTag("search_back_button")) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "ar") "رجوع" else "Back")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -107,11 +107,11 @@ fun SearchScreen(
                 .clip(RoundedCornerShape(16.dp))
                 .testTag("global_search_input"),
             placeholder = { Text(if (lang == "ar") "ابحث عن سور، أحاديث، أدعية..." else "Search Surahs, Hadiths, Adhkar...") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = if (lang == "ar") "بحث" else "Search") },
             trailingIcon = {
                 if (query.isNotEmpty()) {
                     IconButton(onClick = { query = "" }) {
-                        Icon(Icons.Filled.Clear, contentDescription = "Clear")
+                        Icon(Icons.Filled.Clear, contentDescription = if (lang == "ar") "مسح" else "Clear")
                     }
                 }
             },
@@ -184,7 +184,7 @@ fun SearchScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Filled.YoutubeSearchedFor, contentDescription = "Type", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                    Icon(Icons.Filled.YoutubeSearchedFor, contentDescription = if (lang == "ar") "النوع" else "Type", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
                         text = if (lang == "ar") "ابدأ بكتابة كلمة للبحث في القرآن والسنة والذكر" else "Enter a keyword above to lookup records from holy resources.",
@@ -220,7 +220,7 @@ fun SearchScreen(
                                         ) {
                                             Column {
                                                 Text(s.englishName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                                Text("Surah ${s.id} • ${s.totalAyahs} Ayahs", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                                                Text(if (lang == "ar") "السورة ${s.id} • ${s.totalAyahs} آية" else "Surah ${s.id} • ${s.totalAyahs} Ayahs", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                                             }
                                             Text(s.name, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD4AF37))
                                         }
@@ -250,7 +250,7 @@ fun SearchScreen(
                                                 horizontalArrangement = Arrangement.SpaceBetween
                                             ) {
                                                 Text(h.collection, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFFD4AF37))
-                                                Text("N° ${h.number}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                                                Text(if (lang == "ar") "رقم ${h.number}" else "N° ${h.number}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                                             }
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Text(
@@ -327,8 +327,8 @@ fun NoResultsFound() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Filled.SearchOff, contentDescription = "None", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+        Icon(Icons.Filled.SearchOff, contentDescription = if (lang == "ar") "لا يوجد" else "None", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
         Spacer(modifier = Modifier.height(16.dp))
-        Text("No matching results found.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 15.sp)
+        Text(if (lang == "ar") "لم يتم العثور على نتائج مطابقة." else "No matching results found.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), fontSize = 15.sp)
     }
 }
