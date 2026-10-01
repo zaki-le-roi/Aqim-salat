@@ -159,9 +159,9 @@ fun SupportScreen(
                                 else "Navigate to Settings, then click on 'Prayer Calculation' where you can fully customize the Athan voice for Fajr (e.g., Medina Athan) and standard prayers (e.g., Makkah Athan)."
                             ),
                             Pair(
-                                if (lang == "ar") "ما هي نقاط البركة (Barakah Points) وكيف أستفيد منها؟" else "What are Barakah Points and how to use them?",
-                                if (lang == "ar") "هي نظام تشجيعي يهدف لمساعدتك على الالتزام. تكسب النقاط عند توثيق صلواتك في وقتها، قراءة وردك من القرآن الكريم، مشاركة تذكيرات الخير في المجتمع، أو التصويت في الاستطلاعات وتظهر في قائمة المتصدرين."
-                                else "It is an encouraging rewarding mechanism. You accumulate points by completing prayers, reading Quran, publishing reminders in the community forum, and voting on weekly polls."
+                                if (lang == "ar") "هل توجد نقاط أو مكافآت داخل التطبيق؟" else "Does the app have points or rewards?",
+                                if (lang == "ar") "لا أعرض في هذه الشاشة نظام نقاط أو مكافآت ما لم يكن مفعلاً ومربوطاً بمصدر بيانات فعلي داخل التطبيق."
+                                else "This screen does not claim a points or rewards system unless it is actually enabled and connected to a real data source."
                             )
                         )
 
@@ -376,7 +376,7 @@ fun SupportScreen(
                                  }
                              }
 
-                            items(partners) { (name, desc) ->
+                            items(emptyList<Pair<String, String>>()) { (name, desc) ->
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
@@ -425,7 +425,7 @@ fun SupportScreen(
                                         )
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            if (lang == "ar") "للاستفسار تواصل معنا: ads@aqimsalah.org" else "For booking inquiries: ads@aqimsalah.org",
+                                            if (lang == "ar") "لا يوجد حالياً عنوان بريد منشور موثق داخل التطبيق." else "No verified public email address is currently published in the app.",
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary
