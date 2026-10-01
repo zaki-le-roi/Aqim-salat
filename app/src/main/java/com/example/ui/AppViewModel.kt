@@ -1416,7 +1416,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun addCommunityPost(content: String) {
         val member = loggedInMember.value
         val name = member?.name ?: "مستخدم أقم صلاتك"
-        val country = member?.country ?: "المدينة المنورة"
+        val country = member?.country?.takeIf { it.isNotBlank() } ?: "غير محدد"
         val newPost = CommunityPost(
             id = _communityPosts.value.size + 1,
             authorName = name,
