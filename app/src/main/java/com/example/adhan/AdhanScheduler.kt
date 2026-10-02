@@ -36,7 +36,7 @@ object AdhanScheduler {
         }
 
         val alarmManager = appContext.getSystemService(AlarmManager::class.java) ?: return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) return
+        val exactAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
 
         cancel(context)
         val latitude = repository.appLatitude.first()
@@ -88,7 +88,11 @@ object AdhanScheduler {
                     appContext, requestCode, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
+                if (exactAllowed) {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
+                } else {
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
+                }
             }
         }
 
@@ -106,7 +110,11 @@ object AdhanScheduler {
             appContext, REQUEST_REFRESH, refreshIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, refresh, refreshPending)
+        if (exactAllowed) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, refresh, refreshPending)
+        } else {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, refresh, refreshPending)
+        }
     }
 
     fun cancel(context: Context) {
