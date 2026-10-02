@@ -41,6 +41,12 @@ object AdhanScheduler {
         cancel(context)
         val latitude = repository.appLatitude.first()
         val longitude = repository.appLongitude.first()
+        val locationName = repository.appLocationName.first()
+        // Do not schedule from the legacy Algiers fallback before a real device location is acquired.
+        if (latitude == 36.7538 && longitude == 3.0588 && locationName == "الجزائر العاصمة، الجزائر") {
+            cancel(appContext)
+            return
+        }
         val method = runCatching {
             PrayerCalculator.CalculationMethod.valueOf(repository.appCalcMethod.first())
         }.getOrDefault(PrayerCalculator.CalculationMethod.MWL)
