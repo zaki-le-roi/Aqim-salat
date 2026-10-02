@@ -77,6 +77,7 @@ class AppRepository(
         val KEY_LATITUDE = doublePreferencesKey("app_latitude")
         val KEY_LONGITUDE = doublePreferencesKey("app_longitude")
         val KEY_LOCATION_NAME = stringPreferencesKey("app_location_name")
+        val KEY_LOCATION_CONFIGURED = booleanPreferencesKey("app_location_configured")
         val KEY_ATHAN_FAJR_VOICE = stringPreferencesKey("app_athan_fajr_voice")
         val KEY_ATHAN_OTHER_VOICE = stringPreferencesKey("app_athan_other_voice")
         val KEY_SNOOZE_MINUTES = intPreferencesKey("app_snooze_minutes")
@@ -113,6 +114,10 @@ class AppRepository(
 
     val appLongitude: Flow<Double> = context.dataStore.data.map { pref ->
         pref[KEY_LONGITUDE] ?: 3.0588
+    }
+
+    val appLocationConfigured: Flow<Boolean> = context.dataStore.data.map { pref ->
+        pref[KEY_LOCATION_CONFIGURED] ?: (pref[KEY_LATITUDE] != null && pref[KEY_LONGITUDE] != null && (pref[KEY_LATITUDE] != 36.7538 || pref[KEY_LONGITUDE] != 3.0588))
     }
 
     val appLocationName: Flow<String> = context.dataStore.data.map { pref ->
@@ -205,6 +210,7 @@ class AppRepository(
     suspend fun setLocation(name: String, lat: Double, lng: Double) {
         context.dataStore.edit { pref ->
             pref[KEY_LOCATION_NAME] = name
+            pref[KEY_LOCATION_CONFIGURED] = true
             pref[KEY_LATITUDE] = lat
             pref[KEY_LONGITUDE] = lng
         }
