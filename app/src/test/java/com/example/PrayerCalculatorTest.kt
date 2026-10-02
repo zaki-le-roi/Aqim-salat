@@ -25,11 +25,11 @@ class PrayerCalculatorTest {
             madhab = PrayerCalculator.Madhab.STANDARD
         )
 
-        val values = listOf(times.fajr, times.sunrise, times.dhuhr, times.asr, times.maghrib, times.isha)
-        println("ALGERS_TIMES=$values")
-            .map { it.replace(":", "").toInt() }
+        val timeStrings = listOf(times.fajr, times.sunrise, times.dhuhr, times.asr, times.maghrib, times.isha)
+        val values = timeStrings.map { it.substring(0, 2).toInt() * 60 + it.substring(3, 5).toInt() }
+        println("ALGERS_TIMES=$timeStrings")
 
-        assertTrue("Unexpected order: $values", values.zipWithNext().all { (a, b) -> a < b })
+        assertTrue("Unexpected order: $timeStrings", values.zipWithNext().all { (a, b) -> a < b })
         assertTrue(times.fajr.matches(Regex("\\d{2}:\\d{2}")))
         assertTrue(times.isha.matches(Regex("\\d{2}:\\d{2}")))
     }
