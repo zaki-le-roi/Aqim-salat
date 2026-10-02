@@ -677,7 +677,7 @@ fun SurahReader(
                     verses = apiResult
                 } catch (e: Exception) {
                     errorMsg = if (lang == "ar") {
-    "تعذر تحميل هذه السورة الآن. أعد المحاولة عند توفر الإنترنت؛ لا حاجة لتنزيل ملف السورة."
+    if (lang == "en") "This surah could not be loaded. Retry when internet is available; no surah file download is required." else "تعذر تحميل هذه السورة الآن. أعد المحاولة عند توفر الإنترنت؛ لا حاجة لتنزيل ملف السورة."
 } else {
     "This surah could not be loaded right now. Retry when internet is available; no surah file download is required."
 }
@@ -767,9 +767,9 @@ fun SurahReader(
             TopAppBar(
                 title = {
                     Column {
-                        Text("سورة ${surah.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF042B1D))
+                        Text(if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF042B1D))
                         Text(
-                            text = "آياتها: ${surah.totalAyahs} • نزولها: ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
+                            text = if (lang == "en") "Ayahs: ${surah.totalAyahs} • ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan"}" else "آياتها: ${surah.totalAyahs} • نزولها: ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
                             fontSize = 11.sp,
                             color = Color.Gray
                         )
@@ -783,7 +783,7 @@ fun SurahReader(
                 actions = {
                     if (currentlyPlayingIndex != -1) {
                         IconButton(onClick = { releaseAudio() }) {
-                            Icon(Icons.Filled.Stop, contentDescription = "إيقاف", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Filled.Stop, contentDescription = if (lang == "en") "Stop" else "إيقاف", tint = MaterialTheme.colorScheme.error)
                         }
                     }
 
@@ -901,7 +901,7 @@ fun SurahReader(
                             CircularProgressIndicator(color = Color(0xFFD4AF37))
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = if (lang == "ar") "جاري تحميل الآيات الكريمة..." else "Loading verses...",
+                                text = if (lang == "en") "Loading verses..." else "جاري تحميل الآيات الكريمة...",
                                 fontSize = 14.sp,
                                 color = txtColor.copy(alpha = 0.6f)
                             )
@@ -1327,9 +1327,9 @@ fun SurahReader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     listOf(
-                        Triple("WARM", Color(0xFFFAF6EE), "دافئ"),
-                        Triple("GREEN", Color(0xFF0F261D), "ليلي هادئ"),
-                        Triple("NIGHT", Color(0xFF121212), "داكن")
+                        Triple("WARM", Color(0xFFFAF6EE), if (lang == "en") "Warm" else "دافئ"),
+                        Triple("GREEN", Color(0xFF0F261D), if (lang == "en") "Calm green night" else "ليلي هادئ"),
+                        Triple("NIGHT", Color(0xFF121212), if (lang == "en") "Dark" else "داكن")
                     ).forEach { (thName, col, label) ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -1462,7 +1462,7 @@ fun SurahReader(
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF042B1D)),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("إغلاق التفاصيل", color = Color.White)
+                    Text(if (lang == "en") "Close details" else "إغلاق التفاصيل", color = Color.White)
                 }
             }
         }
@@ -1490,7 +1490,7 @@ fun SurahHeaderBlock(surah: QuranData.Surah, goldColor: Color, txtColor: Color) 
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية",
+                    text = if (lang == "en") if (surah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan" else if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = goldColor
