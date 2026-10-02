@@ -43,10 +43,8 @@ fun SettingsScreen(
 
     // Supported lists
     val languages = listOf(
-        Pair("ar", "العربية (Arabic)"),
-        Pair("en", "English"),
-        Pair("fr", "Français (French)"),
-        Pair("tr", "Türkçe (Turkish)")
+        Pair("ar", "العربية"),
+        Pair("en", "English")
     )
     val themes = listOf("LIGHT", "DARK", "AMOLED", "AUTO")
     val methods = listOf("ALGERIA", "UMM_AL_QURA", "EGYPT", "MWL", "KARACHI", "ISNA", "TURKEY", "AWQAF")
