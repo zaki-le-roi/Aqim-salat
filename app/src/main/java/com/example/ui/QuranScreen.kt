@@ -1042,7 +1042,7 @@ fun SurahReader(
                                                 horizontalAlignment = Alignment.CenterHorizontally
                                             ) {
                                                 if (pageIdx == 0) {
-                                                    SurahHeaderBlock(surah = surah, goldColor = goldAccent, txtColor = txtColor)
+                                                    SurahHeaderBlock(surah = surah, lang = lang, goldColor = goldAccent, txtColor = txtColor)
                                                     Spacer(modifier = Modifier.height(16.dp))
                                                     if (surah.id != 9 && surah.id != 1) {
                                                         Text(
