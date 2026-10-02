@@ -455,8 +455,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val zone = calendar.timeZone
         val offsetHours = zone.getOffset(date.time) / 3600000.0
 
-        val calcMethod = PrayerCalculator.CalculationMethod.valueOf(methodStr)
-        val madhab = PrayerCalculator.Madhab.valueOf(madhabStr)
+        val calcMethod = runCatching {
+            PrayerCalculator.CalculationMethod.valueOf(methodStr)
+        }.getOrDefault(PrayerCalculator.CalculationMethod.ALGERIA)
+        val madhab = runCatching {
+            PrayerCalculator.Madhab.valueOf(madhabStr)
+        }.getOrDefault(PrayerCalculator.Madhab.STANDARD)
 
         val times = PrayerCalculator.calculateTimes(
             latitude = lat,
