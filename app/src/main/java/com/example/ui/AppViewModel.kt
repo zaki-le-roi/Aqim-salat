@@ -525,9 +525,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val maghribSec = toSecs(times.maghrib)
         val ishaSec = toSecs(times.isha)
 
+        // Sunrise is a displayed astronomical event, not a prayer. It must never become
+        // the "next prayer" or the "current prayer".
         val prayers = listOf(
             "Fajr" to fajrSec,
-            "Sunrise" to sunriseSec,
             "Dhuhr" to dhuhrSec,
             "Asr" to asrSec,
             "Maghrib" to maghribSec,
