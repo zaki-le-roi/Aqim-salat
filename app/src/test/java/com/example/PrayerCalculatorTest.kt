@@ -28,7 +28,7 @@ class PrayerCalculatorTest {
         val values = listOf(times.fajr, times.sunrise, times.dhuhr, times.asr, times.maghrib, times.isha)
             .map { it.replace(":", "").toInt() }
 
-        assertTrue(values.zipWithNext().all { (a, b) -> a < b })
+        assertTrue("Unexpected order: $values", values.zipWithNext().all { (a, b) -> a < b })
         assertTrue(times.fajr.matches(Regex("\\d{2}:\\d{2}")))
         assertTrue(times.isha.matches(Regex("\\d{2}:\\d{2}")))
     }
@@ -51,6 +51,6 @@ class PrayerCalculatorTest {
             PrayerCalculator.Madhab.HANAFI
         )
 
-        assertTrue(hanafi.asr.replace(":", "").toInt() > standard.asr.replace(":", "").toInt())
+        assertTrue("Standard=${standard.asr}, Hanafi=${hanafi.asr}", hanafi.asr.replace(":", "").toInt() > standard.asr.replace(":", "").toInt())
     }
 }
