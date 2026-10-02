@@ -313,7 +313,7 @@ fun QuranScreen(
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
-                                            text = "سورة ${lastRead.surahName}",
+                                            text = if (lang == "en") "Surah ${lastRead.surahName}" else "سورة ${lastRead.surahName}",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFF042B1D)
@@ -338,12 +338,12 @@ fun QuranScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("quran_search_bar"),
-                        placeholder = { Text("ابحث عن اسم السورة، رقمها...", fontSize = 14.sp) },
-                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "ابحث", tint = Color.Gray) },
+                        placeholder = { Text(if (lang == "en") "Search surah name or number..." else "ابحث عن اسم السورة أو رقمها...", fontSize = 14.sp) },
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = if (lang == "en") "Search" else "بحث", tint = Color.Gray) },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Filled.Clear, contentDescription = "مسح", tint = Color.Gray)
+                                    Icon(Icons.Filled.Clear, contentDescription = if (lang == "en") "Clear" else "مسح", tint = Color.Gray)
                                 }
                             }
                         },
@@ -368,10 +368,10 @@ fun QuranScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         val tabs = listOf(
-                            "ALL" to "كل السور",
-                            "MECCAN" to "مكية",
-                            "MEDINAN" to "مدنية",
-                            "BOOKMARKS" to "المفضلة"
+                            "ALL" to if (lang == "en") "All" else "كل السور",
+                            "MECCAN" to if (lang == "en") "Meccan" else "مكية",
+                            "MEDINAN" to if (lang == "en") "Medinan" else "مدنية",
+                            "BOOKMARKS" to if (lang == "en") "Bookmarks" else "المفضلة"
                         )
                         tabs.forEach { (key, title) ->
                             val isSelected = selectedTab == key
@@ -428,7 +428,7 @@ fun QuranScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "جزء $juzNum",
+                                    text = if (lang == "en") "Juz $juzNum" else "جزء $juzNum",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF042B1D)
@@ -504,7 +504,7 @@ fun QuranScreen(
                                                             .padding(horizontal = 6.dp, vertical = 2.dp)
                                                     ) {
                                                         Text(
-                                                            text = if (isMeccan) "مكية" else "مدنية",
+                                                            text = if (lang == "en") if (isMeccan) "Meccan" else "Medinan" else if (isMeccan) "مكية" else "مدنية",
                                                             fontSize = 10.sp,
                                                             color = if (isMeccan) Color(0xFFE65100) else Color(0xFF2E7D32),
                                                             fontWeight = FontWeight.Bold
@@ -512,7 +512,7 @@ fun QuranScreen(
                                                     }
                                                     Spacer(modifier = Modifier.width(8.dp))
                                                     Text(
-                                                        text = "عدد الآيات: ${surah.totalAyahs}",
+                                                        text = if (lang == "en") "Ayahs: ${surah.totalAyahs}" else "عدد الآيات: ${surah.totalAyahs}",
                                                         fontSize = 11.sp,
                                                         color = Color.Gray
                                                     )
@@ -777,7 +777,7 @@ fun SurahReader(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }, modifier = Modifier.testTag("surah_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع", tint = Color(0xFF042B1D))
+                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = Color(0xFF042B1D))
                     }
                 },
                 actions = {
@@ -794,7 +794,7 @@ fun SurahReader(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
-                            contentDescription = "خيارات القراءة",
+                            contentDescription = if (lang == "en") "Reading options" else "خيارات القراءة",
                             tint = Color(0xFF042B1D)
                         )
                     }
@@ -806,7 +806,7 @@ fun SurahReader(
                     ) {
                         Icon(
                             imageVector = if (isMushafMode) Icons.Filled.ViewList else Icons.Filled.MenuBook,
-                            contentDescription = "تبديل العرض",
+                            contentDescription = if (lang == "en") "Change view" else "تبديل العرض",
                             tint = Color(0xFF042B1D)
                         )
                     }
@@ -867,7 +867,7 @@ fun SurahReader(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.SwapVert,
-                                    contentDescription = "رأسي",
+                                    contentDescription = if (lang == "en") "Vertical" else "رأسي",
                                     tint = if (verticalScroll) Color(0xFFD4AF37) else Color.Gray
                                 )
                             }
@@ -878,7 +878,7 @@ fun SurahReader(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.SwapHoriz,
-                                    contentDescription = "أفقي",
+                                    contentDescription = if (lang == "en") "Horizontal" else "أفقي",
                                     tint = if (!verticalScroll) Color(0xFFD4AF37) else Color.Gray
                                 )
                             }
@@ -914,7 +914,7 @@ fun SurahReader(
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Icon(Icons.Filled.CloudOff, contentDescription = "انقطع الاتصال", modifier = Modifier.size(64.dp), tint = txtColor.copy(alpha = 0.3f))
+                            Icon(Icons.Filled.CloudOff, contentDescription = if (lang == "en") "Offline" else "غير متصل", modifier = Modifier.size(64.dp), tint = txtColor.copy(alpha = 0.3f))
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = errorMsg!!,
@@ -973,19 +973,19 @@ fun SurahReader(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "الجزء $juzNum",
+                                                text = if (lang == "en") "Juz $juzNum" else "الجزء $juzNum",
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = goldAccent
                                             )
                                             Text(
-                                                text = "صـ $startPage",
+                                                text = if (lang == "en") "p. $startPage" else "صـ $startPage",
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = goldAccent
                                             )
                                             Text(
-                                                text = "سورة ${surah.name}",
+                                                text = if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}",
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = goldAccent
@@ -1023,13 +1023,13 @@ fun SurahReader(
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
                                                 Text(
-                                                    text = "الجزء ${getJuzNumber(surah.id, startIdx + 1)}",
+                                                    text = if (lang == "en") "Juz ${getJuzNumber(surah.id, startIdx + 1)}" else "الجزء ${getJuzNumber(surah.id, startIdx + 1)}",
                                                     fontSize = 11.sp,
                                                     color = goldAccent,
                                                     fontWeight = FontWeight.Bold
                                                 )
                                                 Text(
-                                                    text = "سورة ${surah.name}",
+                                                    text = if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}",
                                                     fontSize = 12.sp,
                                                     color = goldAccent,
                                                     fontWeight = FontWeight.Bold
@@ -1150,7 +1150,7 @@ fun SurahReader(
                                                     IconButton(onClick = { playRecitation(verses.indexOf(ayah), ayah.audioUrl) }) {
                                                         Icon(
                                                             imageVector = if (isPlayingThisAyah) Icons.Filled.PauseCircle else Icons.Filled.PlayCircle,
-                                                            contentDescription = "استماع",
+                                                            contentDescription = if (lang == "en") "Listen" else "استماع",
                                                             tint = goldAccent
                                                         )
                                                     }
@@ -1160,8 +1160,8 @@ fun SurahReader(
                                                             viewModel.toggleBookmark(
                                                                 type = "QURAN",
                                                                 referenceId = refKey,
-                                                                title = "سورة ${surah.name} • آية ${ayah.numberInSurah}",
-                                                                subtitle = "تفسير: " + ayah.translationText.take(50) + "...",
+                                                                title = if (lang == "en") "Surah ${surah.name} • Ayah ${ayah.numberInSurah}" else "سورة ${surah.name} • آية ${ayah.numberInSurah}",
+                                                                subtitle = (if (lang == "en") "Meaning: " else "تفسير: ") + ayah.translationText.take(50) + "...",
                                                                 arabicText = ayah.arabicText,
                                                                 translationText = ayah.translationText
                                                             )
@@ -1169,7 +1169,7 @@ fun SurahReader(
                                                     ) {
                                                         Icon(
                                                             imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                                            contentDescription = "حفظ",
+                                                            contentDescription = if (lang == "en") "Save" else "حفظ",
                                                             tint = if (isBookmarked) goldAccent else Color.Gray
                                                         )
                                                     }
@@ -1382,7 +1382,7 @@ fun SurahReader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "سورة ${surah.name} • الآية ${details.numberInSurah}",
+                        text = if (lang == "en") "Surah ${surah.name} • Ayah ${details.numberInSurah}" else "سورة ${surah.name} • الآية ${details.numberInSurah}",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = Color(0xFFD4AF37)
@@ -1392,7 +1392,7 @@ fun SurahReader(
                         IconButton(onClick = { playRecitation(verses.indexOf(details), details.audioUrl) }) {
                             Icon(
                                 imageVector = if (isPlayingThisAyah) Icons.Filled.PauseCircle else Icons.Filled.PlayCircle,
-                                contentDescription = "استماع",
+                                contentDescription = if (lang == "en") "Listen" else "استماع",
                                 tint = Color(0xFFD4AF37),
                                 modifier = Modifier.size(28.dp)
                             )
@@ -1403,8 +1403,8 @@ fun SurahReader(
                                 viewModel.toggleBookmark(
                                     type = "QURAN",
                                     referenceId = refKey,
-                                    title = "سورة ${surah.name} • آية ${details.numberInSurah}",
-                                    subtitle = "تفسير: " + details.translationText.take(50) + "...",
+                                    title = if (lang == "en") "Surah ${surah.name} • Ayah ${details.numberInSurah}" else "سورة ${surah.name} • آية ${details.numberInSurah}",
+                                    subtitle = (if (lang == "en") "Meaning: " else "تفسير: ") + details.translationText.take(50) + "...",
                                     arabicText = details.arabicText,
                                     translationText = details.translationText
                                 )
@@ -1412,7 +1412,7 @@ fun SurahReader(
                         ) {
                             Icon(
                                 imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                contentDescription = "حفظ",
+                                contentDescription = if (lang == "en") "Save" else "حفظ",
                                 tint = Color(0xFFD4AF37),
                                 modifier = Modifier.size(28.dp)
                             )
@@ -1482,7 +1482,7 @@ fun SurahHeaderBlock(surah: QuranData.Surah, goldColor: Color, txtColor: Color) 
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "سورة ${surah.name}",
+                text = if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF042B1D)
@@ -1497,7 +1497,7 @@ fun SurahHeaderBlock(surah: QuranData.Surah, goldColor: Color, txtColor: Color) 
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "عدد الآيات: ${surah.totalAyahs}",
+                    text = if (lang == "en") "Ayahs: ${surah.totalAyahs}" else "عدد الآيات: ${surah.totalAyahs}",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = txtColor.copy(alpha = 0.8f)
