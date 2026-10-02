@@ -195,10 +195,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _isFastingToday.value = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE).getBoolean(fastingKey, false)
         initCommunityAndPolls()
 
-        // Fetch initial set of real mosques from Overpass around current coordinates
-        viewModelScope.launch {
-            fetchRealNearbyMosques(latitude.value, longitude.value)
-        }
+        // Nearby mosques are loaded only after a real device location is acquired.
+        // This prevents the old fallback coordinates from showing unrelated mosques.
     }
 
     @SuppressLint("MissingPermission")
