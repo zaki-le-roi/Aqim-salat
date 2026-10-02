@@ -648,6 +648,7 @@ fun SurahReader(
     lang: String,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val bookmarks by viewModel.bookmarks.collectAsState()
