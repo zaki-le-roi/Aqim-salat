@@ -60,8 +60,6 @@ class MainActivity : ComponentActivity() {
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == true
             if (granted) {
                 locationViewModel?.startLocationTracking()
-            } else {
-                locationViewModel?.detectLocationByIp()
             }
         }
 
@@ -109,8 +107,10 @@ class MainActivity : ComponentActivity() {
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 val observer = LifecycleEventObserver { _, event ->
-                    if (event == Lifecycle.Event.ON_STOP) {
-                        appViewModel.stopLocationTracking()
+                    when (event) {
+                        Lifecycle.Event.ON_START -> appViewModel.startLocationTracking()
+                        Lifecycle.Event.ON_STOP -> appViewModel.stopLocationTracking()
+                        else -> Unit
                     }
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
