@@ -303,57 +303,50 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val dist = calculateDist(oldLat, oldLng, lat, lng)
             if (dist <= 0.05 && oldLat != 0.0 && oldLng != 0.0) return@launch
 
-            fun persistLocation(name: String, isAlgeria: Boolean) {
+            // Persist coordinates immediately so prayer times, Qibla and mosque distance never
+            // wait for reverse-geocoding to finish.
+            repo.setLocation("My Location", lat, lng)
+            runCatching { AdhanScheduler.schedule(getApplication()) }
+            fetchRealNearbyMosques(lat, lng)
+
+            val geocoder = runCatching {
+                Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
+            }.getOrNull() ?: return@launch
+
+            fun applyAddress(addresses: List<android.location.Address>) {
+                val addr = addresses.firstOrNull() ?: return
+                val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea
+                val country = addr.countryName.orEmpty()
+                val countryCode = addr.countryCode.orEmpty()
+                val isAlgeria = countryCode.equals("DZ", ignoreCase = true) ||
+                    country.contains("Algeria", ignoreCase = true) ||
+                    country.contains("الجزائر")
+                val addressName = listOfNotNull(city, country.ifBlank { null })
+                    .joinToString(", ")
+                    .ifBlank { "My Location" }
+
                 viewModelScope.launch {
-                    repo.setLocation(name, lat, lng)
+                    repo.setLocation(addressName, lat, lng)
                     if (isAlgeria) repo.setCalcMethod("ALGERIA")
                     runCatching { AdhanScheduler.schedule(getApplication()) }
                 }
             }
 
-            var addressName = "My Location"
-            var isAlgeria = false
             try {
-                val geocoder = Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     geocoder.getFromLocation(lat, lng, 1) { addresses ->
-                        val addr = addresses.firstOrNull()
-                        if (addr != null) {
-                            val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea
-                            val country = addr.countryName.orEmpty()
-                            val countryCode = addr.countryCode.orEmpty()
-                            isAlgeria = countryCode.equals("DZ", ignoreCase = true) ||
-                                country.contains("Algeria", ignoreCase = true) ||
-                                country.contains("الجزائر")
-                            addressName = listOfNotNull(city, country.ifBlank { null }).joinToString(", ")
-                                .ifBlank { "My Location" }
-                        }
-                        persistLocation(addressName, isAlgeria)
+                        applyAddress(addresses)
                     }
                 } else {
                     @Suppress("DEPRECATION")
-                    val addresses = geocoder.getFromLocation(lat, lng, 1)
-                    val addr = addresses?.firstOrNull()
-                    if (addr != null) {
-                        val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea
-                        val country = addr.countryName.orEmpty()
-                        val countryCode = addr.countryCode.orEmpty()
-                        isAlgeria = countryCode.equals("DZ", ignoreCase = true) ||
-                            country.contains("Algeria", ignoreCase = true) ||
-                            country.contains("الجزائر")
-                        addressName = listOfNotNull(city, country.ifBlank { null }).joinToString(", ")
-                            .ifBlank { "My Location" }
-                    }
-                    persistLocation(addressName, isAlgeria)
+                    applyAddress(geocoder.getFromLocation(lat, lng, 1).orEmpty())
                 }
             } catch (_: Exception) {
-                persistLocation(addressName, false)
+                // Coordinates are already persisted; address resolution is optional.
             }
-
-            fetchRealNearbyMosques(lat, lng)
         }
     }
-    
+
     fun openMosqueNavigation(mosque: LocalMosque) {
         val uri = Uri.parse("geo:${mosque.lat},${mosque.lng}?q=${Uri.encode(mosque.nameAr)}")
         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri).apply {
