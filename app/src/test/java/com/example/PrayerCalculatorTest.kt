@@ -26,6 +26,7 @@ class PrayerCalculatorTest {
         )
 
         val values = listOf(times.fajr, times.sunrise, times.dhuhr, times.asr, times.maghrib, times.isha)
+        println("ALGERS_TIMES=$values")
             .map { it.replace(":", "").toInt() }
 
         assertTrue("Unexpected order: $values", values.zipWithNext().all { (a, b) -> a < b })
@@ -51,6 +52,7 @@ class PrayerCalculatorTest {
             PrayerCalculator.Madhab.HANAFI
         )
 
+        println("ASR_STANDARD=${standard.asr}, ASR_HANAFI=${hanafi.asr}")
         assertTrue("Standard=${standard.asr}, Hanafi=${hanafi.asr}", hanafi.asr.replace(":", "").toInt() > standard.asr.replace(":", "").toInt())
     }
 }
