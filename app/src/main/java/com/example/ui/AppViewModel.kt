@@ -306,7 +306,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // Persist coordinates immediately so prayer times, Qibla and mosque distance never
             // wait for reverse-geocoding to finish.
             repo.setLocation("My Location", lat, lng)
-            runCatching { AdhanScheduler.schedule(getApplication()) }
+            try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
             fetchRealNearbyMosques(lat, lng)
 
             val geocoder = runCatching {
@@ -328,7 +328,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 viewModelScope.launch {
                     repo.setLocation(addressName, lat, lng)
                     if (isAlgeria) repo.setCalcMethod("ALGERIA")
-                    runCatching { AdhanScheduler.schedule(getApplication()) }
+                    try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
                 }
             }
 
