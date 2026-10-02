@@ -1120,7 +1120,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
         if (fineGranted || coarseGranted) {
             viewModel.startLocationTracking()
         } else {
-            viewModel.detectLocationByIp()
+            // Keep the app on device/GPS location only. The user can retry permission from the app.
         }
     }
 
