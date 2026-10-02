@@ -244,7 +244,7 @@ fun HomeScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "${if (locationName == "الجزائر العاصمة، الجزائر") { if (lang == "ar") "الجزائر العاصمة (افتراضي)" else "Algiers (default)" } else locationName} +",
+                                text = locationName,
                                 fontSize = 12.sp,
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold
