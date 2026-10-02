@@ -318,16 +318,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     updateLocationCoordinates(location.latitude, location.longitude)
                     _isTrackingLocation.value = false
                 } else {
-                    // Last location is null, trigger IP Geolocation as fallback
-                    detectLocationByIp()
+                    // Keep waiting for a real device location update; IP geolocation is not precise enough for prayer times.
+                    _isTrackingLocation.value = true
                 }
             }.addOnFailureListener {
-                // Failed, trigger IP Geolocation as fallback
-                detectLocationByIp()
+                // Keep the high-accuracy location request active instead of substituting an IP location.
+                _isTrackingLocation.value = true
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            detectLocationByIp()
+            _isTrackingLocation.value = false
         }
         
         // Register location updates
@@ -419,6 +419,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                         repo.setCalcMethod("ALGERIA")
                                     }
                                 }
+                                AdhanScheduler.schedule(getApplication())
                             }
                         }
                     } else {
@@ -448,6 +449,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     repo.setLocation("My Location", lat, lng)
+                    AdhanScheduler.schedule(getApplication())
                 }
                 
                 fetchRealNearbyMosques(lat, lng)
