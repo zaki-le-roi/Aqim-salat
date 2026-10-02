@@ -676,7 +676,11 @@ fun SurahReader(
                     val apiResult = QuranApiClient.fetchSurah(surah.id, lang)
                     verses = apiResult
                 } catch (e: Exception) {
-                    errorMsg = "الرجاء التأكد من الاتصال بالإنترنت لعرض وتخزين السور."
+                    errorMsg = if (lang == "ar") {
+    "تعذر تحميل هذه السورة الآن. أعد المحاولة عند توفر الإنترنت؛ لا حاجة لتنزيل ملف السورة."
+} else {
+    "This surah could not be loaded right now. Retry when internet is available; no surah file download is required."
+}
                 } finally {
                     isLoading = false
                 }
@@ -897,7 +901,7 @@ fun SurahReader(
                             CircularProgressIndicator(color = Color(0xFFD4AF37))
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "جاري تحميل الآيات الكريمة...",
+                                text = if (lang == "ar") "جاري تحميل الآيات الكريمة..." else "Loading verses...",
                                 fontSize = 14.sp,
                                 color = txtColor.copy(alpha = 0.6f)
                             )
