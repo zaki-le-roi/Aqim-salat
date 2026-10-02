@@ -649,6 +649,7 @@ fun SurahReader(
     onBack: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     val bookmarks by viewModel.bookmarks.collectAsState()
 
     // Configuration Settings
@@ -696,14 +697,20 @@ fun SurahReader(
                 try {
                     isLoading = true
                     errorMsg = null
-                    val apiResult = QuranApiClient.fetchSurah(surah.id, lang)
-                    verses = apiResult
-                } catch (e: Exception) {
-                    errorMsg = if (lang == "ar") {
-    if (lang == "en") "This surah could not be loaded. Retry when internet is available; no surah file download is required." else "تعذر تحميل هذه السورة الآن. أعد المحاولة عند توفر الإنترنت؛ لا حاجة لتنزيل ملف السورة."
-} else {
-    "This surah could not be loaded right now. Retry when internet is available; no surah file download is required."
-}
+                    val cached = loadCachedSurah(context, surah.id, lang)
+                    if (cached != null) {
+                        verses = cached
+                    } else {
+                        val apiResult = QuranApiClient.fetchSurah(surah.id, lang)
+                        verses = apiResult
+                        saveCachedSurah(context, surah.id, lang, apiResult)
+                    }
+                } catch (_: Exception) {
+                    errorMsg = if (lang == "en") {
+                        "This surah is not cached yet. Connect to the internet once to load it; after that it is available offline."
+                    } else {
+                        "هذه السورة غير محفوظة بعد. اتصل بالإنترنت مرة واحدة لتحميلها، وبعد ذلك ستصبح متاحة دون اتصال."
+                    }
                 } finally {
                     isLoading = false
                 }
