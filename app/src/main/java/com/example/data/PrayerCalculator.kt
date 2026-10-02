@@ -126,7 +126,7 @@ object PrayerCalculator {
 
         // Asr Calculation (shadow angle)
         val gAsr = acot(madhab.shadowFactor.toDouble() + tan(dtr(abs(latitude - declination))))
-        val asrAngle = -rtd(gAsr)
+        val asrAngle = rtd(gAsr)
         var asrHour = hourAngle(asrAngle, 1)
 
         // High-latitude fallback: use an angle-based portion of the night.
