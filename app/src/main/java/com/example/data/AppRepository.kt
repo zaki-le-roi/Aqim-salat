@@ -93,7 +93,10 @@ class AppRepository(
 
     // --- Preference Observables ---
     val appLanguage: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_LANGUAGE] ?: "ar"
+        when (pref[KEY_LANGUAGE]) {
+            "en" -> "en"
+            else -> "ar"
+        }
     }
 
     val appMadhab: Flow<String> = context.dataStore.data.map { pref ->
