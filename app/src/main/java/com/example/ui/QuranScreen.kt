@@ -650,7 +650,6 @@ fun SurahReader(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
     val bookmarks by viewModel.bookmarks.collectAsState()
 
     // Configuration Settings
