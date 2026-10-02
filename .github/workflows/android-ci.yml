@@ -3,7 +3,7 @@ name: Android CI
 
 on:
   push:
-    branches: ["main", "security-hardening", "production-polish-20261002"]
+    branches: ["main", "security-hardening"]
     tags: ["v*"]
   pull_request:
     branches: ["main"]
