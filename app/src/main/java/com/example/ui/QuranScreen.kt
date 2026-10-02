@@ -49,7 +49,30 @@ import com.example.data.QuranFontLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
+private const val QURAN_CACHE_PREFS = "quran_surah_cache"
+
+private fun loadCachedSurah(context: android.content.Context, surahId: Int, lang: String): List<QuranApiClient.ApiAyah>? {
+    val raw = context.getSharedPreferences(QURAN_CACHE_PREFS, android.content.Context.MODE_PRIVATE)
+        .getString("${surahId}_${lang}", null) ?: return null
+    return runCatching {
+        val array = JSONArray(raw)
+        List(array.length()) { index ->
+            val item = array.getJSONObject(index)
+            QuranApiClient.ApiAyah(item.getInt("numberInSurah"), item.getString("arabicText"), item.optString("translationText"), item.optString("audioUrl"))
+        }
+    }.getOrNull()?.takeIf { it.isNotEmpty() }
+}
+
+private fun saveCachedSurah(context: android.content.Context, surahId: Int, lang: String, verses: List<QuranApiClient.ApiAyah>) {
+    runCatching {
+        val array = JSONArray()
+        verses.forEach { verse -> array.put(JSONObject().apply { put("numberInSurah", verse.numberInSurah); put("arabicText", verse.arabicText); put("translationText", verse.translationText); put("audioUrl", verse.audioUrl) }) }
+        context.getSharedPreferences(QURAN_CACHE_PREFS, android.content.Context.MODE_PRIVATE).edit().putString("${surahId}_${lang}", array.toString()).apply()
+    }
+}
 // 114 Surah Start Pages in Standard 604-page Madinah Mushaf
 val SURAH_START_PAGES = intArrayOf(
     1, 2, 50, 77, 106, 128, 151, 177, 187, 208, 221, 235, 249, 255, 262, 267, 282, 293, 305, 312,
