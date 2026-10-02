@@ -214,7 +214,7 @@ fun QuranScreen(
         }
     }
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides if (lang == "en") LayoutDirection.Ltr else LayoutDirection.Rtl) {
         if (selectedSurah == null) {
             // --- Surah List Browsing Mode ---
             Column(
@@ -236,7 +236,7 @@ fun QuranScreen(
                     ) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "﴿  القرآن الكريم  ﴾",
+                            text = if (lang == "en") "﴿  The Holy Quran  ﴾" else "﴿  القرآن الكريم  ﴾",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFD4AF37),
@@ -244,7 +244,7 @@ fun QuranScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "القرآن الكريم",
+                            text = if (lang == "en") "The Holy Quran" else "القرآن الكريم",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -307,7 +307,7 @@ fun QuranScreen(
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = "مواصلة القراءة",
+                                            text = if (lang == "en") "Continue reading" else "مواصلة القراءة",
                                             fontSize = 11.sp,
                                             color = Color.Gray,
                                             fontWeight = FontWeight.Bold
@@ -398,7 +398,7 @@ fun QuranScreen(
 
                     // --- Juz Quick Jump Index ---
                     Text(
-                        text = "الوصول السريع بالأجزاء",
+                        text = if (lang == "en") "Quick access by Juz" else "الوصول السريع بالأجزاء",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF042B1D),
@@ -455,7 +455,7 @@ fun QuranScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "لا توجد نتائج مطابقة لبحثك",
+                                        text = if (lang == "en") "No matching results" else "لا توجد نتائج مطابقة لبحثك",
                                         color = Color.Gray,
                                         fontSize = 14.sp
                                     )
@@ -525,7 +525,7 @@ fun QuranScreen(
                                         if (isOffline) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
-                                                    text = "متاحة دون اتصال",
+                                                    text = if (lang == "en") "Available offline" else "متاحة دون اتصال",
                                                     fontSize = 9.sp,
                                                     color = Color(0xFF4CAF50)
                                                 )
@@ -815,7 +815,7 @@ fun SurahReader(
             )
         }
     ) { innerPadding ->
-        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        CompositionLocalProvider(LocalLayoutDirection provides if (lang == "en") LayoutDirection.Ltr else LayoutDirection.Rtl) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1235,7 +1235,7 @@ fun SurahReader(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "طريقة عرض المصحف",
+                    text = if (lang == "en") "Reading view" else "طريقة عرض المصحف",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF042B1D),
@@ -1260,7 +1260,7 @@ fun SurahReader(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "المصحف الرأسي",
+                            text = if (lang == "en") "Vertical Mushaf" else "المصحف الرأسي",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             color = if (verticalScroll) Color(0xFFD4AF37) else Color.Gray
@@ -1277,7 +1277,7 @@ fun SurahReader(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "المصحف الأفقي",
+                            text = if (lang == "en") "Horizontal Mushaf" else "المصحف الأفقي",
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             color = if (!verticalScroll) Color(0xFFD4AF37) else Color.Gray
@@ -1299,7 +1299,7 @@ fun SurahReader(
                         Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFFD4AF37))
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "طريقة عرض المصحف بالصفحات",
+                            text = if (lang == "en") "Page-based Mushaf view" else "طريقة عرض المصحف بالصفحات",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF333333)
@@ -1314,7 +1314,7 @@ fun SurahReader(
                 Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
 
                 Text(
-                    text = "لون خلفية القراءة",
+                    text = if (lang == "en") "Reading background" else "لون خلفية القراءة",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray,
@@ -1438,7 +1438,7 @@ fun SurahReader(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "التفسير الميسر للآية الكريمة:",
+                    text = if (lang == "en") "Tafsir al-Muyassar:" else "التفسير الميسر للآية الكريمة:",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFD4AF37)
