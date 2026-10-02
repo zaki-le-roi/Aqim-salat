@@ -419,7 +419,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                         repo.setCalcMethod("ALGERIA")
                                     }
                                 }
-                                AdhanScheduler.schedule(getApplication())
+                                viewModelScope.launch { AdhanScheduler.schedule(getApplication()) }
                             }
                         }
                     } else {
@@ -443,7 +443,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             }
                         } else {
                             repo.setLocation("My Location", lat, lng)
-                            AdhanScheduler.schedule(getApplication())
+                            viewModelScope.launch { AdhanScheduler.schedule(getApplication()) }
                         }
                     }
                 } catch (e: Exception) {
