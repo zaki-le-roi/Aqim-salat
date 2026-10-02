@@ -939,7 +939,7 @@ fun SurahReader(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     item {
-                                        SurahHeaderBlock(surah = surah, goldColor = goldAccent, txtColor = txtColor)
+                                        SurahHeaderBlock(surah = surah, lang = lang, goldColor = goldAccent, txtColor = txtColor)
                                         Spacer(modifier = Modifier.height(20.dp))
                                     }
 
@@ -1470,7 +1470,7 @@ fun SurahReader(
 }
 
 @Composable
-fun SurahHeaderBlock(surah: QuranData.Surah, goldColor: Color, txtColor: Color) {
+fun SurahHeaderBlock(surah: QuranData.Surah, lang: String, goldColor: Color, txtColor: Color) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
