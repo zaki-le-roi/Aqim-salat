@@ -201,110 +201,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun detectLocationByIp() {
-        _isTrackingLocation.value = true
-        viewModelScope.launch(Dispatchers.IO) {
-            var success = false
-            try {
-                val url = java.net.URL("https://ip-api.com/json")
-                val conn = url.openConnection() as java.net.HttpURLConnection
-                conn.connectTimeout = 8000
-                conn.readTimeout = 8000
-                conn.requestMethod = "GET"
-                
-                if (conn.responseCode == 200) {
-                    val response = conn.inputStream.bufferedReader().use { it.readText() }
-                    val json = org.json.JSONObject(response)
-                    if (json.getString("status") == "success") {
-                        val lat = json.getDouble("lat")
-                        val lon = json.getDouble("lon")
-                        val city = json.optString("city", "Detected Location")
-                        val country = json.optString("country", "")
-                        val countryCode = json.optString("countryCode", "")
-                        
-                        val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
-                                        country.contains("Algeria", ignoreCase = true) || 
-                                        country.contains("الجزائر")
-                        
-                        val addressName = if (country.isNotEmpty()) "$city, $country" else city
-                        
-                        viewModelScope.launch(Dispatchers.Main) {
-                            repo.setLocation(addressName, lat, lon)
-                            fetchRealNearbyMosques(lat, lon)
-                            if (isAlgeria) {
-                                repo.setCalcMethod("ALGERIA")
-                            }
-                            _isTrackingLocation.value = false
-                        }
-                        success = true
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-
-            if (!success) {
-                // Try fallback to ipapi.co
-                try {
-                    val url = java.net.URL("https://ipapi.co/json/")
-                    val conn = url.openConnection() as java.net.HttpURLConnection
-                    conn.connectTimeout = 8000
-                    conn.readTimeout = 8000
-                    conn.requestMethod = "GET"
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0")
-                    if (conn.responseCode == 200) {
-                        val response = conn.inputStream.bufferedReader().use { it.readText() }
-                        val json = org.json.JSONObject(response)
-                        val lat = json.getDouble("latitude")
-                        val lon = json.getDouble("longitude")
-                        val city = json.optString("city", "Detected Location")
-                        val country = json.optString("country_name", "")
-                        val countryCode = json.optString("country_code", "")
-                        val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
-                                        country.contains("Algeria", ignoreCase = true) || 
-                                        country.contains("الجزائر")
-                        val addressName = if (country.isNotEmpty()) "$city, $country" else city
-                        viewModelScope.launch(Dispatchers.Main) {
-                            repo.setLocation(addressName, lat, lon)
-                            fetchRealNearbyMosques(lat, lon)
-                            if (isAlgeria) {
-                                repo.setCalcMethod("ALGERIA")
-                            }
-                            _isTrackingLocation.value = false
-                        }
-                        success = true
-                    }
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                }
-            }
-
-            if (!success) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    _isTrackingLocation.value = false
-                }
-            }
-        }
-    }
-
     @SuppressLint("MissingPermission")
     fun startLocationTracking() {
-        if (_isTrackingLocation.value) return
+        if (_isTrackingLocation.value && locationCallback != null) return
         val context = getApplication<Application>().applicationContext
         
         val hasFine = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
         val hasCoarse = androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
         
         if (!hasFine && !hasCoarse) {
-            // Exact prayer times and nearby-mosque ranking require device location.
-            // Never silently replace precise GPS with IP geolocation.
-            runCatching {
-                val settingsIntent = Intent(
-                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.parse("package:$context.packageName")
-                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(settingsIntent)
-            }
+            // Permission is requested by MainActivity. Never replace device location with IP geolocation.
+            _isTrackingLocation.value = false
             return
         }
         
@@ -313,23 +220,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         
         // Fetch last known location instantly
         try {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                if (location != null) {
-                    updateLocationCoordinates(location.latitude, location.longitude)
-                    _isTrackingLocation.value = false
-                } else {
-                    // Keep waiting for a real device location update; IP geolocation is not precise enough for prayer times.
-                    _isTrackingLocation.value = true
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        updateLocationCoordinates(location.latitude, location.longitude)
+                    }
                 }
-            }.addOnFailureListener {
-                // Keep the high-accuracy location request active instead of substituting an IP location.
-                _isTrackingLocation.value = true
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+                .addOnFailureListener {
+                    // Continue with active high-accuracy updates.
+                }
+        } catch (_: SecurityException) {
             _isTrackingLocation.value = false
+            return
         }
-        
+
         // Register location updates
         val locationRequest = LocationRequest.Builder(
             Priority.PRIORITY_HIGH_ACCURACY,
@@ -360,7 +264,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
     
     fun stopLocationTracking() {
-        if (!_isTrackingLocation.value) return
+        if (!_isTrackingLocation.value && locationCallback == null) return
         val context = getApplication<Application>().applicationContext
         try {
             locationCallback?.let {
@@ -397,63 +301,56 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val oldLat = latitude.value
             val oldLng = longitude.value
             val dist = calculateDist(oldLat, oldLng, lat, lng)
-            if (dist > 0.05) { // more than 50 meters
-                var addressName = "Detected Location"
-                try {
-                    val geocoder = Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        geocoder.getFromLocation(lat, lng, 1) { addresses ->
-                            val addr = addresses.firstOrNull()
-                            if (addr != null) {
-                                val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea ?: "Detected Location"
-                                val country = addr.countryName ?: ""
-                                val countryCode = addr.countryCode ?: ""
-                                val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
-                                                country.contains("Algeria", ignoreCase = true) || 
-                                                country.contains("الجزائر")
-                                
-                                addressName = if (country.isNotEmpty()) "$city, $country" else city
-                                viewModelScope.launch {
-                                    repo.setLocation(addressName, lat, lng)
-                                    if (isAlgeria) {
-                                        repo.setCalcMethod("ALGERIA")
-                                    }
-                                }
-                                viewModelScope.launch { AdhanScheduler.schedule(getApplication()) }
-                            }
-                        }
-                    } else {
-                        @Suppress("DEPRECATION")
-                        val addresses = geocoder.getFromLocation(lat, lng, 1)
-                        val addr = addresses?.firstOrNull()
-                        if (addr != null) {
-                            val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea ?: "Detected Location"
-                            val country = addr.countryName ?: ""
-                            val countryCode = addr.countryCode ?: ""
-                            val isAlgeria = countryCode.equals("DZ", ignoreCase = true) || 
-                                            country.contains("Algeria", ignoreCase = true) || 
-                                            country.contains("الجزائر")
-                            
-                            addressName = if (country.isNotEmpty()) "$city, $country" else city
-                            viewModelScope.launch {
-                                repo.setLocation(addressName, lat, lng)
-                                if (isAlgeria) {
-                                    repo.setCalcMethod("ALGERIA")
-                                }
-                            }
-                        } else {
-                            repo.setLocation("My Location", lat, lng)
-                            viewModelScope.launch { AdhanScheduler.schedule(getApplication()) }
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    repo.setLocation("My Location", lat, lng)
-                    AdhanScheduler.schedule(getApplication())
+            if (dist <= 0.05 && oldLat != 0.0 && oldLng != 0.0) return@launch
+
+            fun persistLocation(name: String, isAlgeria: Boolean) {
+                viewModelScope.launch {
+                    repo.setLocation(name, lat, lng)
+                    if (isAlgeria) repo.setCalcMethod("ALGERIA")
+                    runCatching { AdhanScheduler.schedule(getApplication()) }
                 }
-                
-                fetchRealNearbyMosques(lat, lng)
             }
+
+            var addressName = "My Location"
+            var isAlgeria = false
+            try {
+                val geocoder = Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    geocoder.getFromLocation(lat, lng, 1) { addresses ->
+                        val addr = addresses.firstOrNull()
+                        if (addr != null) {
+                            val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea
+                            val country = addr.countryName.orEmpty()
+                            val countryCode = addr.countryCode.orEmpty()
+                            isAlgeria = countryCode.equals("DZ", ignoreCase = true) ||
+                                country.contains("Algeria", ignoreCase = true) ||
+                                country.contains("الجزائر")
+                            addressName = listOfNotNull(city, country.ifBlank { null }).joinToString(", ")
+                                .ifBlank { "My Location" }
+                        }
+                        persistLocation(addressName, isAlgeria)
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    val addresses = geocoder.getFromLocation(lat, lng, 1)
+                    val addr = addresses?.firstOrNull()
+                    if (addr != null) {
+                        val city = addr.locality ?: addr.subAdminArea ?: addr.adminArea
+                        val country = addr.countryName.orEmpty()
+                        val countryCode = addr.countryCode.orEmpty()
+                        isAlgeria = countryCode.equals("DZ", ignoreCase = true) ||
+                            country.contains("Algeria", ignoreCase = true) ||
+                            country.contains("الجزائر")
+                        addressName = listOfNotNull(city, country.ifBlank { null }).joinToString(", ")
+                            .ifBlank { "My Location" }
+                    }
+                    persistLocation(addressName, isAlgeria)
+                }
+            } catch (_: Exception) {
+                persistLocation(addressName, false)
+            }
+
+            fetchRealNearbyMosques(lat, lng)
         }
     }
     
