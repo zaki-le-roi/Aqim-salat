@@ -540,7 +540,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFF8F9FA))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -555,7 +555,7 @@ fun HomeScreen(
                             },
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF495057),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f),
                             textAlign = if (lang == "ar") TextAlign.Right else TextAlign.Left
                         )
@@ -711,14 +711,14 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF5F5F5))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
                                 .clickable { showOnboarding = false; homePrefs.edit().putBoolean("onboarding_dismissed", true).apply() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
                                 contentDescription = if (lang == "ar") "إغلاق" else "Close",
-                                tint = Color(0xFF888888),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(14.dp)
                             )
                         }
