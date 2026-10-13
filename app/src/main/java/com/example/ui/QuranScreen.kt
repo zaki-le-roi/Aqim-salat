@@ -374,8 +374,8 @@ fun QuranScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD4AF37),
                             unfocusedBorderColor = Color(0xFFE2E2E2),
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         ),
                         singleLine = true
                     )
@@ -402,7 +402,7 @@ fun QuranScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) Color.White else Color.Transparent)
+                                    .background(if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent)
                                     .clickable { selectedTab = key }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
@@ -411,7 +411,7 @@ fun QuranScreen(
                                     text = title,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
-                                    color = if (isSelected) Color(0xFF042B1D) else Color.Gray
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -1151,9 +1151,9 @@ fun SurahReader(
                                             .testTag("ayah_card_$refKey"),
                                         shape = RoundedCornerShape(16.dp),
                                         colors = CardDefaults.cardColors(
-                                            containerColor = if (isPlayingThisAyah) Color(0xFFD4AF37).copy(alpha = 0.08f) else Color.White
+                                            containerColor = if (isPlayingThisAyah) Color(0xFFD4AF37).copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface
                                         ),
-                                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E2E2).copy(alpha = 0.6f))
+                                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
                                     ) {
                                         Column(modifier = Modifier.padding(16.dp)) {
                                             Row(
@@ -1399,7 +1399,7 @@ fun SurahReader(
         ModalBottomSheet(
             onDismissRequest = { selectedAyahDetails = null },
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -1480,7 +1480,7 @@ fun SurahReader(
                     text = details.translationText,
                     fontSize = 14.sp,
                     lineHeight = 22.sp,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Justify
                 )
 
@@ -1489,7 +1489,7 @@ fun SurahReader(
                 Button(
                     onClick = { selectedAyahDetails = null },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF042B1D)),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(if (lang == "en") "Close details" else "إغلاق التفاصيل", color = Color.White)
