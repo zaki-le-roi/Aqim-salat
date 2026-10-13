@@ -46,7 +46,14 @@ fun SettingsScreen(
         Pair("ar", "العربية"),
         Pair("en", "English")
     )
-    val themes = listOf("LIGHT", "DARK", "AMOLED", "AUTO")
+    val themes = listOf(
+        "AUTO" to if (lang == "ar") "تلقائي حسب الجهاز" else "Follow device",
+        "LIGHT" to if (lang == "ar") "فاتح" else "Light",
+        "DARK" to if (lang == "ar") "داكن" else "Dark",
+        "AMOLED" to if (lang == "ar") "أسود موفّر للطاقة (AMOLED)" else "True black (AMOLED)",
+        "SUNRISE_SUNSET" to if (lang == "ar") "حسب وقت الشروق والغروب" else "Sunrise and sunset",
+        "PRAYER_ADAPTIVE" to if (lang == "ar") "ألوان تتغير مع الصلاة القادمة" else "Adapt to next prayer"
+    )
     val methods = listOf("ALGERIA", "UMM_AL_QURA", "EGYPT", "MWL", "KARACHI", "ISNA", "TURKEY", "AWQAF")
     val madhabs = listOf("STANDARD", "HANAFI")
     val recitersList = listOf("Mishary Al-Afasy", "Abdul Basit Abdus Samad", "Saad Al-Ghamdi")
@@ -245,23 +252,23 @@ fun SettingsScreen(
             title = { Text(if (lang == "ar") "اختر سمة التطبيق" else "Select Theme Mode", fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    themes.forEach { th ->
+                    themes.forEach { (themeCode, themeLabel) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    viewModel.setThemeMode(th)
+                                    viewModel.setThemeMode(themeCode)
                                     activeDialog = null
                                 }
                                 .padding(vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(selected = th == activeThemeVal, onClick = {
-                                viewModel.setThemeMode(th)
+                            RadioButton(selected = themeCode == activeThemeVal, onClick = {
+                                viewModel.setThemeMode(themeCode)
                                 activeDialog = null
                             })
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(th, fontSize = 16.sp)
+                            Text(themeLabel, fontSize = 16.sp)
                         }
                     }
                 }
