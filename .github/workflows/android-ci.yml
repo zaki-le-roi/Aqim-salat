@@ -13,7 +13,7 @@ permissions:
 
 # Avoid wasting CI minutes and artifact storage on superseded pushes.
 concurrency:
-  group: android-ci-v2-${{ github.ref }}
+  group: android-ci-v3-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
