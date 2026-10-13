@@ -29,12 +29,12 @@ object HadithData {
             reference = "Sahih al-Bukhari, Book 2, Hadith 6"
         ),
         Hadith(
-            collection = "Sahih al-Bukhari",
-            id = "bukhari_3",
-            number = "6018",
-            arabic = "الْخَالِقُ جَمِيلٌ يُحِبُّ الْجَمَالَ، وَمَنْ لاَ يَرْحَمِ النَّاسَ لاَ يَرْحَمْهُ اللَّهُ",
-            english = "He who is not merciful to others, Allah will not be merciful to him.",
-            reference = "Sahih al-Bukhari, Book 78, Hadith 48"
+            collection = "Sahih Muslim",
+            id = "muslim_jamal_91",
+            number = "91",
+            arabic = "إِنَّ اللَّهَ جَمِيلٌ يُحِبُّ الْجَمَالَ، الْكِبْرُ بَطَرُ الْحَقِّ وَغَمْطُ النَّاسِ",
+            english = "Allah is Beautiful and loves beauty. Arrogance is rejecting the truth and looking down on people.",
+            reference = "Sahih Muslim 91"
         ),
         
         // Sahih Muslim
@@ -47,12 +47,12 @@ object HadithData {
             reference = "Sahih Muslim, Book 2, Hadith 1"
         ),
         Hadith(
-            collection = "Sahih Muslim",
-            id = "muslim_2",
-            number = "2564",
-            arabic = "اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا",
-            english = "Be mindful of Allah wherever you are, and follow up a bad deed with a good deed which will wipe it out.",
-            reference = "Sahih Muslim, Book 45, Hadith 12"
+            collection = "Jami' at-Tirmidhi",
+            id = "tirmidhi_1987",
+            number = "1987",
+            arabic = "اتَّقِ اللَّهَ حَيْثُمَا كُنْتَ، وَأَتْبِعِ السَّيِّئَةَ الْحَسَنَةَ تَمْحُهَا، وَخَالِقِ النَّاسَ بِخُلُقٍ حَسَنٍ",
+            english = "Be mindful of Allah wherever you are, follow a bad deed with a good deed to erase it, and treat people with good character.",
+            reference = "Jami' at-Tirmidhi 1987"
         ),
 
         // Riyad as-Salihin
