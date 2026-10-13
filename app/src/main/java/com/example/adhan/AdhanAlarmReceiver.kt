@@ -123,7 +123,10 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         }
         prefs.edit().putBoolean("active", true).apply()
 
-        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: run {
+            restoreRingerModeIfNeeded(context)
+            return
+        }
         val restoreIntent = Intent(context, AdhanAlarmReceiver::class.java).apply {
             putExtra(EXTRA_RESTORE_RINGER, true)
         }
@@ -132,11 +135,14 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val restoreAt = System.currentTimeMillis() + SILENT_DURATION_MS
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, restoreAt, pending)
-        } else {
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, restoreAt, pending)
-        }
+        val scheduled = runCatching {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, restoreAt, pending)
+            } else {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, restoreAt, pending)
+            }
+        }.isSuccess
+        if (!scheduled) restoreRingerModeIfNeeded(context)
     }
 
     fun restoreRingerModeIfNeeded(context: Context) {
@@ -146,7 +152,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         if (audio.ringerMode == AudioManager.RINGER_MODE_SILENT) {
             val originalMode = prefs.getInt("original_ringer_mode", AudioManager.RINGER_MODE_NORMAL)
             val restored = runCatching { audio.ringerMode = originalMode }.isSuccess
-            if (!restored) return
+            if (!restored || audio.ringerMode != originalMode) return
         }
         // Do not override a mode the user changed manually while the temporary silence was active.
         prefs.edit().putBoolean("active", false).apply()
