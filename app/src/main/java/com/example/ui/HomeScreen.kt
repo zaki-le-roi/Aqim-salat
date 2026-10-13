@@ -49,6 +49,7 @@ fun HomeScreen(
     val hijriDate by viewModel.hijriDateString.collectAsState()
     val isPlaying by viewModel.isAthanPlaying.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
+    val locationConfigured by viewModel.locationConfigured.collectAsState()
     val loggedInMember by viewModel.loggedInMember.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -239,12 +240,12 @@ fun HomeScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
                             .background(Color.Black.copy(alpha = 0.45f))
-                            .clickable { onNavigateToFeature("SETTINGS") }
+                            .clickable { onNavigateToFeature("PRAYER_TIMES") }
                             .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = locationName,
+                                text = if (locationConfigured) locationName else "حدّد موقعك لعرض المواقيت الصحيحة",
                                 fontSize = 12.sp,
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold
