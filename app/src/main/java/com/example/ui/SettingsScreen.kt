@@ -145,14 +145,14 @@ fun SettingsScreen(
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("التنبيه قبل الأذان", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                            Text(if (preAlertEnabled) "سيظهر تذكير قبل الصلاة بـ $preAlertMinutes دقيقة" else "تذكير اختياري للاستعداد للصلاة", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                            Text(if (lang == "ar") "التنبيه قبل الأذان" else "Pre-prayer reminder", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(if (lang == "ar") { if (preAlertEnabled) "سيظهر تذكير قبل الصلاة بـ $preAlertMinutes دقيقة" else "تذكير اختياري للاستعداد للصلاة" } else { if (preAlertEnabled) "A reminder will appear $preAlertMinutes minutes before prayer" else "Optional reminder to prepare for prayer" }, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
                         }
                         Switch(checked = preAlertEnabled, onCheckedChange = { viewModel.setPrePrayerAlert(it, preAlertMinutes) })
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        FilterChip(selected = preAlertMinutes == 10, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 10) }, label = { Text("10 دقائق") }, enabled = preAlertEnabled)
-                        FilterChip(selected = preAlertMinutes == 15, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 15) }, label = { Text("15 دقيقة") }, enabled = preAlertEnabled)
+                        FilterChip(selected = preAlertMinutes == 10, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 10) }, label = { Text(if (lang == "ar") "10 دقائق" else "10 minutes") }, enabled = preAlertEnabled)
+                        FilterChip(selected = preAlertMinutes == 15, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 15) }, label = { Text(if (lang == "ar") "15 دقيقة" else "15 minutes") }, enabled = preAlertEnabled)
                     }
                 }
             }
