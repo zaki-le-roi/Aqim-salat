@@ -666,6 +666,7 @@ fun SurahReader(
     var verses by remember { mutableStateOf<List<QuranApiClient.ApiAyah>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
+    var retryToken by remember { mutableIntStateOf(0) }
 
     // Audio stream state
     var activeAudioPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
@@ -677,7 +678,7 @@ fun SurahReader(
         currentlyPlayingIndex = -1
     }
 
-    DisposableEffect(surah.id, lang) {
+    DisposableEffect(surah.id, lang, retryToken) {
 
         if (QuranData.localAyahs.containsKey(surah.id)) {
             val localList = QuranData.localAyahs[surah.id]!!.map {
@@ -952,6 +953,15 @@ fun SurahReader(
                                 fontSize = 15.sp,
                                 color = txtColor
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { retryToken++ },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Icon(Icons.Filled.Refresh, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(if (lang == "en") "Try again" else "إعادة المحاولة")
+                            }
                         }
                     } else {
                         if (isMushafMode) {
