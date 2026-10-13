@@ -669,17 +669,17 @@ fun PrayerTimesScreen(
 
                     items(presetCities) { (name, latVal, lngVal) ->
                         val displayName = when (name) {
-                            "Algiers" -> if (lang == "ar") "الجزائر العاصمة (Alger)" else "Algiers"
-                            "Oran" -> if (lang == "ar") "وهران (Oran)" else "Oran"
-                            "Constantine" -> if (lang == "ar") "قسنطينة (Constantine)" else "Constantine"
-                            "Annaba" -> if (lang == "ar") "عنابة (Annaba)" else "Annaba"
-                            "Mecca" -> if (lang == "ar") "مكة المكرمة" else "Mecca"
-                            "Medina" -> if (lang == "ar") "المدينة المنورة" else "Medina"
-                            "Cairo" -> if (lang == "ar") "القاهرة" else "Cairo"
-                            "Istanbul" -> if (lang == "ar") "إسطنبول" else "Istanbul"
-                            "London" -> if (lang == "ar") "لندن" else "London"
-                            "Paris" -> if (lang == "ar") "باريس" else "Paris"
-                            "New York" -> if (lang == "ar") "نيويورك" else "New York"
+                            "Algiers" -> "الجزائر العاصمة"
+                            "Oran" -> "وهران"
+                            "Constantine" -> "قسنطينة"
+                            "Annaba" -> "عنابة"
+                            "Mecca" -> "مكة المكرمة"
+                            "Medina" -> "المدينة المنورة"
+                            "Cairo" -> "القاهرة"
+                            "Istanbul" -> "إسطنبول"
+                            "London" -> "لندن"
+                            "Paris" -> "باريس"
+                            "New York" -> "نيويورك"
                             else -> name
                         }
                         
