@@ -686,7 +686,7 @@ fun SurahReader(
                 QuranApiClient.ApiAyah(
                     numberInSurah = it.number,
                     arabicText = it.text,
-                    translationText = "",
+                    translationText = if (lang == "en") it.translation else "",
                     audioUrl = "https://everyayah.com/data/Alafasy_128kbps/$paddedSurah$paddedAyah.mp3"
                 )
             }
