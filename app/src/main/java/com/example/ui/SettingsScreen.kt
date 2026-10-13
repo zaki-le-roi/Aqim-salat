@@ -35,6 +35,7 @@ fun SettingsScreen(
     val notificationsVal by viewModel.notificationsEnabled.collectAsState()
     val preAlertEnabled by viewModel.prePrayerAlertEnabled.collectAsState()
     val preAlertMinutes by viewModel.prePrayerAlertMinutes.collectAsState()
+    val autoSilentEnabled by viewModel.autoSilentEnabled.collectAsState()
     val activeThemeVal by viewModel.themeMode.collectAsState()
     val defaultReciterVal by viewModel.defaultReciter.collectAsState()
     val hapticsVal by viewModel.hapticsEnabled.collectAsState()
@@ -153,6 +154,67 @@ fun SettingsScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         FilterChip(selected = preAlertMinutes == 10, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 10) }, label = { Text(if (lang == "ar") "10 دقائق" else "10 minutes") }, enabled = preAlertEnabled)
                         FilterChip(selected = preAlertMinutes == 15, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 15) }, label = { Text(if (lang == "ar") "15 دقيقة" else "15 minutes") }, enabled = preAlertEnabled)
+                    }
+                }
+            }
+        }
+
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth().testTag("setting_auto_silent"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.VolumeOff,
+                                contentDescription = if (lang == "ar") "الوضع الصامت التلقائي" else "Automatic silent mode",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    if (lang == "ar") "الوضع الصامت وقت الصلاة" else "Silent mode at prayer",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    if (lang == "ar") {
+                                        if (autoSilentEnabled) "يكتم الرنين 10 دقائق ثم يعيد وضعه السابق" else "اختياري؛ يحتاج صلاحية عدم الإزعاج"
+                                    } else {
+                                        if (autoSilentEnabled) "Mutes ringing for 10 minutes, then restores the previous mode" else "Optional; requires Do Not Disturb access"
+                                    },
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = autoSilentEnabled,
+                            onCheckedChange = { requested ->
+                                val accepted = viewModel.setAutoSilentEnabled(requested)
+                                if (requested && !accepted) {
+                                    Toast.makeText(
+                                        context,
+                                        if (lang == "ar") "امنح التطبيق صلاحية عدم الإزعاج، ثم فعّل الخيار مرة أخرى" else "Grant Do Not Disturb access, then enable this option again",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+                        )
                     }
                 }
             }
