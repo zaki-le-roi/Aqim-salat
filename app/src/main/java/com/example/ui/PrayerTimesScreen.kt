@@ -51,6 +51,7 @@ fun PrayerTimesScreen(
     val currentName by viewModel.currentPrayerName.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
     val locationConfigured by viewModel.locationConfigured.collectAsState()
+    val isTrackingLocation by viewModel.isTrackingLocation.collectAsState()
     
     val lat by viewModel.latitude.collectAsState()
     val lng by viewModel.longitude.collectAsState()
@@ -579,7 +580,6 @@ fun PrayerTimesScreen(
                         Button(
                             onClick = {
                                 viewModel.startLocationTracking()
-                                showLocationDialog = false
                             },
                             modifier = Modifier.fillMaxWidth().testTag("gps_auto_detect_button"),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
@@ -594,6 +594,14 @@ fun PrayerTimesScreen(
                                 )
                             }
                         }
+                    }
+                    item {
+                        Text(
+                            text = if (isTrackingLocation) "جارٍ انتظار موقع الهاتف الحقيقي… إذا لم يتغير الموقع، تحقق من تفعيل GPS وإذن الموقع للتطبيق." else "لا نعرض مدينة افتراضية على أنها موقعك. فعّل GPS وإذن الموقع ثم اضغط الزر أعلاه، أو اختر مدينة يدويًا.",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f),
+                            fontSize = 12.sp,
+                            lineHeight = 18.sp
+                        )
                     }
 
                     // Preset cities divider
