@@ -346,7 +346,7 @@ fun MoreScreen(
                             Column {
                                 Text(
                                     text = if (currentLanguage == "ar") "صندوق العلامات" else "Saved Bookmarks",
-                                    color = Color(0xFF333333),
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -387,7 +387,7 @@ fun ServicesSectionCard(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1E3A5F),
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
@@ -430,7 +430,7 @@ fun ServicesSectionCard(
                                     text = item.localizedTitle(lang),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF20352B),
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     textAlign = TextAlign.Center,
                                     maxLines = 2,
                                     minLines = 2,
