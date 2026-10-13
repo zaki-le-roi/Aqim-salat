@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Locale
 
 private const val QURAN_CACHE_PREFS = "quran_surah_cache"
 
@@ -680,8 +681,8 @@ fun SurahReader(
 
         if (QuranData.localAyahs.containsKey(surah.id)) {
             val localList = QuranData.localAyahs[surah.id]!!.map {
-                val paddedSurah = String.format("%03d", surah.id)
-                val paddedAyah = String.format("%03d", it.number)
+                val paddedSurah = String.format(Locale.US, "%03d", surah.id)
+                val paddedAyah = String.format(Locale.US, "%03d", it.number)
                 QuranApiClient.ApiAyah(
                     numberInSurah = it.number,
                     arabicText = it.text,
