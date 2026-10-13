@@ -84,6 +84,7 @@ class AppRepository(
         val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("app_notifications_enabled")
         val KEY_PRE_PRAYER_ALERT_MINUTES = intPreferencesKey("pre_prayer_alert_minutes")
         val KEY_PRE_PRAYER_ALERT_ENABLED = booleanPreferencesKey("pre_prayer_alert_enabled")
+        val KEY_AUTO_SILENT_ENABLED = booleanPreferencesKey("auto_silent_enabled")
         val KEY_THEME_MODE = stringPreferencesKey("app_theme_mode")
         val KEY_WALLPAPER = stringPreferencesKey("app_wallpaper")
         val KEY_PREF_MOSQUE_ID = stringPreferencesKey("app_pref_mosque_id")
@@ -144,6 +145,14 @@ class AppRepository(
 
     val prePrayerAlertMinutes: Flow<Int> = context.dataStore.data.map { pref ->
         (pref[KEY_PRE_PRAYER_ALERT_MINUTES] ?: 10).coerceIn(10, 15)
+    }
+
+    val autoSilentEnabled: Flow<Boolean> = context.dataStore.data.map { pref ->
+        pref[KEY_AUTO_SILENT_ENABLED] ?: false
+    }
+
+    suspend fun setAutoSilentEnabled(enabled: Boolean) {
+        context.dataStore.edit { pref -> pref[KEY_AUTO_SILENT_ENABLED] = enabled }
     }
 
     suspend fun setPrePrayerAlert(enabled: Boolean, minutes: Int) {
