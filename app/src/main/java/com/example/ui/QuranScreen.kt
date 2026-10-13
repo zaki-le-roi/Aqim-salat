@@ -676,8 +676,7 @@ fun SurahReader(
         currentlyPlayingIndex = -1
     }
 
-    DisposableEffect(surah.id) {
-        viewModel.saveLastReadSurah(surah.id, 1, surah.name)
+    DisposableEffect(surah.id, lang) {
 
         if (QuranData.localAyahs.containsKey(surah.id)) {
             val localList = QuranData.localAyahs[surah.id]!!.map {
@@ -991,7 +990,10 @@ fun SurahReader(
                                             verses = verses,
                                             txtColor = txtColor,
                                             goldColor = goldAccent,
-                                            onVerseClick = { selectedAyahDetails = it }
+                                            onVerseClick = {
+                                                         selectedAyahDetails = it
+                                                         viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
+                                                     }
                                         )
                                     }
 
@@ -1177,7 +1179,10 @@ fun SurahReader(
                                                 }
 
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    IconButton(onClick = { playRecitation(verses.indexOf(ayah), ayah.audioUrl) }) {
+                                                    IconButton(onClick = {
+                                                        viewModel.saveLastReadSurah(surah.id, ayah.numberInSurah, surah.name)
+                                                        playRecitation(verses.indexOf(ayah), ayah.audioUrl)
+                                                    }) {
                                                         Icon(
                                                             imageVector = if (isPlayingThisAyah) Icons.Filled.PauseCircle else Icons.Filled.PlayCircle,
                                                             contentDescription = if (lang == "en") "Listen" else "استماع",
