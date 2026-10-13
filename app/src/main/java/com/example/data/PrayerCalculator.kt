@@ -3,6 +3,7 @@ package com.example.data
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
+import java.util.Locale
 import kotlin.math.*
 
 object PrayerCalculator {
@@ -157,7 +158,7 @@ object PrayerCalculator {
             val totalMinutes = kotlin.math.round(h * 60.0).toInt()
             val formattedHour = (totalMinutes / 60) % 24
             val mins = totalMinutes % 60
-            return String.format("%02d:%02d", formattedHour, mins)
+            return String.format(Locale.US, "%02d:%02d", formattedHour, mins)
         }
 
         return PrayerTimes(
