@@ -1,12 +1,15 @@
 package com.example.adhan
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.RingtoneManager
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -17,6 +20,14 @@ import kotlinx.coroutines.launch
 
 class AdhanAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.getBooleanExtra(EXTRA_RESTORE_RINGER, false)) {
+            restoreRingerModeIfNeeded(context)
+            return
+        }
+        if (intent.getBooleanExtra(EXTRA_SILENT_START, false)) {
+            startTemporarySilentMode(context)
+            return
+        }
         if (intent.getBooleanExtra(EXTRA_REFRESH, false)) {
             val pending = goAsync()
             CoroutineScope(Dispatchers.IO).launch {
@@ -94,7 +105,58 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         manager?.notify(prayerName.hashCode(), notification)
     }
 
+    private fun startTemporarySilentMode(context: Context) {
+        val audio = context.getSystemService(AudioManager::class.java) ?: return
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            notificationManager?.isNotificationPolicyAccessGranted != true
+        ) return
+
+        val prefs = context.getSharedPreferences("auto_silent_runtime", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("active", false)) {
+            prefs.edit().putInt("original_ringer_mode", audio.ringerMode).apply()
+        }
+        runCatching { audio.ringerMode = AudioManager.RINGER_MODE_SILENT }
+        if (audio.ringerMode != AudioManager.RINGER_MODE_SILENT) {
+            prefs.edit().putBoolean("active", false).apply()
+            return
+        }
+        prefs.edit().putBoolean("active", true).apply()
+
+        val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return
+        val restoreIntent = Intent(context, AdhanAlarmReceiver::class.java).apply {
+            putExtra(EXTRA_RESTORE_RINGER, true)
+        }
+        val pending = PendingIntent.getBroadcast(
+            context, REQUEST_RINGER_RESTORE, restoreIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val restoreAt = System.currentTimeMillis() + SILENT_DURATION_MS
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, restoreAt, pending)
+        } else {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, restoreAt, pending)
+        }
+    }
+
+    fun restoreRingerModeIfNeeded(context: Context) {
+        val prefs = context.getSharedPreferences("auto_silent_runtime", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("active", false)) return
+        val audio = context.getSystemService(AudioManager::class.java) ?: return
+        if (audio.ringerMode == AudioManager.RINGER_MODE_SILENT) {
+            val originalMode = prefs.getInt("original_ringer_mode", AudioManager.RINGER_MODE_NORMAL)
+            val restored = runCatching { audio.ringerMode = originalMode }.isSuccess
+            if (!restored) return
+        }
+        // Do not override a mode the user changed manually while the temporary silence was active.
+        prefs.edit().putBoolean("active", false).apply()
+    }
+
     companion object {
+        private const val REQUEST_RINGER_RESTORE = 0x8A20
+        private const val SILENT_DURATION_MS = 10 * 60 * 1000L
+        const val EXTRA_SILENT_START = "auto_silent_start"
+        const val EXTRA_RESTORE_RINGER = "restore_ringer_mode"
         const val EXTRA_PRAYER_KEY = "prayer_key"
         const val EXTRA_PRAYER_NAME = "prayer_name"
         const val EXTRA_DATE = "date"
