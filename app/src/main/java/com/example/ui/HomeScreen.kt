@@ -156,34 +156,7 @@ fun HomeScreen(
                             }
                         }
 
-                        // Branded Aqim Salah Premium Badge
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFF0B3D2E))
-                                .border(1.dp, Color(0xFFD4AF37), RoundedCornerShape(20.dp))
-                                .clickable { onNavigateToFeature("PREMIUM") }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Star,
-                                    contentDescription = "Crown",
-                                    tint = Color(0xFFD4AF37),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = if (lang == "ar") "أقم صلاتك المميز" else "Aqim Salah Premium",
-                                    color = Color(0xFFD4AF37),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
+                        // أُزيل زر العضوية المميز لأنه لم يكن مرتبطًا بميزة فعلية.
 
                         // Notification icon with orange badge
                         Box {
@@ -196,7 +169,7 @@ fun HomeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = if (isPlaying) Icons.Filled.VolumeUp else Icons.Filled.Settings,
+                                    imageVector = Icons.Filled.Settings,
                                     contentDescription = if (lang == "ar") "الإعدادات" else "Settings",
                                     tint = Color(0xFFD4AF37),
                                     modifier = Modifier.size(20.dp)
