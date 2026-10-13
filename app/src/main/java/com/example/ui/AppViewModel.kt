@@ -14,6 +14,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
 import com.example.adhan.AdhanScheduler
+import com.example.widget.PrayerTimesWidgetProvider
 import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -309,6 +310,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repo.setLocation(name.trim(), lat, lng)
             runCatching { AdhanScheduler.schedule(getApplication()) }
+            runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
         }
     }
     
@@ -335,6 +337,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // wait for reverse-geocoding to finish.
             repo.setLocation("My Location", lat, lng)
             try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
+            try { PrayerTimesWidgetProvider.requestUpdate(context) } catch (_: Exception) { }
             fetchRealNearbyMosques(lat, lng)
 
             val geocoder = runCatching {
@@ -759,6 +762,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repo.setPrePrayerAlert(enabled, minutes)
             AdhanScheduler.schedule(context)
+            runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
         }
     }
 
@@ -767,11 +771,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setCalculationMethod(method: String) {
-        viewModelScope.launch { repo.setCalcMethod(method); AdhanScheduler.schedule(getApplication()) }
+        viewModelScope.launch { repo.setCalcMethod(method); AdhanScheduler.schedule(getApplication()); runCatching { PrayerTimesWidgetProvider.requestUpdate(context) } }
     }
 
     fun setMadhab(madhabName: String) {
-        viewModelScope.launch { repo.setMadhab(madhabName); AdhanScheduler.schedule(getApplication()) }
+        viewModelScope.launch { repo.setMadhab(madhabName); AdhanScheduler.schedule(getApplication()); runCatching { PrayerTimesWidgetProvider.requestUpdate(context) } }
     }
 
     fun toggleNotifications(enabled: Boolean) {
@@ -797,6 +801,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repo.setLocation(city, lat, lng)
             AdhanScheduler.schedule(getApplication())
+            runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
             triggerHapticFeedback()
         }
     }
