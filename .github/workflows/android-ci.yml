@@ -31,17 +31,17 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Set up Gradle cache
+      - name: Set up Gradle 9.7.1
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
+        with:
+          gradle-version: "9.7.1"
+          validate-wrappers: false
 
       - name: Unit tests
-        run: ./gradlew --no-daemon test
+        run: gradle --no-daemon test
 
       - name: Debug APK
-        run: ./gradlew --no-daemon assembleDebug
+        run: gradle --no-daemon assembleDebug
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -52,7 +52,7 @@ jobs:
           retention-days: 3
 
       - name: Release AAB
-        run: ./gradlew --no-daemon bundleRelease
+        run: gradle --no-daemon bundleRelease
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
