@@ -50,6 +50,7 @@ fun PrayerTimesScreen(
     val countdown by viewModel.countdownText.collectAsState()
     val currentName by viewModel.currentPrayerName.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
+    val locationConfigured by viewModel.locationConfigured.collectAsState()
     
     val lat by viewModel.latitude.collectAsState()
     val lng by viewModel.longitude.collectAsState()
@@ -454,7 +455,7 @@ fun PrayerTimesScreen(
                                     Icon(Icons.Filled.LocationOn, contentDescription = if (lang == "ar") "الموقع" else "Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = locationName,
+                                        text = if (locationConfigured) locationName else "لم يتم تحديد الموقع بعد",
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.primary
