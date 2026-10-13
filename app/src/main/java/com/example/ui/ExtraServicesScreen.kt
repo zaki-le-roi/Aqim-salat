@@ -130,13 +130,13 @@ fun WorldPrayerTimesScreen(lang: String, onBack: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val times = remember(selected) {
         val now = Date()
-        val offsetHours = java.time.ZoneId.of(selected.timeZoneId)
-            .rules.getOffset(now.toInstant()).totalSeconds / 3600.0
+        val cityTimeZone = java.util.TimeZone.getTimeZone(selected.timeZoneId)
+        val offsetHours = cityTimeZone.getOffset(now.time) / 3600000.0
         PrayerCalculator.calculateTimes(
             selected.lat, selected.lon, offsetHours, now,
             PrayerCalculator.CalculationMethod.MWL,
             PrayerCalculator.Madhab.STANDARD,
-            java.util.TimeZone.getTimeZone(selected.timeZoneId)
+            cityTimeZone
         )
     }
 
