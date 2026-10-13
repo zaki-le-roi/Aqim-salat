@@ -19,6 +19,8 @@ object QuranApiClient {
 
     // Fetches Uthmani Arabic Quran text and the Arabic Tafsir al-Muyassar. Audio is streamed; no surah files are downloaded.
     suspend fun fetchSurah(surahId: Int, lang: String = "ar"): List<ApiAyah> = withContext(Dispatchers.IO) {
+        require(surahId in 1..114) { "Surah ID must be between 1 and 114." }
+
         val tafsirEdition = if (lang == "en") "en.asad" else "ar.muyassar"
         val urlString = "https://api.alquran.cloud/v1/surah/$surahId/editions/quran-uthmani,$tafsirEdition"
         val url = URL(urlString)
@@ -29,13 +31,13 @@ object QuranApiClient {
 
         try {
             if (connection.responseCode == 200) {
-                val reader = BufferedReader(InputStreamReader(connection.inputStream))
                 val response = StringBuilder()
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    response.append(line)
+                BufferedReader(InputStreamReader(connection.inputStream, Charsets.UTF_8)).use { reader ->
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
                 }
-                reader.close()
 
                 val jsonResponse = JSONObject(response.toString())
                 val dataArray = jsonResponse.getJSONArray("data")
@@ -47,6 +49,9 @@ object QuranApiClient {
 
                 val arabicAyahs = arabicEdition.getJSONArray("ayahs")
                 val translationAyahs = translationEdition.getJSONArray("ayahs")
+                require(arabicAyahs.length() > 0 && arabicAyahs.length() == translationAyahs.length()) {
+                    "Quran service returned incomplete or mismatched ayah data."
+                }
 
                 val result = mutableListOf<ApiAyah>()
                 for (i in 0 until arabicAyahs.length()) {
