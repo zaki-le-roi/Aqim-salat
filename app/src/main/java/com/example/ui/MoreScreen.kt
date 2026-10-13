@@ -33,50 +33,7 @@ data class ServicesGridItem(
     val tint: Color
 )
 
-private fun ServicesGridItem.localizedTitle(lang: String): String {
-    if (lang == "ar") return titleAr
-    return when (titleAr) {
-        "الرئيسية" -> "Home"
-        "الإعدادات" -> "Settings"
-        "القبلة" -> "Qibla"
-        "حاسبة الزكاة" -> "Zakat Calculator"
-        "عمل اليوم والليلة" -> "Daily Deeds"
-        "بنك الصدقات" -> "Sadaqah Bank"
-        "الفوائد" -> "Benefits"
-        "ورد المحاسبة" -> "Daily Accountability"
-        "التقويم" -> "Calendar"
-        "وجهة المسافر" -> "Travel Companion"
-        "الصلاة حول العالم" -> "Prayer Times Worldwide"
-        "الاستطلاعات" -> "Polls"
-        "أصدقائي" -> "My Friends"
-        "مساجد" -> "Mosques"
-        "المطاعم الحلال" -> "Halal Food"
-        "صحيح أقم صلاتك" -> "Aqim Salat Community"
-        "حدث في مثل هذا اليوم" -> "On This Day"
-        "متابعة الفجر" -> "Fajr Tracker"
-        "رمضان" -> "Ramadan"
-        "المصحف" -> "Quran"
-        "العلامات المحفوظة", "صندوق العلامات" -> "Saved Bookmarks"
-        "الأذكار" -> "Adhkar"
-        "الأدعية" -> "Duas"
-        "أسماء الله الحسنى" -> "Names of Allah"
-        "الحديث", "الفوائد والحديث" -> "Benefits & Hadith"
-        "طاعاتك", "أعمال اليوم والليلة" -> "Your Daily Deeds"
-        "الدعاء" -> "Dua"
-        "السيرة" -> "Seerah"
-        "حصن المسلم" -> "Hisn Al-Muslim"
-        "الأسئلة الشائعة" -> "FAQ"
-        "الدعم الفني" -> "Technical Support"
-        "من نحن" -> "About Us"
-        "انشر التطبيق" -> "Share App"
-        "برامجنا" -> "Our Apps"
-        "انشر التفاصيل" -> "Share Details"
-        "قيم التطبيق" -> "Rate App"
-        "تابعنا" -> "Follow Us"
-        "شركاؤنا" -> "Partners"
-        else -> titleAr
-    }
-}
+private fun ServicesGridItem.localizedTitle(lang: String): String = titleAr
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,10 +93,9 @@ fun MoreScreen(
     )
 
     val currentLanguage by viewModel.language.collectAsState()
-    var showLanguageMenu by remember { mutableStateOf(false) }
 
     CompositionLocalProvider(
-        LocalLayoutDirection provides if (currentLanguage == "ar") LayoutDirection.Rtl else LayoutDirection.Ltr
+        LocalLayoutDirection provides LayoutDirection.Rtl
     ) {
         Column(
             modifier = modifier
@@ -159,50 +115,28 @@ fun MoreScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Back + language selector
+                // زر الرجوع؛ التطبيق يعمل باللغة العربية فقط.
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.ChevronLeft,
-                        contentDescription = if (currentLanguage == "ar") "الرجوع" else "Back",
+                        contentDescription = "الرجوع",
                         tint = Color.White,
                         modifier = Modifier
                             .size(24.dp)
                             .clickable { onNavigateToFeature("HOME") }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Box {
-                        Surface(
-                            onClick = { showLanguageMenu = true },
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color.White.copy(alpha = 0.12f)
-                        ) {
-                            Text(
-                                text = if (currentLanguage == "ar") "العربية" else "English",
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = showLanguageMenu,
-                            onDismissRequest = { showLanguageMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("العربية") },
-                                onClick = {
-                                    viewModel.setAppLanguage("ar")
-                                    showLanguageMenu = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("English") },
-                                onClick = {
-                                    viewModel.setAppLanguage("en")
-                                    showLanguageMenu = false
-                                }
-                            )
-                        }
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color.White.copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = "العربية",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
+                        )
                     }
                 }
 
