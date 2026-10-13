@@ -7,6 +7,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Locale
 
 object QuranApiClient {
 
@@ -66,8 +67,8 @@ object QuranApiClient {
                     // https://cdn.alafasy.me/audios/128/<surahId_padded>/<ayahId_padded>.mp3
                     // For example: Surah 1 Ayah 1 -> https://everyayah.com/data/Alafasy_128kbps/001001.mp3
                     // Let's form a robust audio streaming URL using Alafasy's famous recitation:
-                    val paddedSurah = String.format("%03d", surahId)
-                    val paddedAyah = String.format("%03d", numInSurah)
+                    val paddedSurah = String.format(Locale.US, "%03d", surahId)
+                    val paddedAyah = String.format(Locale.US, "%03d", numInSurah)
                     val audioUrl = "https://everyayah.com/data/Alafasy_128kbps/$paddedSurah$paddedAyah.mp3"
 
                     result.add(
