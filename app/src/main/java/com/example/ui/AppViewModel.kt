@@ -91,6 +91,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val athanOtherVoice: StateFlow<String> = repo.appAthanOtherVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Makkah")
     val snoozeMinutes: StateFlow<Int> = repo.appSnoozeMinutes.stateIn(viewModelScope, SharingStarted.Eagerly, 5)
     val notificationsEnabled: StateFlow<Boolean> = repo.notificationsEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+    val prePrayerAlertEnabled: StateFlow<Boolean> = repo.prePrayerAlertEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    val prePrayerAlertMinutes: StateFlow<Int> = repo.prePrayerAlertMinutes.stateIn(viewModelScope, SharingStarted.Eagerly, 10)
     val themeMode: StateFlow<String> = repo.appThemeMode.stateIn(viewModelScope, SharingStarted.Eagerly, "AUTO")
     val wallpaper: StateFlow<String> = repo.appWallpaper.stateIn(viewModelScope, SharingStarted.Eagerly, "DEFAULT")
     val prefMosqueId: StateFlow<String> = repo.prefMosqueId.stateIn(viewModelScope, SharingStarted.Eagerly, "")
@@ -753,6 +755,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Settings actions
+    fun setPrePrayerAlert(enabled: Boolean, minutes: Int = prePrayerAlertMinutes.value) {
+        viewModelScope.launch {
+            repo.setPrePrayerAlert(enabled, minutes)
+            AdhanScheduler.schedule(context)
+        }
+    }
+
     fun setAppLanguage(lang: String) {
         viewModelScope.launch { repo.setLanguage(lang) }
     }
