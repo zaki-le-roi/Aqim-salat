@@ -43,6 +43,14 @@ data class LocalMosque(
     val distanceKm: Double = 0.0
 )
 
+private data class PrayerCalculationSettings(
+    val latitude: Double,
+    val longitude: Double,
+    val madhab: String,
+    val method: String,
+    val language: String
+)
+
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context = application.applicationContext
@@ -77,7 +85,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val calcMethod: StateFlow<String> = repo.appCalcMethod.stateIn(viewModelScope, SharingStarted.Eagerly, "ALGERIA")
     val latitude: StateFlow<Double> = repo.appLatitude.stateIn(viewModelScope, SharingStarted.Eagerly, 36.7538)
     val longitude: StateFlow<Double> = repo.appLongitude.stateIn(viewModelScope, SharingStarted.Eagerly, 3.0588)
-    val locationName: StateFlow<String> = repo.appLocationName.stateIn(viewModelScope, SharingStarted.Eagerly, "الجزائر العاصمة، الجزائر")
+    val locationConfigured: StateFlow<Boolean> = repo.appLocationConfigured.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    val locationName: StateFlow<String> = repo.appLocationName.stateIn(viewModelScope, SharingStarted.Eagerly, "لم يتم تحديد الموقع بعد")
     val athanFajrVoice: StateFlow<String> = repo.appAthanFajrVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Fajr Medina")
     val athanOtherVoice: StateFlow<String> = repo.appAthanOtherVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Makkah")
     val snoozeMinutes: StateFlow<Int> = repo.appSnoozeMinutes.stateIn(viewModelScope, SharingStarted.Eagerly, 5)
@@ -175,9 +184,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     init {
         // Collect coordinates and options to trigger prayer calculations dynamically
         viewModelScope.launch {
-            combine(latitude, longitude, madhab, calcMethod, language) { lat, lng, m, c, lang ->
-                calculateAllTimes(lat, lng, m, c, lang)
-            }.collect()
+            val calculationSettings = combine(latitude, longitude, madhab, calcMethod, language) { lat, lng, m, c, lang ->
+                PrayerCalculationSettings(lat, lng, m, c, lang)
+            }
+            combine(calculationSettings, locationConfigured) { settings, configured ->
+                settings to configured
+            }.collect { (settings, configured) ->
+                calculateAllTimes(
+                    settings.latitude,
+                    settings.longitude,
+                    settings.madhab,
+                    settings.method,
+                    settings.language,
+                    configured
+                )
+            }
         }
 
         // Countdown Timer Loop (Runs continuously, recalculating every second)
@@ -446,8 +467,27 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun calculateAllTimes(lat: Double, lng: Double, madhabStr: String, methodStr: String, lang: String) {
+    private fun calculateAllTimes(
+        lat: Double,
+        lng: Double,
+        madhabStr: String,
+        methodStr: String,
+        lang: String,
+        isLocationConfigured: Boolean
+    ) {
         val date = Date()
+        if (!isLocationConfigured) {
+            // لا تعرض مواقيت أو اتجاه قبلة محسوبة من إحداثيات افتراضية على أنها تخص المستخدم.
+            _prayerTimes.value = null
+            _nextPrayerName.value = ""
+            _nextPrayerTime.value = ""
+            _countdownText.value = "—"
+            _currentPrayerName.value = ""
+            _moonPhaseName.value = PrayerCalculator.getMoonPhaseName(PrayerCalculator.calculateMoonPhase(date), "ar")
+            val hijri = PrayerCalculator.getHijriDate(date, "ar")
+            _hijriDateString.value = "${hijri.day} ${hijri.monthName} ${hijri.year} هـ"
+            return
+        }
         val calendar = Calendar.getInstance()
         val zone = calendar.timeZone
         val offsetHours = zone.getOffset(date.time) / 3600000.0
