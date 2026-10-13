@@ -242,20 +242,27 @@ object PrayerCalculator {
     data class HijriDate(val year: Int, val month: Int, val day: Int, val monthName: String)
 
     fun getHijriDate(date: Date, lang: String): HijriDate {
-        // Use Android ICU's supported Islamic calendar instead of the old approximation,
-        // which incorrectly displayed dates decades in the future (e.g. year 1478).
-        val hijriCalendar = android.icu.util.IslamicCalendar(
-            TimeZone.getDefault(),
-            android.icu.util.ULocale("ar")
-        )
-        hijriCalendar.setCalculationType(
-            android.icu.util.IslamicCalendar.CalculationType.ISLAMIC_UMALQURA
-        )
-        hijriCalendar.time = date
+        val cal = Calendar.getInstance().apply { time = date }
+        val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH) + 1
+        val day = cal.get(Calendar.DAY_OF_MONTH)
 
-        val hYear = hijriCalendar.get(android.icu.util.Calendar.YEAR)
-        val hMonth = hijriCalendar.get(android.icu.util.Calendar.MONTH) + 1
-        val hDay = hijriCalendar.get(android.icu.util.Calendar.DAY_OF_MONTH)
+        // Convert Julian day to the tabular Islamic calendar. The previous formula
+        // was one 30-year cycle too high and could show years such as 1478 instead of 1448.
+        val jd = floor(getJulianDate(year, month, day)) + 0.5
+        val hYear = floor((30.0 * (jd - 1948439.5) + 10646.0) / 10631.0).toInt()
+
+        fun islamicToJulian(hYearValue: Int, hMonthValue: Int, hDayValue: Int): Double {
+            return hDayValue +
+                ceil(29.5 * (hMonthValue - 1)) +
+                (hYearValue - 1) * 354.0 +
+                floor((3.0 + 11.0 * hYearValue) / 30.0) +
+                1948439.5 - 1.0
+        }
+
+        val hMonth = (ceil((jd - (29.0 + islamicToJulian(hYear, 1, 1)) / 29.5).coerceAtLeast(0.0)).toInt() + 1)
+            .coerceIn(1, 12)
+        val hDay = (jd - islamicToJulian(hYear, hMonth, 1) + 1.0).toInt().coerceIn(1, 30)
 
         val hMonthsAr = listOf(
             "محرّم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة",
