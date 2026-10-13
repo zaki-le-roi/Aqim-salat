@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.Manifest
+import android.location.Geocoder
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
@@ -34,6 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.PrayerCalculator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -578,6 +582,8 @@ fun PrayerTimesScreen(
         var customLatitude by remember { mutableStateOf("") }
         var customLongitude by remember { mutableStateOf("") }
         var locationError by remember { mutableStateOf("") }
+        var isSearchingCity by remember { mutableStateOf(false) }
+        val locationScope = rememberCoroutineScope()
 
         AlertDialog(
             onDismissRequest = { showLocationDialog = false },
@@ -642,69 +648,14 @@ fun PrayerTimesScreen(
                         }
                     }
 
-                    // Preset cities divider
+                    // City search uses the device geocoder instead of a fixed list of city coordinates.
                     item {
                         Text(
-                            text = if (lang == "ar") "المدن المقترحة" else if (lang == "tr") "Önerilen Şehirler" else "Suggested Cities",
+                            text = "ابحث عن أي مدينة لتحديد إحداثياتها الحقيقية",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
                         )
-                    }
-
-                    // Preset cities list (Algeria & global)
-                    val presetCities = listOf(
-                        Triple("Algiers", 36.7538, 3.0588),
-                        Triple("Oran", 35.6971, -0.6308),
-                        Triple("Constantine", 36.3650, 6.6147),
-                        Triple("Annaba", 36.9000, 7.7667),
-                        Triple("Mecca", 21.4225, 39.8262),
-                        Triple("Medina", 24.4673, 39.6111),
-                        Triple("Cairo", 30.0444, 31.2357),
-                        Triple("Istanbul", 41.0082, 28.9784),
-                        Triple("London", 51.5074, -0.1278),
-                        Triple("Paris", 48.8566, 2.3522),
-                        Triple("New York", 40.7128, -74.0060)
-                    )
-
-                    items(presetCities) { (name, latVal, lngVal) ->
-                        val displayName = when (name) {
-                            "Algiers" -> "الجزائر العاصمة"
-                            "Oran" -> "وهران"
-                            "Constantine" -> "قسنطينة"
-                            "Annaba" -> "عنابة"
-                            "Mecca" -> "مكة المكرمة"
-                            "Medina" -> "المدينة المنورة"
-                            "Cairo" -> "القاهرة"
-                            "Istanbul" -> "إسطنبول"
-                            "London" -> "لندن"
-                            "Paris" -> "باريس"
-                            "New York" -> "نيويورك"
-                            else -> name
-                        }
-                        
-                        Surface(
-                            onClick = {
-                                viewModel.setManualCity(displayName, latVal, lngVal)
-                                showLocationDialog = false
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(14.dp).fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Filled.LocationCity, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(displayName, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                                }
-                                Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
-                            }
-                        }
                     }
 
                     // Custom Coordinates section divider
@@ -717,15 +668,55 @@ fun PrayerTimesScreen(
                         )
                     }
 
-                    // Custom City Name Input
+                    // City name input and real geocoder lookup
                     item {
                         OutlinedTextField(
                             value = customCityName,
-                            onValueChange = { customCityName = it },
-                            label = { Text(if (lang == "ar") "اسم المدينة" else "City Name") },
+                            onValueChange = { customCityName = it; locationError = "" },
+                            label = { Text("اسم المدينة أو المنطقة") },
                             modifier = Modifier.fillMaxWidth().testTag("custom_city_input"),
                             singleLine = true
                         )
+                    }
+                    item {
+                        Button(
+                            onClick = {
+                                val query = customCityName.trim()
+                                if (query.isBlank()) {
+                                    locationError = "اكتب اسم المدينة أولًا"
+                                } else {
+                                    isSearchingCity = true
+                                    locationError = ""
+                                    locationScope.launch {
+                                        @Suppress("DEPRECATION")
+                                        fun lookupCity(): List<android.location.Address> {
+                                            if (!Geocoder.isPresent()) return emptyList()
+                                            return Geocoder(context, Locale("ar")).getFromLocationName(query, 1).orEmpty()
+                                        }
+                                        val matches = withContext(Dispatchers.IO) {
+                                            runCatching { lookupCity() }.getOrDefault(emptyList())
+                                        }
+                                        val address = matches.firstOrNull()
+                                        if (address != null && address.hasLatitude() && address.hasLongitude()) {
+                                            customLatitude = address.latitude.toString()
+                                            customLongitude = address.longitude.toString()
+                                            customCityName = listOfNotNull(
+                                                address.locality ?: address.subAdminArea ?: address.adminArea,
+                                                address.countryName
+                                            ).joinToString("، ").ifBlank { query }
+                                            locationError = "تم العثور على إحداثيات المدينة. اضغط حفظ لتطبيقها."
+                                        } else {
+                                            locationError = "تعذر العثور على المدينة. تحقق من الإنترنت أو أدخل الإحداثيات يدويًا."
+                                        }
+                                        isSearchingCity = false
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !isSearchingCity
+                        ) {
+                            Text(if (isSearchingCity) "جارٍ البحث عن المدينة…" else "البحث عن المدينة وإحضار إحداثياتها")
+                        }
                     }
 
                     // Custom Latitude Input
