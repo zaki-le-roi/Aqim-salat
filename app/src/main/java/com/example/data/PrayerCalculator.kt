@@ -242,24 +242,20 @@ object PrayerCalculator {
     data class HijriDate(val year: Int, val month: Int, val day: Int, val monthName: String)
 
     fun getHijriDate(date: Date, lang: String): HijriDate {
-        val cal = Calendar.getInstance().apply { time = date }
-        val year = cal.get(Calendar.YEAR)
-        val month = cal.get(Calendar.MONTH) + 1
-        val day = cal.get(Calendar.DAY_OF_MONTH)
+        // Use Android ICU's supported Islamic calendar instead of the old approximation,
+        // which incorrectly displayed dates decades in the future (e.g. year 1478).
+        val hijriCalendar = android.icu.util.IslamicCalendar(
+            TimeZone.getDefault(),
+            android.icu.util.ULocale("ar")
+        )
+        hijriCalendar.setCalculationType(
+            android.icu.util.IslamicCalendar.CalculationType.ISLAMIC_UMALQURA
+        )
+        hijriCalendar.time = date
 
-        val jd = getJulianDate(year, month, day)
-        // Convert Julian Date to Hijri tabular calendar
-        val l = jd - 1948439.5 + 10632.0
-        val n = floor((l - 1.0) / 10631.0).toInt()
-        val lOffset = l - 10631.0 * n - 1.0
-        val z = floor((lOffset + 354.0) / 354.36667).toInt()
-        val zCal = if (z > 30) 30 else z
-        val j = lOffset - floor(354.36667 * zCal) + 1
-
-        val hYear = 30 * n + zCal
-        var hMonth = ceil(j / 29.5).toInt()
-        if (hMonth > 12) hMonth = 12
-        val hDay = (j - floor(29.5 * (hMonth - 1))).toInt()
+        val hYear = hijriCalendar.get(android.icu.util.Calendar.YEAR)
+        val hMonth = hijriCalendar.get(android.icu.util.Calendar.MONTH) + 1
+        val hDay = hijriCalendar.get(android.icu.util.Calendar.DAY_OF_MONTH)
 
         val hMonthsAr = listOf(
             "محرّم", "صفر", "ربيع الأول", "ربيع الآخر", "جمادى الأولى", "جمادى الآخرة",
