@@ -807,7 +807,7 @@ fun SurahReader(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }, modifier = Modifier.testTag("surah_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = Color(0xFF042B1D))
+                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 actions = {
@@ -825,7 +825,7 @@ fun SurahReader(
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = if (lang == "en") "Reading options" else "خيارات القراءة",
-                            tint = Color(0xFF042B1D)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -837,7 +837,7 @@ fun SurahReader(
                         Icon(
                             imageVector = if (isMushafMode) Icons.Filled.ViewList else Icons.Filled.MenuBook,
                             contentDescription = if (lang == "en") "Change view" else "تبديل العرض",
-                            tint = Color(0xFF042B1D)
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
