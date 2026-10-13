@@ -93,12 +93,8 @@ class AppRepository(
     }
 
     // --- Preference Observables ---
-    val appLanguage: Flow<String> = context.dataStore.data.map { pref ->
-        when (pref[KEY_LANGUAGE]) {
-            "en" -> "en"
-            else -> "ar"
-        }
-    }
+    // التطبيق معتمد باللغة العربية فقط؛ لا نسمح لتفضيل قديم بتحويل الواجهة إلى الإنجليزية.
+    val appLanguage: Flow<String> = context.dataStore.data.map { "ar" }
 
     val appMadhab: Flow<String> = context.dataStore.data.map { pref ->
         pref[KEY_MADHAB] ?: "STANDARD"
@@ -196,7 +192,7 @@ class AppRepository(
     }
 
     suspend fun setLanguage(lang: String) {
-        context.dataStore.edit { pref -> pref[KEY_LANGUAGE] = lang }
+        context.dataStore.edit { pref -> pref[KEY_LANGUAGE] = "ar" }
     }
 
     suspend fun setMadhab(madhab: String) {
