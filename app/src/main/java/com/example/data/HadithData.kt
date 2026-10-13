@@ -30,7 +30,7 @@ object HadithData {
         ),
         Hadith(
             collection = "Sahih Muslim",
-            id = "muslim_jamal_91",
+            id = "bukhari_3",
             number = "91",
             arabic = "إِنَّ اللَّهَ جَمِيلٌ يُحِبُّ الْجَمَالَ، الْكِبْرُ بَطَرُ الْحَقِّ وَغَمْطُ النَّاسِ",
             english = "Allah is Beautiful and loves beauty. Arrogance is rejecting the truth and looking down on people.",
