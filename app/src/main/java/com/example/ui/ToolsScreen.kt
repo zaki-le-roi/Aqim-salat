@@ -1820,6 +1820,34 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
             "لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ.",
             "لا إله إلا أنت سبحانك إني كنت من الظالمين، يا حي يا قيوم برحمتك أستغيث.",
             "There is no deity worthy of worship except Allah, the Magnificent, the Forbearing. There is no deity worthy of worship except Allah, Lord of the Mighty Throne. There is no deity worthy of worship except Allah, Lord of the heavens, Lord of the earth, and Lord of the Noble Throne."
+        ),
+        HisnDua(
+            "8", "أذكار الصباح والمساء", "Morning & Evening",
+            "دعاء الصباح والمساء", "Morning and Evening Supplication",
+            "اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا وَبِكَ نَحْيَا وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ.",
+            "يُقال صباحًا، ويُقال في المساء بلفظ: اللهم بك أمسينا وبك أصبحنا وبك نحيا وبك نموت وإليك المصير.",
+            "O Allah, by Your grace we enter the morning and by Your grace we enter the evening; by You we live and die, and to You is the resurrection."
+        ),
+        HisnDua(
+            "9", "أذكار الصباح والمساء", "Morning & Evening",
+            "ذكر الحفظ من الضرر", "Supplication for Protection",
+            "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.",
+            "يُقال ثلاث مرات صباحًا وثلاث مرات مساءً.",
+            "In the name of Allah, with whose name nothing on earth or in heaven can cause harm, and He is the All-Hearing, All-Knowing."
+        ),
+        HisnDua(
+            "10", "أذكار الصباح والمساء", "Morning & Evening",
+            "الرضا بالله ربًا", "Being Pleased with Allah as Lord",
+            "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صلى الله عليه وسلم نَبِيًّا.",
+            "يُقال ثلاث مرات صباحًا ومساءً.",
+            "I am pleased with Allah as my Lord, Islam as my religion, and Muhammad, peace and blessings be upon him, as my Prophet."
+        ),
+        HisnDua(
+            "11", "أذكار الصباح والمساء", "Morning & Evening",
+            "الاستعاذة من شر المخلوقات", "Seeking Refuge from Created Evil",
+            "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.",
+            "من الأذكار الواردة للاستعاذة بالله من شر ما خلق.",
+            "I seek refuge in the perfect words of Allah from the evil of what He has created."
         )
     )
 
