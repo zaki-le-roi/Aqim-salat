@@ -769,7 +769,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setAutoSilentEnabled(enabled: Boolean) {
+    fun setAutoSilentEnabled(enabled: Boolean): Boolean {
         if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val notificationManager = context.getSystemService(NotificationManager::class.java)
             if (notificationManager != null && !notificationManager.isNotificationPolicyAccessGranted) {
@@ -779,13 +779,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     )
                 }
-                return
+                return false
             }
         }
         viewModelScope.launch {
             repo.setAutoSilentEnabled(enabled)
             AdhanScheduler.schedule(context)
         }
+        return true
     }
 
     fun setAppLanguage(lang: String) {
