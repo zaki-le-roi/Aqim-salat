@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">أقم صلاتك</string>
+    <string name="prayer_widget_description">مواقيت الصلاة اليومية</string>
 </resources>
