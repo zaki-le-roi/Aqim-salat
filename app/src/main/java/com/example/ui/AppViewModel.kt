@@ -2,6 +2,7 @@ package com.example.ui
 
 import android.app.Application
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
@@ -10,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Vibrator
 import android.os.VibrationEffect
+import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.*
@@ -94,6 +96,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val notificationsEnabled: StateFlow<Boolean> = repo.notificationsEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, true)
     val prePrayerAlertEnabled: StateFlow<Boolean> = repo.prePrayerAlertEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val prePrayerAlertMinutes: StateFlow<Int> = repo.prePrayerAlertMinutes.stateIn(viewModelScope, SharingStarted.Eagerly, 10)
+    val autoSilentEnabled: StateFlow<Boolean> = repo.autoSilentEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val themeMode: StateFlow<String> = repo.appThemeMode.stateIn(viewModelScope, SharingStarted.Eagerly, "AUTO")
     val wallpaper: StateFlow<String> = repo.appWallpaper.stateIn(viewModelScope, SharingStarted.Eagerly, "DEFAULT")
     val prefMosqueId: StateFlow<String> = repo.prefMosqueId.stateIn(viewModelScope, SharingStarted.Eagerly, "")
@@ -763,6 +766,25 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repo.setPrePrayerAlert(enabled, minutes)
             AdhanScheduler.schedule(context)
             runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
+        }
+    }
+
+    fun setAutoSilentEnabled(enabled: Boolean) {
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val notificationManager = context.getSystemService(NotificationManager::class.java)
+            if (notificationManager != null && !notificationManager.isNotificationPolicyAccessGranted) {
+                runCatching {
+                    context.startActivity(
+                        Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    )
+                }
+                return
+            }
+        }
+        viewModelScope.launch {
+            repo.setAutoSilentEnabled(enabled)
+            AdhanScheduler.schedule(context)
         }
     }
 
