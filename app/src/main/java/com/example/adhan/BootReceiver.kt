@@ -12,6 +12,7 @@ class BootReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                AdhanAlarmReceiver.restoreRingerModeIfNeeded(context.applicationContext)
                 AdhanScheduler.schedule(context.applicationContext)
                 runCatching { com.example.widget.PrayerTimesWidgetProvider.requestUpdate(context.applicationContext) }
             } finally { pending.finish() }
