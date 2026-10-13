@@ -285,14 +285,14 @@ fun MoreScreen(
                         .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Left Card: Golden Al-Mosally (أقم صلاتك المميز)
+                    // Left Card: World prayer times
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { onNavigateToFeature("PREMIUM") },
+                            .clickable { onNavigateToFeature("WORLD_PRAYER_TIMES") },
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D253F)),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFFD700))
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
@@ -300,22 +300,22 @@ fun MoreScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Shield,
-                                contentDescription = if (currentLanguage == "ar") "مميز" else "Premium",
-                                tint = Color(0xFFFFD700),
+                                imageVector = Icons.Filled.Public,
+                                contentDescription = if (currentLanguage == "ar") "مواقيت الصلاة حول العالم" else "World prayer times",
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = if (currentLanguage == "ar") "أقم صلاتك المميز" else "Aqim Salat Premium",
-                                    color = Color(0xFFFFD700),
+                                    text = if (currentLanguage == "ar") "مواقيت الصلاة حول العالم" else "World prayer times",
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = if (currentLanguage == "ar") "ميزات حصرية" else "Exclusive features",
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    text = if (currentLanguage == "ar") "مواقيت المدن المختلفة" else "Prayer times for different cities",
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                     fontSize = 9.sp
                                 )
                             }
