@@ -260,7 +260,7 @@ object PrayerCalculator {
                 1948439.5 - 1.0
         }
 
-        val hMonth = (ceil((jd - (29.0 + islamicToJulian(hYear, 1, 1)) / 29.5).coerceAtLeast(0.0)).toInt() + 1)
+        val hMonth = (ceil((jd - (29.0 + islamicToJulian(hYear, 1, 1))) / 29.5).toInt() + 1)
             .coerceIn(1, 12)
         val hDay = (jd - islamicToJulian(hYear, hMonth, 1) + 1.0).toInt().coerceIn(1, 30)
 
