@@ -73,7 +73,7 @@ object QuranData {
         Surah(59, "الحشر", "Al-Hashr", "The Exile", "Medinan", 24),
         Surah(60, "الممتحنة", "Al-Mumtahanah", "She That Is To Be Examined", "Medinan", 13),
         Surah(61, "الصف", "As-Saff", "The Ranks", "Medinan", 14),
-        Surah(62, "الجمعة", "Al-Jumuyah", "The Congregation", "Medinan", 11),
+        Surah(62, "الجمعة", "Al-Jumu'ah", "The Congregation", "Medinan", 11),
         Surah(63, "المنافقون", "Al-Munafiqun", "The Hypocrites", "Medinan", 11),
         Surah(64, "التغابن", "At-Taghabun", "The Mutual Disillusion", "Medinan", 18),
         Surah(65, "الطلاق", "At-Talaq", "The Divorce", "Medinan", 12),
