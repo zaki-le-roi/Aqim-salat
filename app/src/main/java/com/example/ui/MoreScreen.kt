@@ -144,7 +144,7 @@ fun MoreScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F8F6))
+                .background(MaterialTheme.colorScheme.background)
         ) {
         // --- IMMERSIVE SOLID DEEP BLUE HEADER ---
         Box(
@@ -328,7 +328,7 @@ fun MoreScreen(
                             .weight(1f)
                             .clickable { onNavigateToFeature("FAVORITES") },
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
                     ) {
                         Row(
@@ -375,7 +375,7 @@ fun ServicesSectionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
