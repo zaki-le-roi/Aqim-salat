@@ -1765,16 +1765,16 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
         HisnDua(
             "1", "أذكار الصباح والمساء", "Morning & Evening",
             "آية الكرسي", "Ayat al-Kursi",
-            "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ...",
+            "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ",
             "من قرأها حين يصبح أجير من الجن حتى يمسي، ومن قرأها حين يمسي أجير منهم حتى يصبح.",
-            "Allahu la ilaha illa Huwa, Al-Hayyul-Qayyum. No slumber can seize Him nor sleep. To Him belongs all that is in the heavens and on earth..."
+            "Allah—there is no deity except Him, the Ever-Living, the Sustainer of all. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who could intercede with Him except by His permission? He knows what is before them and what will be after them, and they encompass nothing of His knowledge except what He wills. His Kursi extends over the heavens and the earth, and preserving them does not tire Him. He is the Most High, the Most Great."
         ),
         HisnDua(
             "2", "أذكار الصباح والمساء", "Morning & Evening",
             "سيد الاستغفار", "Master of Forgiveness",
             "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ.",
             "من قالها موقنا بها حين يصبح فمات من يومه قبل أن يمسي فهو من أهل الجنة.",
-            "O Allah, You are my Lord, there is none worthy of worship but You. You created me and I am Your slave. I keep Your covenant and my promise to You as much as I can..."
+            "O Allah, You are my Lord; there is no deity worthy of worship except You. You created me and I am Your servant. I keep my covenant and promise to You as best I can. I seek refuge in You from the evil I have done. I acknowledge Your blessings upon me and confess my sins, so forgive me, for none forgives sins except You."
         ),
         HisnDua(
             "3", "النوم والاستيقاظ", "Sleep & Waking",
@@ -1794,22 +1794,22 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
             "5", "السفر والترحال", "Travel & Outdoors",
             "دعاء السفر", "Dua for Travel",
             "اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ وَإِنَّا إِلَىٰ رَبِّنَا لَمُنقَلِبُونَ.",
-            "اللهم إنا نسألك في سفرنا هذا البر والتقوى، ومن العمل ما ترضى، اللهم هون علينا سفرنا هذا...",
-            "Allah is the Greatest (three times). Glory is to Him Who has provided this for us, though we could never have had it by our efforts. And surely, to our Lord we are returning..."
+            "اللَّهُمَّ إِنَّا نَسْأَلُكَ فِي سَفَرِنَا هَذَا الْبِرَّ وَالتَّقْوَى، وَمِنَ الْعَمَلِ مَا تَرْضَى، اللَّهُمَّ هَوِّنْ عَلَيْنَا سَفَرَنَا هَذَا وَاطْوِ عَنَّا بُعْدَهُ، اللَّهُمَّ أَنْتَ الصَّاحِبُ فِي السَّفَرِ، وَالْخَلِيفَةُ فِي الْأَهْلِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ وَعْثَاءِ السَّفَرِ، وَكَآبَةِ الْمَنْظَرِ، وَسُوءِ الْمُنْقَلَبِ فِي الْمَالِ وَالْأَهْلِ.",
+            "Allah is the Greatest, Allah is the Greatest, Allah is the Greatest. Glory be to the One who has subjected this to us, for we could not have done so by ourselves; and surely, to our Lord we will return. O Allah, we ask You on this journey for righteousness, piety, and deeds that please You. Make this journey easy for us and shorten its distance. You are our Companion on the journey and the Guardian of our family. I seek refuge in You from the hardships of travel, distressing sights, and a bad return concerning wealth and family."
         ),
         HisnDua(
             "6", "الصلاة والوضوء", "Prayer & Ablution",
             "دعاء الذهاب إلى المسجد", "Dua for Going to the Mosque",
-            "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُورًا، وَفِي لِسَانِي نُورًا، وَاجْعَلْ فِي سَمْعِي نُورًا، وَاجْعَلْ فِي بَصَرِي نُورًا، وَاجْعَلْ مِنْ خَلْفِي نُورًا...",
-            "اللهم اجعل لي نورا في قبري ونورا في عظامي ونورا في دمي ونورا في لحمي...",
-            "O Allah, place light in my heart, and on my tongue light, and in my hearing light, and in my sight light, and behind me light..."
+            "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُورًا، وَفِي لِسَانِي نُورًا، وَفِي سَمْعِي نُورًا، وَفِي بَصَرِي نُورًا، وَمِنْ فَوْقِي نُورًا، وَمِنْ تَحْتِي نُورًا، وَعَنْ يَمِينِي نُورًا، وَعَنْ يَسَارِي نُورًا، وَأَمَامِي نُورًا، وَخَلْفِي نُورًا، وَاجْعَلْ فِي نَفْسِي نُورًا، وَأَعْظِمْ لِي نُورًا.",
+            "اللَّهُمَّ اجْعَلْ لِي نُورًا فِي قَلْبِي، وَنُورًا فِي سَمْعِي، وَنُورًا فِي بَصَرِي، وَنُورًا عَنْ يَمِينِي، وَنُورًا عَنْ يَسَارِي، وَنُورًا فَوْقِي، وَنُورًا تَحْتِي، وَنُورًا أَمَامِي، وَنُورًا خَلْفِي، وَعَظِّمْ لِي نُورًا.",
+            "O Allah, place light in my heart, on my tongue, in my hearing and in my sight. Place light above me and below me, to my right and to my left, before me and behind me, and grant me abundant light."
         ),
         HisnDua(
             "7", "الشدة والكرب", "Distress & Relief",
             "دعاء الكرب والهم", "Dua for Distress & Anxiety",
             "لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ.",
             "لا إله إلا أنت سبحانك إني كنت من الظالمين، يا حي يا قيوم برحمتك أستغيث.",
-            "There is none worthy of worship but Allah the Mighty, the Forbearing. There is none worthy of worship but Allah, Lord of the Magnificent Throne..."
+            "There is no deity worthy of worship except Allah, the Magnificent, the Forbearing. There is no deity worthy of worship except Allah, Lord of the Mighty Throne. There is no deity worthy of worship except Allah, Lord of the heavens, Lord of the earth, and Lord of the Noble Throne."
         )
     )
 
