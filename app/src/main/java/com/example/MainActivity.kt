@@ -2,19 +2,11 @@ package com.example
 
 import android.os.Bundle
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.Toast
-import com.google.android.play.core.appupdate.AppUpdateManager
-import com.google.android.play.core.appupdate.AppUpdateManagerFactory
-import com.google.android.play.core.appupdate.AppUpdateOptions
-import com.google.android.play.core.install.InstallStateUpdatedListener
-import com.google.android.play.core.install.model.AppUpdateType
-import com.google.android.play.core.install.model.InstallStatus
-import com.google.android.play.core.install.model.UpdateAvailability
 import com.example.adhan.AdhanScheduler
 import kotlinx.coroutines.launch
 import androidx.core.content.ContextCompat
@@ -63,26 +55,11 @@ class MainActivity : ComponentActivity() {
 
     private var locationViewModel: AppViewModel? = null
 
-    private lateinit var appUpdateManager: AppUpdateManager
-    private val updateLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-        if (result.resultCode != RESULT_OK) {
-            Toast.makeText(this, "تم تأجيل التحديث.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private val installStateListener = InstallStateUpdatedListener { state ->
-        if (state.installStatus() == InstallStatus.DOWNLOADED) {
-            appUpdateManager.completeUpdate()
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        appUpdateManager = AppUpdateManagerFactory.create(this)
         locationViewModel = ViewModelProvider(this)[AppViewModel::class.java]
-        appUpdateManager.registerListener(installStateListener)
-        checkForUpdates()
+        ApkUpdateChecker(this).checkForUpdate()
         requestNotificationAndAlarmAccess()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -150,35 +127,7 @@ class MainActivity : ComponentActivity() {
         // when Android has not granted exact-alarm access, so the app does not trap users in Settings.
     }
 
-    private fun checkForUpdates() {
-        appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-            val available = info.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-            if (available && info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
-                appUpdateManager.startUpdateFlowForResult(
-                    info,
-                    updateLauncher,
-                    AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
-                )
-            }
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        appUpdateManager.appUpdateInfo.addOnSuccessListener { info ->
-            if (info.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS &&
-                info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
-                appUpdateManager.startUpdateFlowForResult(
-                    info,
-                    updateLauncher,
-                    AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build()
-                )
-            }
-        }
-    }
-
     override fun onDestroy() {
-        if (::appUpdateManager.isInitialized) appUpdateManager.unregisterListener(installStateListener)
         super.onDestroy()
     }
 }
