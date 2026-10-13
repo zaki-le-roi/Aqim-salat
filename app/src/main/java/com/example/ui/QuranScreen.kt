@@ -1103,7 +1103,10 @@ fun SurahReader(
                                                     verses = pageVerses,
                                                     txtColor = txtColor,
                                                     goldColor = goldAccent,
-                                                    onVerseClick = { selectedAyahDetails = it }
+                                                    onVerseClick = {
+                                                         selectedAyahDetails = it
+                                                         viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
+                                                     }
                                                 )
                                             }
 
