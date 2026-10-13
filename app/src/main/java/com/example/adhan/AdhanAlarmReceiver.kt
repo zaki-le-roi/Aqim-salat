@@ -26,6 +26,10 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         }
 
         val prayerName = intent.getStringExtra(EXTRA_PRAYER_NAME) ?: return
+        if (intent.getBooleanExtra(EXTRA_PRE_ALERT, false)) {
+            showPrePrayerNotification(context, prayerName, intent.getStringExtra(EXTRA_PRAYER_KEY).orEmpty())
+            return
+        }
         val serviceIntent = Intent(context, AdhanPlaybackService::class.java).apply {
             putExtra(AdhanPlaybackService.EXTRA_PRAYER_NAME, prayerName)
             putExtra(AdhanPlaybackService.EXTRA_PRAYER_KEY, intent.getStringExtra(EXTRA_PRAYER_KEY) ?: "")
@@ -34,6 +38,28 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
             .onFailure { showFallbackForService(context, prayerName) }
     }
 
+    private fun showPrePrayerNotification(context: Context, prayerName: String, prayerKey: String) {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        val channelId = "pre_prayer_alerts"
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            manager.createNotificationChannel(NotificationChannel(channelId, "التنبيه قبل الصلاة", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "تذكير للاستعداد للصلاة قبل دخول وقتها"
+                enableVibration(true)
+            })
+        }
+        val openApp = PendingIntent.getActivity(context, ("pre_" + prayerKey).hashCode(), Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        manager.notify(("pre_" + prayerKey + System.currentTimeMillis() / 86_400_000L).hashCode(),
+            NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(com.example.R.drawable.ic_notification_adhan)
+                .setContentTitle("اقترب وقت صلاة $prayerName")
+                .setContentText("استعد للصلاة؛ بقيت دقائق على الأذان.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_REMINDER)
+                .setAutoCancel(true)
+                .setContentIntent(openApp)
+                .build()
+        )
+    }
     fun showFallbackForService(context: Context, prayerName: String) {
         val manager = context.getSystemService(NotificationManager::class.java)
         val channelId = "adhan"
@@ -73,5 +99,6 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         const val EXTRA_PRAYER_NAME = "prayer_name"
         const val EXTRA_DATE = "date"
         const val EXTRA_REFRESH = "refresh"
+        const val EXTRA_PRE_ALERT = "pre_prayer_alert"
     }
 }
