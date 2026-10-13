@@ -95,27 +95,34 @@ fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boole
     }
 }
 
-data class WorldCity(val nameAr: String, val nameEn: String, val lat: Double, val lon: Double, val tz: Double)
+data class WorldCity(val nameAr: String, val nameEn: String, val lat: Double, val lon: Double, val timeZoneId: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorldPrayerTimesScreen(lang: String, onBack: () -> Unit) {
     val cities = remember {
         listOf(
-            WorldCity("الجزائر", "Algiers", 36.7538, 3.0588, 1.0),
-            WorldCity("العلمة", "El Eulma", 36.1528, 5.6902, 1.0),
-            WorldCity("مكة المكرمة", "Makkah", 21.4225, 39.8262, 3.0),
-            WorldCity("المدينة المنورة", "Madinah", 24.4672, 39.6024, 3.0),
-            WorldCity("القاهرة", "Cairo", 30.0444, 31.2357, 2.0),
-            WorldCity("إسطنبول", "Istanbul", 41.0082, 28.9784, 3.0),
-            WorldCity("باريس", "Paris", 48.8566, 2.3522, 2.0),
-            WorldCity("لندن", "London", 51.5074, -0.1278, 1.0)
+            WorldCity("الجزائر", "Algiers", 36.7538, 3.0588, "Africa/Algiers"),
+            WorldCity("العلمة", "El Eulma", 36.1528, 5.6902, "Africa/Algiers"),
+            WorldCity("مكة المكرمة", "Makkah", 21.4225, 39.8262, "Asia/Riyadh"),
+            WorldCity("المدينة المنورة", "Madinah", 24.4672, 39.6024, "Asia/Riyadh"),
+            WorldCity("القاهرة", "Cairo", 30.0444, 31.2357, "Africa/Cairo"),
+            WorldCity("إسطنبول", "Istanbul", 41.0082, 28.9784, "Europe/Istanbul"),
+            WorldCity("باريس", "Paris", 48.8566, 2.3522, "Europe/Paris"),
+            WorldCity("لندن", "London", 51.5074, -0.1278, "Europe/London")
         )
     }
     var selected by remember { mutableStateOf(cities.first()) }
     var expanded by remember { mutableStateOf(false) }
     val times = remember(selected) {
-        PrayerCalculator.calculateTimes(selected.lat, selected.lon, selected.tz, Date(), PrayerCalculator.CalculationMethod.MWL, PrayerCalculator.Madhab.STANDARD)
+        val now = Date()
+        val offsetHours = java.time.ZoneId.of(selected.timeZoneId)
+            .rules.getOffset(now.toInstant()).totalSeconds / 3600.0
+        PrayerCalculator.calculateTimes(
+            selected.lat, selected.lon, offsetHours, now,
+            PrayerCalculator.CalculationMethod.MWL,
+            PrayerCalculator.Madhab.STANDARD
+        )
     }
 
     SimpleExtraScaffold(if (lang == "ar") "الصلاة حول العالم" else "Prayer Times Around the World", onBack) {
