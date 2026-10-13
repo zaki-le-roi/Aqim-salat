@@ -135,7 +135,8 @@ fun WorldPrayerTimesScreen(lang: String, onBack: () -> Unit) {
         PrayerCalculator.calculateTimes(
             selected.lat, selected.lon, offsetHours, now,
             PrayerCalculator.CalculationMethod.MWL,
-            PrayerCalculator.Madhab.STANDARD
+            PrayerCalculator.Madhab.STANDARD,
+            java.util.TimeZone.getTimeZone(selected.timeZoneId)
         )
     }
 
