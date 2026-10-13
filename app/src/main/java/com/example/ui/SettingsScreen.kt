@@ -41,11 +41,7 @@ fun SettingsScreen(
     // Dialog state controllers
     var activeDialog by remember { mutableStateOf<String?>(null) } // "THEME", "LANG", "CALC", "AUDIO", "DOWNLOADS", "BACKUP", "PRIVACY", "ACCESSIBILITY"
 
-    // Supported lists
-    val languages = listOf(
-        Pair("ar", "العربية"),
-        Pair("en", "English")
-    )
+    // Supported prayer-time and theme choices
     val themes = listOf(
         "AUTO" to if (lang == "ar") "تلقائي حسب الجهاز" else "Follow device",
         "LIGHT" to if (lang == "ar") "فاتح" else "Light",
@@ -92,17 +88,6 @@ fun SettingsScreen(
         }
 
 
-
-        // 2. Language
-        item {
-            SettingsItemCard(
-                icon = Icons.Filled.Language,
-                title = Translations.get("language", lang),
-                subtitle = languages.firstOrNull { it.first == lang }?.second ?: "العربية",
-                tag = "setting_language",
-                onClick = { activeDialog = "LANG" }
-            )
-        }
 
         // 3. Notifications Manager
         item {
@@ -210,40 +195,6 @@ fun SettingsScreen(
     }
 
     // --- Interactive Dialogue Handlers ---
-
-    // B. Language Selector
-    if (activeDialog == "LANG") {
-        AlertDialog(
-            onDismissRequest = { activeDialog = null },
-            title = { Text(if (lang == "ar") "لغة التطبيق" else "App language", fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    languages.forEach { (code, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setAppLanguage(code)
-                                    activeDialog = null
-                                }
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = lang == code, onClick = {
-                                viewModel.setAppLanguage(code)
-                                activeDialog = null
-                            })
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(label, fontSize = 16.sp)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { activeDialog = null }) { Text(if (lang == "ar") "إغلاق" else "Close") }
-            }
-        )
-    }
 
     // A. Theme Selector Dialog
     if (activeDialog == "THEME") {
