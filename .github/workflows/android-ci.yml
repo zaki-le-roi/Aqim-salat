@@ -19,6 +19,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -30,17 +31,17 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Set up Gradle 9.7.1
+      - name: Set up Gradle cache
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "9.7.1"
-          validate-wrappers: false
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
 
       - name: Unit tests
-        run: gradle test
+        run: ./gradlew --no-daemon test
 
       - name: Debug APK
-        run: gradle assembleDebug
+        run: ./gradlew --no-daemon assembleDebug
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -51,7 +52,7 @@ jobs:
           retention-days: 3
 
       - name: Release AAB
-        run: gradle bundleRelease
+        run: ./gradlew --no-daemon bundleRelease
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
