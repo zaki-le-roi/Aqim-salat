@@ -75,13 +75,14 @@ object PrayerCalculator {
         timezoneOffset: Double, // in hours
         date: Date,
         method: CalculationMethod = CalculationMethod.MWL,
-        madhab: Madhab = Madhab.STANDARD
+        madhab: Madhab = Madhab.STANDARD,
+        timeZone: TimeZone = TimeZone.getDefault()
     ): PrayerTimes {
         require(latitude.isFinite() && latitude in -90.0..90.0) { "Latitude must be between -90 and 90 degrees." }
         require(longitude.isFinite() && longitude in -180.0..180.0) { "Longitude must be between -180 and 180 degrees." }
         require(timezoneOffset.isFinite() && timezoneOffset in -14.0..14.0) { "Timezone offset is outside the supported range." }
 
-        val cal = Calendar.getInstance().apply { time = date }
+        val cal = Calendar.getInstance(timeZone).apply { time = date }
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
