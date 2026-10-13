@@ -160,18 +160,6 @@ fun WorldPrayerTimesScreen(lang: String, onBack: () -> Unit) {
     }
 }
 
-@Composable
-fun PremiumFeaturesScreen(lang: String, onBack: () -> Unit) {
-    SimpleExtraScaffold(if (lang == "ar") "أقم صلاتك المميز" else "Aqim Salah Premium", onBack) {
-        Icon(Icons.Filled.Star, null, tint = Color(0xFFD4AF37), modifier = Modifier.size(56.dp))
-        Text("ميزات حصرية", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        listOf("تجربة أكثر تخصيصاً", "خيارات موسعة للتذكيرات", "أولوية للميزات الجديدة").forEach {
-            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Text(it, Modifier.padding(16.dp)) }
-        }
-        Text("هذه الشاشة تعريفية حالياً ولا تنفذ دفعاً أو اشتراكاً تلقائياً.", fontSize = 12.sp)
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SimpleExtraScaffold(title: String, onBack: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
