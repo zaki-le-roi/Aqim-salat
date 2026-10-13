@@ -278,8 +278,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setLocation(name: String, lat: Double, lng: Double) {
+        if (!lat.isFinite() || lat !in -90.0..90.0 ||
+            !lng.isFinite() || lng !in -180.0..180.0 ||
+            name.isBlank()
+        ) return
+
         viewModelScope.launch {
-            repo.setLocation(name, lat, lng)
+            repo.setLocation(name.trim(), lat, lng)
+            runCatching { AdhanScheduler.schedule(getApplication()) }
         }
     }
     
