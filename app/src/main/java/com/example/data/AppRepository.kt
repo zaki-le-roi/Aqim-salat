@@ -82,6 +82,8 @@ class AppRepository(
         val KEY_ATHAN_OTHER_VOICE = stringPreferencesKey("app_athan_other_voice")
         val KEY_SNOOZE_MINUTES = intPreferencesKey("app_snooze_minutes")
         val KEY_NOTIFICATIONS_ENABLED = booleanPreferencesKey("app_notifications_enabled")
+        val KEY_PRE_PRAYER_ALERT_MINUTES = intPreferencesKey("pre_prayer_alert_minutes")
+        val KEY_PRE_PRAYER_ALERT_ENABLED = booleanPreferencesKey("pre_prayer_alert_enabled")
         val KEY_THEME_MODE = stringPreferencesKey("app_theme_mode")
         val KEY_WALLPAPER = stringPreferencesKey("app_wallpaper")
         val KEY_PREF_MOSQUE_ID = stringPreferencesKey("app_pref_mosque_id")
@@ -134,6 +136,21 @@ class AppRepository(
 
     val notificationsEnabled: Flow<Boolean> = context.dataStore.data.map { pref ->
         pref[KEY_NOTIFICATIONS_ENABLED] ?: true
+    }
+
+    val prePrayerAlertEnabled: Flow<Boolean> = context.dataStore.data.map { pref ->
+        pref[KEY_PRE_PRAYER_ALERT_ENABLED] ?: false
+    }
+
+    val prePrayerAlertMinutes: Flow<Int> = context.dataStore.data.map { pref ->
+        (pref[KEY_PRE_PRAYER_ALERT_MINUTES] ?: 10).coerceIn(10, 15)
+    }
+
+    suspend fun setPrePrayerAlert(enabled: Boolean, minutes: Int) {
+        context.dataStore.edit { pref ->
+            pref[KEY_PRE_PRAYER_ALERT_ENABLED] = enabled
+            pref[KEY_PRE_PRAYER_ALERT_MINUTES] = if (minutes == 15) 15 else 10
+        }
     }
 
     val appThemeMode: Flow<String> = context.dataStore.data.map { pref ->
