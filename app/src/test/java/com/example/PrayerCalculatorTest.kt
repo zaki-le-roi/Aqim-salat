@@ -61,6 +61,14 @@ class PrayerCalculatorTest {
     }
 
     @Test
+    fun hijriYearDoesNotDriftByAThirtyYearCycle() {
+        val hijri = PrayerCalculator.getHijriDate(algiersDate(), "ar")
+        assertTrue("Unexpected Hijri year: " + hijri.year, hijri.year in 1440..1455)
+        assertTrue("Invalid Hijri month: " + hijri.month, hijri.month in 1..12)
+        assertTrue("Invalid Hijri day: " + hijri.day, hijri.day in 1..30)
+    }
+
+    @Test
     fun calculationProducesValidClockTimes() {
         val times = PrayerCalculator.calculateTimes(36.7538, 3.0588, 1.0, algiersDate(), PrayerCalculator.CalculationMethod.ALGERIA, PrayerCalculator.Madhab.STANDARD)
         listOf(times.fajr, times.sunrise, times.dhuhr, times.asr, times.maghrib, times.isha)
