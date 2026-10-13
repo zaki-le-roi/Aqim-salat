@@ -117,7 +117,7 @@ class AppRepository(
     }
 
     val appLocationName: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_LOCATION_NAME] ?: "الجزائر العاصمة، الجزائر"
+        pref[KEY_LOCATION_NAME] ?: "لم يتم تحديد الموقع بعد"
     }
 
     val appAthanFajrVoice: Flow<String> = context.dataStore.data.map { pref ->
