@@ -38,6 +38,28 @@ class PrayerCalculatorTest {
         assertTrue("Hanafi Asr=" + hanafi.asr + ", Standard Asr=" + standard.asr, minutes(hanafi.asr) > minutes(standard.asr))
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun rejectsLatitudeOutsideEarthBounds() {
+        PrayerCalculator.calculateTimes(
+            latitude = 91.0,
+            longitude = 3.0588,
+            timezoneOffset = 1.0,
+            date = algiersDate(),
+            method = PrayerCalculator.CalculationMethod.ALGERIA
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun rejectsInvalidTimezoneOffset() {
+        PrayerCalculator.calculateTimes(
+            latitude = 36.7538,
+            longitude = 3.0588,
+            timezoneOffset = 25.0,
+            date = algiersDate(),
+            method = PrayerCalculator.CalculationMethod.ALGERIA
+        )
+    }
+
     @Test
     fun calculationProducesValidClockTimes() {
         val times = PrayerCalculator.calculateTimes(36.7538, 3.0588, 1.0, algiersDate(), PrayerCalculator.CalculationMethod.ALGERIA, PrayerCalculator.Madhab.STANDARD)
