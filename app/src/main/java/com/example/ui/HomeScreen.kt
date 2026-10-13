@@ -69,7 +69,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F8F6)),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(top = 0.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
@@ -272,7 +272,7 @@ fun HomeScreen(
                     .padding(horizontal = 16.dp)
                     .offset(y = (-10).dp), // Slight overlap for depth
                 shape = RoundedCornerShape(30.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Row(
@@ -298,7 +298,7 @@ fun HomeScreen(
                         text = hijriDate,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF173C2E),
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -333,7 +333,7 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
@@ -487,7 +487,7 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
@@ -513,7 +513,7 @@ fun HomeScreen(
                                 text = if (lang == "ar") "سجل إقامة الصلاة اليومية" else "Daily Prayer Tracker",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF173C2E)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         
@@ -696,7 +696,7 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp)
                         .clickable { onNavigateToFeature("AUTH") },
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
@@ -731,7 +731,7 @@ fun HomeScreen(
                                 text = if (lang == "ar") "إعداد العضوية والبيانات الشخصية" else "Set up your membership and profile",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF333333)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = if (lang == "ar") "سجّل الدخول أو أكمل بياناتك الشخصية الآن" else "Sign in or complete your personal details now",
@@ -1065,7 +1065,7 @@ fun CircularGridItem(
             text = label,
             fontSize = 9.5.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF333333),
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
