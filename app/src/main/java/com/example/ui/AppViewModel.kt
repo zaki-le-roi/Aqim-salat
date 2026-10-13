@@ -560,7 +560,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _currentPrayerName.value = currentName
 
         // Format times for display
-        val nextHourStr = String.format("%02d:%02d", (nextSec % 86400) / 3600, ((nextSec % 86400) % 3600) / 60)
+        val nextHourStr = String.format(Locale.US, "%02d:%02d", (nextSec % 86400) / 3600, ((nextSec % 86400) % 3600) / 60)
         _nextPrayerTime.value = nextHourStr
 
         // Countdown math
@@ -568,7 +568,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val h = diffSecs / 3600
         val m = (diffSecs % 3600) / 60
         val s = diffSecs % 60
-        _countdownText.value = String.format("%02d:%02d:%02d", h, m, s)
+        _countdownText.value = String.format(Locale.US, "%02d:%02d:%02d", h, m, s)
     }
 
     private fun loadTodayLogs() {
