@@ -235,7 +235,7 @@ fun AqimSalahApp(
             "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS", "AUTH",
             "COMMUNITY", "POLLS", "FAJR_LIST", "COMPETITION",
             "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY", "SEERAH",
-            "ZAKAT", "ACCOUNTABILITY", "WORLD_PRAYER_TIMES", "DEEDS", "PREMIUM" -> {
+            "ZAKAT", "ACCOUNTABILITY", "WORLD_PRAYER_TIMES", "DEEDS" -> {
                 activeDetailScreen = routeKey
             }
         }
@@ -312,7 +312,6 @@ fun AqimSalahApp(
                     "ACCOUNTABILITY" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "WORLD_PRAYER_TIMES" -> WorldPrayerTimesScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "DEEDS" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null }, challenge = true)
-                    "PREMIUM" -> PremiumFeaturesScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "DAILY_DUA" -> DailyDuaScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "ADMIN" -> AdminScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
