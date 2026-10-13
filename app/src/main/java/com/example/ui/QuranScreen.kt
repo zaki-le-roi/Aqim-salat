@@ -243,7 +243,7 @@ fun QuranScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(Color(0xFFFEFDF9)) // Warm elegant ivory background
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 // --- Islamic Rich Header ---
                 Box(
@@ -339,7 +339,7 @@ fun QuranScreen(
                                             text = if (lang == "en") "Surah ${lastRead.surahName}" else "سورة ${lastRead.surahName}",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF042B1D)
+                                            color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
@@ -386,7 +386,7 @@ fun QuranScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFFF5F5F5), RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -424,7 +424,7 @@ fun QuranScreen(
                         text = if (lang == "en") "Quick access by Juz" else "الوصول السريع بالأجزاء",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF042B1D),
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                     LazyRow(
@@ -454,7 +454,7 @@ fun QuranScreen(
                                     text = if (lang == "en") "Juz $juzNum" else "جزء $juzNum",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF042B1D)
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
@@ -493,7 +493,7 @@ fun QuranScreen(
                                         .clickable { selectedSurah = surah }
                                         .testTag("surah_card_${surah.id}"),
                                     shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFE2E2E2))
                                 ) {
                                     Row(
@@ -512,7 +512,7 @@ fun QuranScreen(
                                                     text = surah.name,
                                                     fontWeight = FontWeight.Bold,
                                                     fontSize = 17.sp,
-                                                    color = Color(0xFF042B1D)
+                                                    color = MaterialTheme.colorScheme.primary
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -634,7 +634,7 @@ fun IslamicStarBadge(number: Int, modifier: Modifier = Modifier) {
             text = number.toString(),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF042B1D),
+            color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center
         )
     }
@@ -797,7 +797,7 @@ fun SurahReader(
             TopAppBar(
                 title = {
                     Column {
-                        Text(if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF042B1D))
+                        Text(if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
                         Text(
                             text = if (lang == "en") "Ayahs: ${surah.totalAyahs} • ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan"}" else "آياتها: ${surah.totalAyahs} • نزولها: ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
                             fontSize = 11.sp,
@@ -841,7 +841,7 @@ fun SurahReader(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }
     ) { innerPadding ->
@@ -1172,7 +1172,7 @@ fun SurahReader(
                                                         text = ayah.numberInSurah.toString(),
                                                         fontSize = 11.sp,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = Color(0xFF042B1D)
+                                                        color = MaterialTheme.colorScheme.primary
                                                     )
                                                 }
 
@@ -1212,7 +1212,7 @@ fun SurahReader(
                                                 text = ayah.arabicText,
                                                 fontSize = 26.sp,
                                                 fontFamily = quranFontFamily ?: FontFamily.Serif,
-                                                color = Color(0xFF042B1D),
+                                                color = MaterialTheme.colorScheme.primary,
                                                 textAlign = TextAlign.Right,
                                                 modifier = Modifier.fillMaxWidth(),
                                                 lineHeight = 48.sp,
@@ -1255,7 +1255,7 @@ fun SurahReader(
         ModalBottomSheet(
             onDismissRequest = { showReadingOptionsSheet = false },
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.surface
         ) {
             Column(
                 modifier = Modifier
@@ -1268,7 +1268,7 @@ fun SurahReader(
                     text = if (lang == "en") "Reading view" else "طريقة عرض المصحف",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF042B1D),
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
@@ -1276,7 +1276,7 @@ fun SurahReader(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFF5F5F5))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -1332,7 +1332,7 @@ fun SurahReader(
                             text = if (lang == "en") "Page-based Mushaf view" else "طريقة عرض المصحف بالصفحات",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF333333)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     Switch(
@@ -1457,7 +1457,7 @@ fun SurahReader(
                     fontSize = 26.sp,
                     fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF042B1D),
+                    color = MaterialTheme.colorScheme.primary,
                     lineHeight = 38.sp,
                     textAlign = TextAlign.Right,
                     modifier = Modifier.fillMaxWidth()
@@ -1515,7 +1515,7 @@ fun SurahHeaderBlock(surah: QuranData.Surah, lang: String, goldColor: Color, txt
                 text = if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF042B1D)
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
