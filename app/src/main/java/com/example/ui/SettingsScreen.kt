@@ -33,6 +33,8 @@ fun SettingsScreen(
     val methodVal by viewModel.calcMethod.collectAsState()
     val locationVal by viewModel.locationName.collectAsState()
     val notificationsVal by viewModel.notificationsEnabled.collectAsState()
+    val preAlertEnabled by viewModel.prePrayerAlertEnabled.collectAsState()
+    val preAlertMinutes by viewModel.prePrayerAlertMinutes.collectAsState()
     val activeThemeVal by viewModel.themeMode.collectAsState()
     val defaultReciterVal by viewModel.defaultReciter.collectAsState()
     val hapticsVal by viewModel.hapticsEnabled.collectAsState()
@@ -134,6 +136,24 @@ fun SettingsScreen(
                             checkedTrackColor = MaterialTheme.colorScheme.primary
                         )
                     )
+                }
+            }
+        }
+
+        item {
+            Card(modifier = Modifier.fillMaxWidth().testTag("setting_pre_prayer_alert"), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("التنبيه قبل الأذان", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(if (preAlertEnabled) "سيظهر تذكير قبل الصلاة بـ $preAlertMinutes دقيقة" else "تذكير اختياري للاستعداد للصلاة", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                        }
+                        Switch(checked = preAlertEnabled, onCheckedChange = { viewModel.setPrePrayerAlert(it, preAlertMinutes) })
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        FilterChip(selected = preAlertMinutes == 10, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 10) }, label = { Text("10 دقائق") }, enabled = preAlertEnabled)
+                        FilterChip(selected = preAlertMinutes == 15, onClick = { viewModel.setPrePrayerAlert(preAlertEnabled, 15) }, label = { Text("15 دقيقة") }, enabled = preAlertEnabled)
+                    }
                 }
             }
         }
