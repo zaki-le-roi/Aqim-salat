@@ -163,7 +163,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.SettingsInputComponent,
                 title = if (lang == "ar") "حساب المواقيت والمذهب" else "Prayer Calculation",
-                subtitle = if (lang == "ar") "الطريقة: $methodVal • المذهب: $madhabVal" else "Method: $methodVal • Madhab: $madhabVal",
+                subtitle = if (lang == "ar") "الطريقة: " + when (methodVal) { "ALGERIA" -> "الجزائر"; "UMM_AL_QURA" -> "أم القرى"; "EGYPT" -> "الهيئة المصرية للمساحة"; "MWL" -> "رابطة العالم الإسلامي"; "KARACHI" -> "جامعة العلوم الإسلامية بكراتشي"; "ISNA" -> "الجمعية الإسلامية لأمريكا الشمالية"; "TURKEY" -> "الشؤون الدينية التركية"; "AWQAF" -> "الأوقاف"; else -> methodVal } + " • المذهب: " + if (madhabVal == "HANAFI") "حنفي" else "الشافعي والمالكي والحنبلي" else "Method: $methodVal • Madhab: $madhabVal",
                 tag = "setting_calculation",
                 onClick = { activeDialog = "CALC" }
             )
@@ -303,7 +303,7 @@ fun SettingsScreen(
                         ) {
                             RadioButton(selected = md == currentMadhab, onClick = { currentMadhab = md })
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text(if (md == "STANDARD") "Standard (Shafi'i, Maliki, Hanbali)" else "Hanafi", fontSize = 14.sp)
+                            Text(if (lang == "ar") { if (md == "STANDARD") "الشافعي والمالكي والحنبلي" else "الحنفي" } else { if (md == "STANDARD") "Standard (Shafi'i, Maliki, Hanbali)" else "Hanafi" }, fontSize = 14.sp)
                         }
                     }
                 }
