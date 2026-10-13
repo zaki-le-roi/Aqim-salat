@@ -326,7 +326,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val oldLat = latitude.value
             val oldLng = longitude.value
             val dist = calculateDist(oldLat, oldLng, lat, lng)
-            if (dist <= 0.05 && oldLat != 0.0 && oldLng != 0.0) return@launch
+            // Even if GPS matches the default coordinates, mark it as confirmed on first fix.
+            if (dist <= 0.05 && locationConfigured.value) return@launch
 
             // Persist coordinates immediately so prayer times, Qibla and mosque distance never
             // wait for reverse-geocoding to finish.
