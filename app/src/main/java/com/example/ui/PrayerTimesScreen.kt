@@ -1,5 +1,12 @@
 package com.example.ui
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -44,6 +51,17 @@ fun PrayerTimesScreen(
     lang: String,
     onBack: (() -> Unit)? = null
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        ) {
+            viewModel.startLocationTracking()
+        }
+    }
+
     val times by viewModel.prayerTimes.collectAsState()
     val nextName by viewModel.nextPrayerName.collectAsState()
     val nextTime by viewModel.nextPrayerTime.collectAsState()
@@ -579,7 +597,15 @@ fun PrayerTimesScreen(
                     item {
                         Button(
                             onClick = {
-                                viewModel.startLocationTracking()
+                                val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                if (hasFine || hasCoarse) {
+                                    viewModel.startLocationTracking()
+                                } else {
+                                    locationPermissionLauncher.launch(
+                                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                    )
+                                }
                             },
                             modifier = Modifier.fillMaxWidth().testTag("gps_auto_detect_button"),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
@@ -597,11 +623,23 @@ fun PrayerTimesScreen(
                     }
                     item {
                         Text(
-                            text = if (isTrackingLocation) "جارٍ انتظار موقع الهاتف الحقيقي… إذا لم يتغير الموقع، تحقق من تفعيل GPS وإذن الموقع للتطبيق." else "لا نعرض مدينة افتراضية على أنها موقعك. فعّل GPS وإذن الموقع ثم اضغط الزر أعلاه، أو اختر مدينة يدويًا.",
+                            text = if (isTrackingLocation) "جارٍ انتظار موقع الهاتف الحقيقي… إذا لم يتغير الموقع، تحقق من تفعيل GPS." else "لا نعرض مدينة افتراضية على أنها موقعك. فعّل إذن الموقع وGPS، ثم حاول مجددًا.",
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f),
                             fontSize = 12.sp,
                             lineHeight = 18.sp
                         )
+                    }
+                    item {
+                        OutlinedButton(
+                            onClick = {
+                                context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Filled.Settings, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("فتح إعدادات الموقع في الهاتف")
+                        }
                     }
 
                     // Preset cities divider
