@@ -46,6 +46,24 @@ jobs:
           echo "STORE_PASSWORD=$ANDROID_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
           echo "KEY_PASSWORD=$ANDROID_KEY_PASSWORD" >> "$GITHUB_ENV"
 
+      - name: Set version from release tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${RELEASE_TAG#v}"
+          IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+          CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
+          python3 - "$VERSION" "$CODE" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+          path = Path("app/build.gradle.kts")
+          content = path.read_text()
+          content = re.sub(r'versionCode = \\d+', f"versionCode = {sys.argv[2]}", content, count=1)
+          content = re.sub(r'versionName = "[^"]+"', f'versionName = "{sys.argv[1]}"', content, count=1)
+          path.write_text(content)
+          PY
+
       - name: Build signed release APK
         run: gradle --no-daemon assembleRelease
 
