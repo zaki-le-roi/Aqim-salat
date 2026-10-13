@@ -30,7 +30,9 @@ object AdhanScheduler {
         val appContext = context.applicationContext
         val repository = AppRepository(AppDatabase.getDatabase(appContext), appContext)
         val enabled = repository.notificationsEnabled.first()
-        if (!enabled) {
+        val preAlertEnabled = repository.prePrayerAlertEnabled.first()
+        val preAlertMinutes = repository.prePrayerAlertMinutes.first().coerceIn(10, 15)
+        if (!enabled && !preAlertEnabled) {
             cancel(context)
             return
         }
@@ -94,10 +96,24 @@ object AdhanScheduler {
                     appContext, requestCode, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                if (exactAllowed) {
-                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
-                } else {
-                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
+                if (enabled) {
+                    if (exactAllowed) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
+                    else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
+                } else alarmManager.cancel(pending)
+
+                if (preAlertEnabled) {
+                    val preTrigger = trigger - preAlertMinutes * 60_000L
+                    if (preTrigger > System.currentTimeMillis()) {
+                        val preIntent = Intent(appContext, AdhanAlarmReceiver::class.java).apply {
+                            putExtra(AdhanAlarmReceiver.EXTRA_PRE_ALERT, true)
+                            putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY, key)
+                            putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, prayers.first { it.first == key }.second)
+                            putExtra(AdhanAlarmReceiver.EXTRA_DATE, dateFormat.format(date))
+                        }
+                        val prePending = PendingIntent.getBroadcast(appContext, requestCode xor 0x35A7, preIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                        if (exactAllowed) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, preTrigger, prePending)
+                        else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, preTrigger, prePending)
+                    }
                 }
             }
         }
@@ -137,6 +153,8 @@ object AdhanScheduler {
                     PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
                 )
                 pending?.let { alarmManager.cancel(it); it.cancel() }
+                val preIntent = Intent(appContext, AdhanAlarmReceiver::class.java).apply { putExtra(AdhanAlarmReceiver.EXTRA_PRE_ALERT, true) }
+                PendingIntent.getBroadcast(appContext, requestCode xor 0x35A7, preIntent, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)?.let { alarmManager.cancel(it); it.cancel() }
             }
         }
         val refreshIntent = Intent(context, AdhanAlarmReceiver::class.java)
