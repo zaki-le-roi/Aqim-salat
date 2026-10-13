@@ -131,7 +131,7 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Filled.GridView,
                                     contentDescription = if (lang == "ar") "القائمة" else "Menu",
-                                    tint = Color(0xFF333333),
+                                    tint = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -306,7 +306,7 @@ fun HomeScreen(
                     Icon(
                         imageVector = Icons.Filled.Share,
                         contentDescription = if (lang == "ar") "مشاركة" else "Share",
-                        tint = Color(0xFF333333),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier
                             .size(20.dp)
                             .clickable {
