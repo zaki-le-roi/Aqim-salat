@@ -11,7 +11,10 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pending = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
-            try { AdhanScheduler.schedule(context.applicationContext) } finally { pending.finish() }
+            try {
+                AdhanScheduler.schedule(context.applicationContext)
+                runCatching { com.example.widget.PrayerTimesWidgetProvider.requestUpdate(context.applicationContext) }
+            } finally { pending.finish() }
         }
     }
 }
