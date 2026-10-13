@@ -40,6 +40,7 @@ import com.example.data.Khatmah
 import android.net.Uri
 import android.content.Context
 import android.content.Intent
+import android.hardware.GeomagneticField
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -434,12 +435,14 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
 fun QiblaTool(viewModel: AppViewModel, lang: String) {
     val qiblaAngle by viewModel.qiblaAngle.collectAsState()
     val distance by viewModel.distanceToKaaba.collectAsState()
+    val latitude by viewModel.latitude.collectAsState()
+    val longitude by viewModel.longitude.collectAsState()
 
     val context = LocalContext.current
     var deviceAzimuth by remember { mutableFloatStateOf(0f) }
     var sensorAvailable by remember { mutableStateOf(false) }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(context, latitude, longitude) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         val rotationSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
         sensorAvailable = rotationSensor != null
@@ -454,9 +457,16 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
                 override fun onSensorChanged(event: SensorEvent) {
                     SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
                     SensorManager.getOrientation(rotationMatrix, orientation)
-                    var azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-                    if (azimuth < 0f) azimuth += 360f
-                    deviceAzimuth = azimuth
+                    var magneticAzimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+                    magneticAzimuth = ((magneticAzimuth % 360f) + 360f) % 360f
+                    // Qibla bearings are measured from true north; correct the magnetic sensor heading.
+                    val declination = GeomagneticField(
+                        latitude.toFloat(),
+                        longitude.toFloat(),
+                        0f,
+                        System.currentTimeMillis()
+                    ).declination
+                    deviceAzimuth = ((magneticAzimuth + declination) % 360f + 360f) % 360f
                 }
 
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
