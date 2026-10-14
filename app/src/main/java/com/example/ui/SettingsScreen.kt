@@ -49,13 +49,13 @@ fun SettingsScreen(
         "AUTO" to if (lang == "ar") "تلقائي حسب الجهاز" else "Follow device",
         "LIGHT" to if (lang == "ar") "فاتح" else "Light",
         "DARK" to if (lang == "ar") "داكن" else "Dark",
-        "AMOLED" to if (lang == "ar") "أسود موفّر للطاقة (AMOLED)" else "True black (AMOLED)",
+        "AMOLED" to "أسود عميق موفّر للطاقة",
         "SUNRISE_SUNSET" to if (lang == "ar") "حسب وقت الشروق والغروب" else "Sunrise and sunset",
-        "PRAYER_ADAPTIVE" to if (lang == "ar") "ألوان تتغير مع الصلاة القادمة" else "Adapt to next prayer"
+        "PRAYER_ADAPTIVE" to "ألوان تتغير مع الصلاة القادمة"
     )
     val methods = listOf("ALGERIA", "UMM_AL_QURA", "EGYPT", "MWL", "KARACHI", "ISNA", "TURKEY", "AWQAF")
     val madhabs = listOf("STANDARD", "HANAFI")
-    val recitersList = listOf("Mishary Al-Afasy", "Abdul Basit Abdus Samad", "Saad Al-Ghamdi")
+    val recitersList = listOf("مشاري العفاسي", "عبد الباسط عبد الصمد", "سعد الغامدي")
 
     // Accessibility state
     var fontSizeZoom by remember(fontScaleVal) { mutableFloatStateOf(fontScaleVal) }
