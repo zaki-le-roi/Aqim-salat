@@ -182,7 +182,7 @@ fun AqimSalahApp(
                 initialToolParam = "MOSQUES"
             }
             "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS",
-            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY", "SEERAH",
+            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "SHARE_APP", "ON_THIS_DAY", "SEERAH",
             "ZAKAT", "ACCOUNTABILITY", "DEEDS" -> {
                 activeDetailScreen = routeKey
             }
@@ -312,7 +312,7 @@ fun AqimSalahApp(
                             onBack = { activeDetailScreen = null }
                         )
                     }
-                    "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE" -> {
+                    "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "SHARE_APP" -> {
                         SupportScreen(
                             viewModel = viewModel,
                             lang = lang,
