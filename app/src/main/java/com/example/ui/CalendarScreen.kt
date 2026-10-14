@@ -94,7 +94,7 @@ fun CalendarScreen(
             ) {
                 if (onBack != null) {
                     IconButton(onClick = onBack, modifier = Modifier.testTag("calendar_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                 }
