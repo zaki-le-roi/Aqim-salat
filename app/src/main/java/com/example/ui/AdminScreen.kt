@@ -653,7 +653,7 @@ fun ContentTab(viewModel: AppViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("[${hadith.collection}] الحديث الشريف رقم: ${hadith.number}", fontWeight = FontWeight.Bold, color = Color(0xFFD4AF37))
+                                Text("[${when (hadith.collection) { "Sahih al-Bukhari" -> "صحيح البخاري"; "Sahih Muslim" -> "صحيح مسلم"; "Jami' at-Tirmidhi" -> "جامع الترمذي"; "Riyad as-Salihin" -> "رياض الصالحين"; "40 Nawawi" -> "الأربعون النووية"; else -> "أحاديث مختارة" }}] الحديث الشريف رقم: ${hadith.number}", fontWeight = FontWeight.Bold, color = Color(0xFFD4AF37))
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(hadith.arabic, maxLines = 1, overflow = TextOverflow.Ellipsis, color = Color.White.copy(alpha = 0.8f))
                             }
