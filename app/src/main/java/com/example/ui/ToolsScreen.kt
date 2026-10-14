@@ -596,14 +596,16 @@ fun AdhkarTool(viewModel: AppViewModel, lang: String) {
     var selectedCategory by remember { mutableStateOf("Morning") }
     var searchQuery by remember { mutableStateOf("") }
 
-    val categories = listOf("Morning", "Evening", "Sleep", "Travel", "Mosque", "Protection")
+    val categories = listOf("Morning", "Evening", "Sleep", "Travel", "Mosque", "Protection", "Food", "Healing")
     val categoryLabels = mapOf(
         "Morning" to if (lang == "ar") "أذكار الصباح" else "Morning",
         "Evening" to if (lang == "ar") "أذكار المساء" else "Evening",
         "Sleep" to if (lang == "ar") "أذكار النوم" else "Sleep",
         "Travel" to if (lang == "ar") "أذكار السفر" else "Travel",
         "Mosque" to if (lang == "ar") "أذكار المسجد" else "Mosque",
-        "Protection" to if (lang == "ar") "أذكار الحفظ" else "Protection"
+        "Protection" to if (lang == "ar") "أذكار الحفظ" else "Protection",
+        "Food" to if (lang == "ar") "أذكار الطعام" else "Food",
+        "Healing" to if (lang == "ar") "أدعية الشفاء" else "Healing"
     )
 
     // Dynamic reactive counters for interactive recitation
@@ -1289,7 +1291,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                 placeholder = { Text(if (lang == "ar") "ابحث عن مسجد بالاسم..." else "Search mosques by name...") },
                 modifier = Modifier.fillMaxWidth().testTag("mosque_search_input"),
                 shape = RoundedCornerShape(12.dp),
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color(0xFFD4AF37)) },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "بحث", tint = Color(0xFFD4AF37)) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
@@ -1847,8 +1849,68 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
             "الاستعاذة من شر المخلوقات", "Seeking Refuge from Created Evil",
             "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.",
             "من الأذكار الواردة للاستعاذة بالله من شر ما خلق.",
-            "I seek refuge in the perfect words of Allah from the evil of what He has created."
-        )
+            "أستعيذ بكلمات الله التامات من شر كل مخلوق."
+        ),
+        HisnDua("12", "النوم والاستيقاظ", "Sleep & Waking", "دعاء الاستيقاظ",
+            "Dua Upon Waking", "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ.",
+            "الحمد لله الذي أعاد إلينا الحياة بعد النوم، وإليه المرجع.", "الحمد لله الذي أحيانا بعد النوم وإليه النشور."),
+        HisnDua("13", "الخلاء", "Bathroom", "دعاء دخول الخلاء", "Entering the Bathroom",
+            "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ.",
+            "دعاء الاستعاذة بالله من الشياطين عند دخول الخلاء.", "اللهم إني أستعيذ بك من الشر والشياطين."),
+        HisnDua("14", "الخلاء", "Bathroom", "دعاء الخروج من الخلاء", "Leaving the Bathroom",
+            "غُفْرَانَكَ.",
+            "طلب المغفرة من الله بعد الخروج.", "أسأل الله مغفرته."),
+        HisnDua("15", "الوضوء", "Ablution", "الذكر بعد الوضوء", "After Ablution",
+            "أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ، اللَّهُمَّ اجْعَلْنِي مِنَ التَّوَّابِينَ وَاجْعَلْنِي مِنَ الْمُتَطَهِّرِينَ.",
+            "يقال بعد إتمام الوضوء.", "أشهد بالتوحيد والرسالة وأسأل الله أن يجعلني من التوابين والمتطهرين."),
+        HisnDua("16", "المسجد", "Mosque", "دعاء الذهاب إلى المسجد", "Going to the Mosque",
+            "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُورًا، وَفِي لِسَانِي نُورًا، وَاجْعَلْ فِي سَمْعِي نُورًا، وَفِي بَصَرِي نُورًا.",
+            "جزء من دعاء طلب النور الوارد عند الخروج إلى الصلاة.", "اللهم ارزقني نور الهداية في قلبي ولساني وسمعي وبصري."),
+        HisnDua("17", "الأذان", "Call to Prayer", "الدعاء بعد الأذان", "After the Adhan",
+            "اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ، وَالصَّلَاةِ الْقَائِمَةِ، آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ، وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ.",
+            "يقال بعد الأذان والصلاة على النبي صلى الله عليه وسلم.", "أسأل الله أن يؤتي نبيه الوسيلة والفضيلة والمقام المحمود."),
+        HisnDua("18", "الهم والكرب", "Distress", "دعاء ذي النون", "Supplication of Yunus",
+            "لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ.",
+            "دعاء نبي الله يونس عليه السلام الوارد في القرآن الكريم.", "أقر بتوحيد الله وأنزهه وأعترف بتقصيري."),
+        HisnDua("19", "الغضب", "Anger", "الاستعاذة عند الغضب", "When Angry",
+            "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ.",
+            "يقال عند الغضب استعاذة بالله من الشيطان.", "ألتجئ إلى الله من الشيطان الرجيم."),
+        HisnDua("20", "قضاء الدين", "Debt", "دعاء قضاء الدين", "For Debt",
+            "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ.",
+            "دعاء سؤال الكفاية بالحلال والغنى بفضل الله.", "اللهم ارزقني الحلال واكفني به وأغنني بفضلك."),
+        HisnDua("21", "الكرب", "Distress", "دعاء الهم والحزن", "For Worry and Grief",
+            "اللَّهُمَّ إِنِّي عَبْدُكَ، ابْنُ عَبْدِكَ، ابْنُ أَمَتِكَ، نَاصِيَتِي بِيَدِكَ، مَاضٍ فِيَّ حُكْمُكَ، عَدْلٌ فِيَّ قَضَاؤُكَ، أَسْأَلُكَ بِكُلِّ اسْمٍ هُوَ لَكَ...",
+            "دعاء مأثور للهم والحزن، والنص هنا مختصر؛ يرجى الرجوع إلى المصدر للنص الكامل.", "دعاء التوسل إلى الله بأسمائه الحسنى عند الهم والحزن."),
+        HisnDua("22", "المطر", "Rain", "دعاء نزول المطر", "When It Rains",
+            "اللَّهُمَّ صَيِّبًا نَافِعًا.",
+            "يقال عند نزول المطر.", "اللهم اجعله مطرًا نافعًا."),
+        HisnDua("23", "الريح", "Wind", "دعاء الريح", "When Wind Blows",
+            "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّهَا.",
+            "يسأل المسلم الله خير الريح ويستعيذ به من شرها.", "اللهم ارزقني خيرها واصرف عني شرها."),
+        HisnDua("24", "زيارة المريض", "Visiting the Sick", "دعاء للمريض", "For the Sick",
+            "لَا بَأْسَ، طَهُورٌ إِنْ شَاءَ اللَّهُ.",
+            "يقال للمريض مواساةً ودعاءً له.", "لا ضرر عليك، جعل الله المرض تطهيرًا للذنوب."),
+        HisnDua("25", "المنزل", "Home", "دعاء الخروج من المنزل", "Leaving Home",
+            "بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ.",
+            "يقال عند الخروج من المنزل.", "أخرج مستعينًا بالله متوكلًا عليه."),
+        HisnDua("26", "اللباس", "Clothing", "دعاء لبس الثوب", "Putting on Clothes",
+            "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ.",
+            "حمد الله على نعمة اللباس.", "الحمد لله الذي رزقني هذا اللباس بفضله."),
+        HisnDua("27", "الاستغفار", "Forgiveness", "سيد الاستغفار", "Master of Forgiveness",
+            "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ.",
+            "من قاله موقنًا به في النهار ثم مات قبل المساء دخل الجنة، وكذلك في المساء.", "صحيح البخاري 6306"),
+        HisnDua("28", "الكفارات", "Expiation", "الذكر بعد المجلس", "After a Gathering",
+            "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ.",
+            "كفارة المجلس عند القيام منه.", "سنن أبي داود 4859؛ جامع الترمذي 3433"),
+        HisnDua("29", "الطعام", "Food", "دعاء الضيف للمضيف", "Dua for the Host",
+            "اللَّهُمَّ بَارِكْ لَهُمْ فِيمَا رَزَقْتَهُمْ، وَاغْفِرْ لَهُمْ وَارْحَمْهُمْ.",
+            "دعاء بالبركة والمغفرة والرحمة لمن قدم الطعام.", "صحيح مسلم 2042"),
+        HisnDua("30", "الزواج", "Marriage", "التهنئة بالزواج", "Congratulating Marriage",
+            "بَارَكَ اللَّهُ لَكَ، وَبَارَكَ عَلَيْكَ، وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ.",
+            "دعاء التهنئة للمتزوج.", "سنن أبي داود 2130؛ جامع الترمذي 1091"),
+        HisnDua("31", "الصباح والمساء", "Morning & Evening", "الاستغفار في اليوم", "Daily Seeking Forgiveness",
+            "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ.",
+            "ورد الإكثار من الاستغفار والتوبة إلى الله.", "صحيح البخاري 6307؛ صحيح مسلم 2702")
     )
 
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -1887,7 +1949,7 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
             ) {
                 Text(
-                    text = "A+",
+                    text = "تكبير",
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp
@@ -1972,14 +2034,14 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
                                 onClick = {
                                     val sendIntent: Intent = Intent().apply {
                                         action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, "${dua.titleAr}\n\n${dua.arabic}\n\n${dua.translationEn}")
+                                        putExtra(Intent.EXTRA_TEXT, "${dua.titleAr}\n\n${dua.arabic}\n\n${dua.translationAr}")
                                         type = "text/plain"
                                     }
                                     val shareIntent = Intent.createChooser(sendIntent, null)
                                     try { context.startActivity(shareIntent) } catch (e: Exception) {}
                                 }
                             ) {
-                                Icon(Icons.Filled.Share, contentDescription = "Share", tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
+                                Icon(Icons.Filled.Share, contentDescription = "مشاركة", tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
                             }
                         }
 
