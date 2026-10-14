@@ -51,9 +51,6 @@ fun SupportScreen(
     var supportSuccess by remember { mutableStateOf(false) }
 
     // Rating star state
-    var selectedStars by remember { mutableIntStateOf(0) }
-    var feedbackText by remember { mutableStateOf("") }
-    var ratedSuccess by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
