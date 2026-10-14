@@ -408,7 +408,7 @@ fun TravelTool(
                             travelDhikrIndex = (travelDhikrIndex - 1 + travelAdhkars.size) % travelAdhkars.size
                             currentDhikrCount = 0
                         }) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Prev")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "السابق")
                         }
 
                         Text(
@@ -422,7 +422,7 @@ fun TravelTool(
                             travelDhikrIndex = (travelDhikrIndex + 1) % travelAdhkars.size
                             currentDhikrCount = 0
                         }) {
-                            Icon(Icons.Filled.ArrowForward, contentDescription = "Next")
+                            Icon(Icons.Filled.ArrowForward, contentDescription = "التالي")
                         }
                     }
 
