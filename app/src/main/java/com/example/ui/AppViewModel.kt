@@ -1068,8 +1068,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         initialValue = emptyList()
     )
 
-    val loggedInMember = MutableStateFlow<AppMember?>(null)
-
     private val _adminRole = MutableStateFlow<String?>(null)
     val adminRole: StateFlow<String?> = _adminRole.asStateFlow()
     private val _adminPermissions = MutableStateFlow<Set<String>>(emptySet())
@@ -1078,100 +1076,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun hasAdminPermission(permission: String): Boolean =
         _adminPermissions.value.contains("ALL") || _adminPermissions.value.contains(permission)
 
-    fun registerMember(
-        name: String,
-        email: String,
-        password: String,
-        country: String,
-        city: String,
-        onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        viewModelScope.launch {
-            if (name.isBlank() || email.isBlank() || password.length < 8) {
-                onFailure("أدخل الاسم والبريد وكلمة مرور من 8 أحرف على الأقل.")
-                return@launch
-            }
-            try {
-                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-                auth.createUserWithEmailAndPassword(email.trim().lowercase(), password)
-                    .addOnSuccessListener { result ->
-                        val userEmail = result.user?.email?.trim()?.lowercase()
-                        if (userEmail.isNullOrBlank()) {
-                            onFailure("تعذر إنشاء الحساب.")
-                            return@addOnSuccessListener
-                        }
-                        viewModelScope.launch {
-                            val newMember = AppMember(
-                                name = name.trim(),
-                                email = userEmail,
-                                country = country.trim(),
-                                city = city.trim(),
-                                points = 150,
-                                registrationDate = System.currentTimeMillis(),
-                                streakDays = 1,
-                                isActive = true
-                            )
-                            repo.insertMember(newMember)
-                            loggedInMember.value = newMember
-                            onSuccess()
-                        }
-                    }
-                    .addOnFailureListener { error ->
-                        onFailure(error.message ?: "تعذر إنشاء الحساب.")
-                    }
-            } catch (_: Exception) {
-                onFailure("خدمة العضوية غير متاحة حاليًا.")
-            }
-        }
-    }
-
-    fun loginMember(email: String, password: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        viewModelScope.launch {
-            try {
-                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
-                auth.signInWithEmailAndPassword(email.trim().lowercase(), password)
-                    .addOnSuccessListener { result ->
-                        val authenticatedEmail = result.user?.email?.trim()?.lowercase()
-                        val matched = allMembers.value.find { it.email.trim().lowercase() == authenticatedEmail }
-                        if (matched == null) {
-                            auth.signOut()
-                            onFailure("الحساب موثق، لكن ملف العضوية غير موجود.")
-                        } else if (!matched.isActive) {
-                            auth.signOut()
-                            onFailure("هذا الحساب تم تجميده من قبل الإدارة.")
-                        } else {
-                            loggedInMember.value = matched
-                            onSuccess()
-                        }
-                    }
-                    .addOnFailureListener { error ->
-                        onFailure(error.message ?: "تعذر تسجيل الدخول.")
-                    }
-            } catch (_: Exception) {
-                onFailure("خدمة العضوية غير متاحة حاليًا.")
-            }
-        }
-    }
-
-    fun logoutMember() {
-        try {
-            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
-        } catch (_: Exception) {
-        }
-        loggedInMember.value = null
-    }
-
     fun updateMemberPoints(memberId: Int, pointsToAdd: Int) {
-        if (loggedInMember.value?.id != memberId && !hasAdminPermission("ALL")) return
+        if (!hasAdminPermission("ALL")) return
         viewModelScope.launch {
             val matched = allMembers.value.find { it.id == memberId }
             if (matched != null) {
                 val updated = matched.copy(points = matched.points + pointsToAdd)
                 repo.insertMember(updated)
-                if (loggedInMember.value?.id == memberId) {
-                    loggedInMember.value = updated
-                }
             }
         }
     }
