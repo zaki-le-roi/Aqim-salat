@@ -200,7 +200,7 @@ fun HadithScreen(
                             ) {
                                 Icon(
                                     imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                    contentDescription = "Bookmark",
+                                    contentDescription = if (isBookmarked) "إزالة الحديث من المحفوظات" else "حفظ الحديث",
                                     tint = if (isBookmarked) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                 )
                             }
