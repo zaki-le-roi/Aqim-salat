@@ -132,7 +132,7 @@ fun DailyDuaScreen(
         ) {
             if (onBack != null) {
                 IconButton(onClick = onBack, modifier = Modifier.testTag("dua_back_button")) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -262,7 +262,7 @@ fun DailyDuaScreen(
                             IconButton(
                                 onClick = {
                                     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("Dua Text", "${dua.arabic}\n\n${dua.translation}")
+                                    val clip = ClipData.newPlainText("نص الدعاء", "${dua.arabic}\n\n${dua.translation}")
                                     clipboard.setPrimaryClip(clip)
                                     Toast.makeText(context, if (lang == "ar") "تم نسخ الدعاء!" else "Dua copied to clipboard!", Toast.LENGTH_SHORT).show()
                                 },
@@ -270,7 +270,7 @@ fun DailyDuaScreen(
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
                             ) {
-                                Icon(Icons.Filled.ContentCopy, contentDescription = "Copy", modifier = Modifier.size(18.dp))
+                                Icon(Icons.Filled.ContentCopy, contentDescription = "نسخ", modifier = Modifier.size(18.dp))
                             }
 
                             Spacer(modifier = Modifier.width(12.dp))
@@ -288,7 +288,7 @@ fun DailyDuaScreen(
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
                             ) {
-                                Icon(Icons.Filled.Share, contentDescription = "Share", modifier = Modifier.size(18.dp))
+                                Icon(Icons.Filled.Share, contentDescription = "مشاركة", modifier = Modifier.size(18.dp))
                             }
 
                             Spacer(modifier = Modifier.width(12.dp))
@@ -298,7 +298,7 @@ fun DailyDuaScreen(
                                     viewModel.toggleBookmark(
                                         type = "DUA",
                                         referenceId = dua.id.toString(),
-                                        title = "Dua - ${dua.source}",
+                                        title = "دعاء ومصدره: ${dua.source}",
                                         subtitle = dua.translation,
                                         arabicText = dua.arabic,
                                         translationText = dua.translation
@@ -315,7 +315,7 @@ fun DailyDuaScreen(
                             ) {
                                 Icon(
                                     imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
-                                    contentDescription = "Fav",
+                                    contentDescription = "المفضلة",
                                     tint = if (isBookmarked) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(18.dp)
                                 )
