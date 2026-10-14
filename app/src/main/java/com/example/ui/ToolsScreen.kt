@@ -139,7 +139,7 @@ fun ToolsScreen(
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Text(title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             }
-                            Icon(Icons.Filled.ArrowForward, contentDescription = "Open", tint = Color(0xFFD4AF37))
+                            Icon(Icons.Filled.ArrowForward, contentDescription = "فتح", tint = Color(0xFFD4AF37))
                         }
                     }
                 }
@@ -169,7 +169,7 @@ fun ToolsScreen(
                         },
                         navigationIcon = {
                             IconButton(onClick = { activeTool = null }, modifier = Modifier.testTag("tool_back_button")) {
-                                Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -231,7 +231,7 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("add_tasbih_button")
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
+                Icon(Icons.Filled.Add, contentDescription = "إضافة")
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(Translations.get("add_counter", lang))
             }
@@ -250,7 +250,7 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                        Icon(Icons.Filled.ArrowDropDown, contentDescription = "Select", tint = MaterialTheme.colorScheme.onSurface)
+                        Icon(Icons.Filled.ArrowDropDown, contentDescription = "اختيار", tint = MaterialTheme.colorScheme.onSurface)
                     }
 
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -352,7 +352,7 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.testTag("tasbih_reset_button")
                 ) {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Reset", tint = MaterialTheme.colorScheme.onSurface)
+                    Icon(Icons.Filled.Refresh, contentDescription = "إعادة الضبط", tint = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(Translations.get("tasbih_reset", lang), color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -367,7 +367,7 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
                         .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
                         .testTag("tasbih_delete_button")
                 ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                    Icon(Icons.Filled.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
                 }
             }
         } else {
@@ -377,7 +377,7 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Filled.AddCircle, contentDescription = "No Counter", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                Icon(Icons.Filled.AddCircle, contentDescription = "لا يوجد عداد", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(if (lang == "ar") "اضغط على إضافة سبحة لبدء عداد التسبيح." else "Tap Add Counter to launch your digital Tasbih tracker.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), textAlign = TextAlign.Center)
             }
@@ -530,7 +530,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
                 // Needle pointing directly to Kaaba
                 Icon(
                     imageVector = Icons.Filled.Navigation,
-                    contentDescription = "Kaaba Direction Needle",
+                    contentDescription = "مؤشر اتجاه القبلة",
                     tint = Color(0xFFD4AF37),
                     modifier = Modifier
                         .size(64.dp)
@@ -549,7 +549,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
             ) {
                 Icon(
                     imageVector = Icons.Filled.Home,
-                    contentDescription = "Kaaba",
+                    contentDescription = "الكعبة المشرفة",
                     tint = Color(0xFFD4AF37),
                     modifier = Modifier.size(24.dp)
                 )
@@ -800,7 +800,7 @@ fun NamesOfAllahTool(viewModel: AppViewModel, lang: String) {
                 .padding(vertical = 12.dp)
                 .testTag("names_search_bar"),
             placeholder = { Text(if (lang == "ar") "ابحث في أسماء الله الحسنى..." else "Search Names...") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "بحث") },
             colors = TextFieldDefaults.colors(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -897,7 +897,7 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Filled.Bedtime, contentDescription = "Ramadan", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
+                    Icon(Icons.Filled.Bedtime, contentDescription = "رمضان", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = Translations.get("ramadan_countdown", lang),
@@ -970,7 +970,7 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(Icons.Filled.VolunteerActivism, contentDescription = "Charity", tint = Color(0xFFD4AF37))
+                        Icon(Icons.Filled.VolunteerActivism, contentDescription = "الصدقة", tint = Color(0xFFD4AF37))
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(if (lang == "ar") "الصدقات المسجلة" else "Sadaqah Logged", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                         Text(if (lang == "ar") "$charityLogged مرة" else "$charityLogged Times", fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -1001,7 +1001,7 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(Icons.Filled.MenuBook, contentDescription = "Qiyam", tint = Color(0xFFD4AF37))
+                        Icon(Icons.Filled.MenuBook, contentDescription = "قيام الليل", tint = Color(0xFFD4AF37))
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(if (lang == "ar") "قيام الليل / التراويح" else "Qiyam / Tarawih", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                         Text(if (lang == "ar") "$qiyamLogged جلسة" else "$qiyamLogged Sessions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -1015,7 +1015,7 @@ fun RamadanTool(viewModel: AppViewModel, lang: String) {
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.testTag("log_qiyam_button")
                         ) {
-                            Text("+ Log")
+                            Text("+ تسجيل")
                         }
                     }
                 }
@@ -1219,7 +1219,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                         }
                         Icon(
                             imageVector = Icons.Filled.MyLocation,
-                            contentDescription = "GPS",
+                            contentDescription = "الموقع الجغرافي",
                             tint = if (locationPermissionGranted) Color(0xFF1E5E3A) else Color(0xFFD4AF37),
                             modifier = Modifier.size(28.dp)
                         )
@@ -1429,7 +1429,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                 ) {
-                                    Icon(Icons.Filled.DirectionsCar, contentDescription = "Drive", tint = MaterialTheme.colorScheme.primary)
+                                    Icon(Icons.Filled.DirectionsCar, contentDescription = "القيادة", tint = MaterialTheme.colorScheme.primary)
                                 }
 
                                 IconButton(
@@ -1441,7 +1441,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                 ) {
-                                    Icon(Icons.Filled.DirectionsWalk, contentDescription = "Walk", tint = MaterialTheme.colorScheme.primary)
+                                    Icon(Icons.Filled.DirectionsWalk, contentDescription = "المشي", tint = MaterialTheme.colorScheme.primary)
                                 }
 
                                 IconButton(
@@ -1463,7 +1463,7 @@ fun MosquesTool(viewModel: AppViewModel, lang: String) {
                                 ) {
                                     Icon(
                                         imageVector = if (isFav) Icons.Filled.Star else Icons.Filled.StarBorder,
-                                        contentDescription = "Fav",
+                                        contentDescription = "المفضلة",
                                         tint = Color(0xFFD4AF37)
                                     )
                                 }
@@ -1540,7 +1540,7 @@ fun KhatmahTool(viewModel: AppViewModel, lang: String) {
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.testTag("create_khatmah_btn")
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
+                Icon(Icons.Filled.Add, contentDescription = "إضافة")
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(if (lang == "ar") "إنشاء خطة" else "Create Plan")
             }
@@ -1596,7 +1596,7 @@ fun KhatmahTool(viewModel: AppViewModel, lang: String) {
                                 }
 
                                 IconButton(onClick = { viewModel.deleteKhatmah(kh) }) {
-                                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.6f))
+                                    Icon(Icons.Filled.Delete, contentDescription = "حذف", tint = Color.Red.copy(alpha = 0.6f))
                                 }
                             }
 
@@ -2106,7 +2106,7 @@ fun HisnAlMuslimTool(viewModel: AppViewModel, lang: String) {
                 placeholder = { Text(if (lang == "ar") "ابحث في الأدعية..." else "Search Duas...") },
                 modifier = Modifier.weight(1f).testTag("hisn_search_input"),
                 shape = RoundedCornerShape(12.dp),
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search", tint = Color(0xFFD4AF37)) },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "بحث", tint = Color(0xFFD4AF37)) },
                 singleLine = true
             )
 
