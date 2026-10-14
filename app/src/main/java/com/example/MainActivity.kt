@@ -181,10 +181,9 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = "MOSQUES"
             }
-            "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS", "AUTH",
-            "COMMUNITY", "POLLS", "FAJR_LIST", "COMPETITION",
+            "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS",
             "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE", "ON_THIS_DAY", "SEERAH",
-            "ZAKAT", "ACCOUNTABILITY", "WORLD_PRAYER_TIMES", "DEEDS" -> {
+            "ZAKAT", "ACCOUNTABILITY", "DEEDS" -> {
                 activeDetailScreen = routeKey
             }
         }
@@ -259,13 +258,11 @@ fun AqimSalahApp(
                 when (activeDetailScreen) {
                     "ZAKAT" -> ZakatCalculatorScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "ACCOUNTABILITY" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null })
-                    "WORLD_PRAYER_TIMES" -> WorldPrayerTimesScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "DEEDS" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null }, challenge = true)
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "DAILY_DUA" -> DailyDuaScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "ADMIN" -> AdminScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "DONATIONS" -> DonationsScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
-                    "AUTH" -> AuthScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null }, onNavigateToAdmin = { activeDetailScreen = "ADMIN" })
                     "FAVORITES" -> FavoritesScreen(
                         viewModel = viewModel, 
                         lang = lang, 
@@ -306,15 +303,6 @@ fun AqimSalahApp(
                     ) { p ->
                         SettingsScreen(viewModel = viewModel, lang = lang, modifier = Modifier.padding(p))
                     }
-                    "COMMUNITY", "POLLS", "FAJR_LIST", "COMPETITION" -> {
-                        CommunityPollsScreen(
-                            viewModel = viewModel,
-                            lang = lang,
-                            initialTab = activeDetailScreen!!,
-                            onBack = { activeDetailScreen = null }
-                        )
-                    }
-
                     "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
 
                     "ON_THIS_DAY" -> {
