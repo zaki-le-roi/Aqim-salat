@@ -500,61 +500,233 @@ fun HomeScreen(
             }
         }
 
-        // --- 6. HIGH-FIDELITY 12-ICON CIRCULAR GRID ---
+        // --- 6. BENTO SERVICES GRID ---
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                val items = listOf(
-                    Triple("HISN_AL_MUSLIM", if (lang == "ar") "حصن المسلم" else "Hisn Al-Muslim", Color(0xFF2E7D32)),
-                    Triple("CALENDAR", if (lang == "ar") "التقويم" else "Calendar", Color(0xFF6A1B9A)),
-                    Triple("QIBLA", if (lang == "ar") "القبلة" else "Qibla", Color(0xFF00897B)),
-                    Triple("SEERAH", if (lang == "ar") "السيرة" else "Seerah", Color(0xFF795548)),
-                    Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Color(0xFF1565C0)),
-                    Triple("QURAN", if (lang == "ar") "المصحف" else "Quran", Color(0xFF2E7D32)),
-                    Triple("MORE_MENU", if (lang == "ar") "المزيد" else "More", Color(0xFF455A64)),
-                    Triple("NAMES", if (lang == "ar") "أسماء الله" else "Names of Allah", Color(0xFF8E24AA)),
-                    Triple("DAILY_DUA", if (lang == "ar") "الأدعية" else "Duas", Color(0xFF00838F)),
-                    Triple("FAVORITES", if (lang == "ar") "علامات" else "Bookmarks", Color(0xFFEF6C00)),
-                    Triple("ZAKAT", if (lang == "ar") "حاسبة الزكاة" else "Zakat Calculator", Color(0xFF00796B))
-                )
-
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Render Row 1
-                    items.take(6).forEach { (key, label, color) ->
-                        CircularGridItem(
-                            key = key,
-                            label = label,
-                            color = color,
-                            lang = lang,
-                            onNavigate = onNavigateToFeature
-                        )
+                    Text(
+                        text = if (lang == "ar") "خدماتك اليومية" else "Your daily services",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = if (lang == "ar") "كل الخدمات" else "All services",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { onNavigateToFeature("MORE_MENU") }
+                            .testTag("home_all_services")
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Premium full-width Quran card.
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(132.dp)
+                        .clickable { onNavigateToFeature("QURAN") }
+                        .testTag("home_service_quran"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF123D35)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(Color(0xFF123D35), Color(0xFF1D6250), Color(0xFF2D7660))
+                                )
+                            )
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .size(104.dp)
+                                .clip(RoundedCornerShape(30.dp))
+                                .background(Color.White.copy(alpha = 0.07f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MenuBook,
+                                contentDescription = null,
+                                tint = Color(0xFFE7D6A4),
+                                modifier = Modifier.size(58.dp)
+                            )
+                        }
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .fillMaxWidth(0.72f),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Text(
+                                text = if (lang == "ar") "القرآن الكريم" else "The Holy Quran",
+                                color = Color.White,
+                                fontSize = 21.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                            Text(
+                                text = if (lang == "ar") "وردك اليومي بين يديك" else "Your daily recitation, always close",
+                                color = Color.White.copy(alpha = 0.82f),
+                                fontSize = 12.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                            ) {
+                                Text(
+                                    text = if (lang == "ar") "افتح المصحف" else "Open Quran",
+                                    color = Color(0xFFF0DDA8),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color(0xFFF0DDA8),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
+                // Three calm pastel cards replace the old crowded circular icon rows.
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(126.dp)
+                            .clickable { onNavigateToFeature("ADHKAR") }
+                            .testTag("home_service_adhkar"),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F2E9)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFD2E6D5)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.Spa, contentDescription = null, tint = Color(0xFF356B48), modifier = Modifier.size(24.dp))
+                            }
+                            Text(
+                                text = if (lang == "ar") "الأذكار" else "Adhkar",
+                                color = Color(0xFF244C35),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(126.dp)
+                            .clickable { onNavigateToFeature("QIBLA") }
+                            .testTag("home_service_qibla"),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F0FA)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFD5E4F6)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.Explore, contentDescription = null, tint = Color(0xFF355F91), modifier = Modifier.size(24.dp))
+                            }
+                            Text(
+                                text = if (lang == "ar") "اتجاه القبلة" else "Qibla direction",
+                                color = Color(0xFF29496F),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(126.dp)
+                            .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
+                            .testTag("home_service_hisn"),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5ECDF)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFEBDDCA)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.Shield, contentDescription = null, tint = Color(0xFF86663D), modifier = Modifier.size(24.dp))
+                            }
+                            Text(
+                                text = if (lang == "ar") "حصن المسلم" else "Hisn al-Muslim",
+                                color = Color(0xFF6B512F),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = { onNavigateToFeature("MORE_MENU") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .height(48.dp)
+                        .testTag("home_all_services_button"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    // Render Row 2
-                    items.drop(6).forEach { (key, label, color) ->
-                        CircularGridItem(
-                            key = key,
-                            label = label,
-                            color = color,
-                            lang = lang,
-                            onNavigate = onNavigateToFeature
-                        )
-                    }
+                    Icon(Icons.Filled.Apps, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (lang == "ar") "استكشف كل الخدمات" else "Explore all services", fontWeight = FontWeight.SemiBold)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(Icons.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
                 }
             }
         }
