@@ -66,7 +66,7 @@ fun SupportScreen(
                             "ABOUT_US" -> if (lang == "ar") "من نحن وقيمنا" else "About Us & Mission"
                             "PARTNERS" -> if (lang == "ar") "شركاؤنا والإعلان معنا" else "Partners & Advertisements"
                             "OUR_APPS" -> if (lang == "ar") "سلسلة تطبيقاتنا الدعوية" else "Our Islamic Sibling Apps"
-                            "RATE_SHARE" -> if (lang == "ar") "التقييم ونشر التطبيق" else "Rate & Share App"
+                            "RATE_SHARE" -> "مشاركة التطبيق"
                             else -> if (lang == "ar") "مركز المساعدة" else "Support Center"
                         },
                         fontWeight = FontWeight.Bold,
@@ -131,7 +131,7 @@ fun SupportScreen(
                 Tab(
                     selected = selectedTab == "RATE_SHARE",
                     onClick = { selectedTab = "RATE_SHARE" },
-                    text = { Text(if (lang == "ar") "🌟 النشر والتقييم" else "Rate & Share") }
+                    text = { Text("مشاركة التطبيق") }
                 )
             }
 
@@ -533,87 +533,6 @@ fun SupportScreen(
                             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            item {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                                ) {
-                                    if (ratedSuccess) {
-                                        Column(
-                                            modifier = Modifier.padding(24.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Icon(Icons.Filled.Star, contentDescription = if (lang == "ar") "نجمة" else "Star", tint = Color(0xFFFFD700), modifier = Modifier.size(56.dp))
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Text(
-                                                if (lang == "ar") "شكراً جزيلاً لتقييمك الطيب!" else "Thank you for your rating!",
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp
-                                            )
-                                            Spacer(modifier = Modifier.height(6.dp))
-                                            Text(
-                                                if (lang == "ar") "تقييماتكم تساعدنا على البقاء وتطوير التطبيق وخدمة المزيد من المسلمين."
-                                                else "Your kind feedback helps us improve and reach more Muslims worldwide.",
-                                                fontSize = 12.sp,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
-                                    } else {
-                                        Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(
-                                                if (lang == "ar") "شاركنا تقييمك ودعمك للتطبيق" else "Rate and support Aqim Salah",
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 15.sp,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                            Spacer(modifier = Modifier.height(12.dp))
-
-                                            // Rating Stars
-                                            Row {
-                                                for (i in 1..5) {
-                                                    Icon(
-                                                        imageVector = if (i <= selectedStars) Icons.Filled.Star else Icons.Filled.StarBorder,
-                                                        contentDescription = "Star $i",
-                                                        tint = if (i <= selectedStars) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                                                        modifier = Modifier
-                                                            .size(40.dp)
-                                                            .clickable { selectedStars = i }
-                                                            .padding(4.dp)
-                                                    )
-                                                }
-                                            }
-
-                                            Spacer(modifier = Modifier.height(12.dp))
-                                            OutlinedTextField(
-                                                value = feedbackText,
-                                                onValueChange = { feedbackText = it },
-                                                placeholder = { Text(if (lang == "ar") "ملاحظة اختيارية لك عند تقييم التطبيق في المتجر" else "Optional note to use when rating the app in the store") },
-                                                modifier = Modifier.fillMaxWidth().height(80.dp),
-                                                shape = RoundedCornerShape(10.dp)
-                                            )
-                                            Spacer(modifier = Modifier.height(12.dp))
-                                            Button(
-                                                onClick = {
-                                                     if (selectedStars > 0) {
-                                                         val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${context.packageName}"))
-                                                         val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}"))
-                                                         try { context.startActivity(marketIntent) } catch (_: Exception) { context.startActivity(webIntent) }
-                                                     } else {
-                                                         Toast.makeText(context, if (lang == "ar") "الرجاء تحديد النجوم أولاً" else "Please select a rating first", Toast.LENGTH_SHORT).show()
-                                                     }
-                                                 },
-                                                modifier = Modifier.fillMaxWidth(),
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
-                                            ) {
-                                                Text(if (lang == "ar") "فتح صفحة التقييم" else "Open Rating Page")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
                             item {
                                 Card(
                                     modifier = Modifier.fillMaxWidth(),
