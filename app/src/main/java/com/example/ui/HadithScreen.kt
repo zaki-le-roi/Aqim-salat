@@ -39,7 +39,7 @@ fun HadithScreen(
     var selectedTab by remember { mutableStateOf("Sahih al-Bukhari") }
     var searchQuery by remember { mutableStateOf("") }
 
-    val tabs = listOf("Sahih al-Bukhari", "Sahih Muslim", "Riyad as-Salihin", "40 Nawawi")
+    val tabs = listOf("Sahih al-Bukhari", "Sahih Muslim", "Jami' at-Tirmidhi", "Riyad as-Salihin", "40 Nawawi")
 
     // Filter hadiths by selected collection and search query
     val filteredHadiths = remember(selectedTab, searchQuery) {
@@ -65,7 +65,7 @@ fun HadithScreen(
         ) {
             if (onBack != null) {
                 IconButton(onClick = onBack, modifier = Modifier.testTag("hadith_back_button")) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -91,10 +91,13 @@ fun HadithScreen(
                     onClick = { selectedTab = tab },
                     text = {
                         Text(
-                            text = if (tab == "Sahih al-Bukhari") "Bukhari"
-                            else if (tab == "Sahih Muslim") "Muslim"
-                            else if (tab == "Riyad as-Salihin") "Riyad"
-                            else "Nawawi",
+                            text = when (tab) {
+                                "Sahih al-Bukhari" -> "صحيح البخاري"
+                                "Sahih Muslim" -> "صحيح مسلم"
+                                "Jami' at-Tirmidhi" -> "جامع الترمذي"
+                                "Riyad as-Salihin" -> "رياض الصالحين"
+                                else -> "الأربعون النووية"
+                            },
                             fontSize = 14.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -115,11 +118,11 @@ fun HadithScreen(
                 .clip(RoundedCornerShape(16.dp))
                 .testTag("hadith_search_bar"),
             placeholder = { Text(Translations.get("search_hadith", lang)) },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "بحث") },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { searchQuery = "" }) {
-                        Icon(Icons.Filled.Clear, contentDescription = "Clear")
+                        Icon(Icons.Filled.Clear, contentDescription = "مسح")
                     }
                 }
             },
@@ -141,6 +144,13 @@ fun HadithScreen(
         ) {
             items(filteredHadiths, key = { it.id }) { hadith ->
                 val refKey = hadith.id
+                val collectionArabic = when (hadith.collection) {
+                    "Sahih al-Bukhari" -> "صحيح البخاري"
+                    "Sahih Muslim" -> "صحيح مسلم"
+                    "Jami' at-Tirmidhi" -> "جامع الترمذي"
+                    "Riyad as-Salihin" -> "رياض الصالحين"
+                    else -> "الأربعون النووية"
+                }
                 val isBookmarked = bookmarks.any { it.type == "HADITH" && it.referenceId == refKey }
 
                 Card(
@@ -167,7 +177,7 @@ fun HadithScreen(
                                     .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
-                                    text = "Hadith ${hadith.number}",
+                                    text = "حديث رقم ${hadith.number}",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.primary
@@ -180,7 +190,7 @@ fun HadithScreen(
                                     viewModel.toggleBookmark(
                                         type = "HADITH",
                                         referenceId = refKey,
-                                        title = "${hadith.collection} • Hadith ${hadith.number}",
+                                        title = "$collectionArabic • حديث ${hadith.number}",
                                         subtitle = hadith.english.take(50) + "...",
                                         arabicText = hadith.arabic,
                                         translationText = hadith.english
@@ -211,7 +221,7 @@ fun HadithScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // English Translation
+                        // شرح الحديث بالعربية
                         Text(
                             text = hadith.english,
                             fontSize = 14.sp,
