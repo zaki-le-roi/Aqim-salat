@@ -56,12 +56,8 @@ fun MoreScreen(
         ServicesGridItem("DEEDS", "أعمال اليوم والليلة", Icons.Filled.TaskAlt, Color.Unspecified),
         ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color.Unspecified),
         ServicesGridItem("TRAVEL", "وجهة المسافر", Icons.Filled.Flight, Color.Unspecified),
-        ServicesGridItem("WORLD_PRAYER_TIMES", "الصلاة حول العالم", Icons.Filled.Public, Color.Unspecified),
-        ServicesGridItem("POLLS", "الاستطلاعات", Icons.Filled.BarChart, Color.Unspecified),
-        ServicesGridItem("COMPETITION", "أصدقائي", Icons.Filled.Group, Color.Unspecified),
         ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color.Unspecified),
         ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color.Unspecified),
-        ServicesGridItem("COMMUNITY", "صحيح أقم صلاتك", Icons.Filled.Forum, Color.Unspecified),
         ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color.Unspecified),
         ServicesGridItem("FAJR_LIST", "متابعة الفجر", Icons.Filled.Cloud, Color.Unspecified),
         ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color.Unspecified)
@@ -87,7 +83,6 @@ fun MoreScreen(
         ServicesGridItem("RATE_SHARE", "انشر التطبيق", Icons.Filled.Share, Color.Unspecified),
         ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color.Unspecified),
         ServicesGridItem("RATE_SHARE", "انشر التفاصيل", Icons.Filled.Share, Color.Unspecified),
-        ServicesGridItem("RATE_SHARE", "قيم التطبيق", Icons.Filled.ThumbUp, Color.Unspecified),
         ServicesGridItem("RATE_SHARE", "تابعنا", Icons.Filled.AlternateEmail, Color.Unspecified),
         ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color.Unspecified)
     )
@@ -140,35 +135,13 @@ fun MoreScreen(
                     }
                 }
 
-                val loggedInMember by viewModel.loggedInMember.collectAsState()
-
-                // Centered User greeting or Login
                 Text(
-                    text = if (currentLanguage == "ar") { loggedInMember?.let { "أهلاً، ${it.name}" } ?: "تسجيل الدخول / التسجيل" } else { loggedInMember?.let { "Welcome, ${it.name}" } ?: "Sign in / Register" },
+                    text = "أقم صلاتك",
                     color = Color.White,
-                    fontSize = 17.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.clickable { onNavigateToFeature("AUTH") }
+                    textAlign = TextAlign.Center
                 )
-
-                // Right: Profile Avatar circle
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f))
-                        .border(1.dp, Color(0xFFFFD700), CircleShape)
-                        .clickable { onNavigateToFeature("AUTH") },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (loggedInMember != null) Icons.Filled.AccountCircle else Icons.Filled.Person,
-                        contentDescription = "الملف الشخصي",
-                        tint = if (loggedInMember != null) Color(0xFFFFCA28) else Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
             }
         }
 
@@ -211,89 +184,6 @@ fun MoreScreen(
                 )
             }
 
-            // Bottom Dual Promo Column Items
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Left Card: World prayer times
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onNavigateToFeature("WORLD_PRAYER_TIMES") },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Public,
-                                contentDescription = if (currentLanguage == "ar") "مواقيت الصلاة حول العالم" else "World prayer times",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = if (currentLanguage == "ar") "مواقيت الصلاة حول العالم" else "World prayer times",
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = if (currentLanguage == "ar") "مواقيت المدن المختلفة" else "Prayer times for different cities",
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                    fontSize = 9.sp
-                                )
-                            }
-                        }
-                    }
-
-                    // Right Card: Saved Bookmarks صندوق العلامات
-                    Card(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { onNavigateToFeature("FAVORITES") },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Bookmark,
-                                contentDescription = if (currentLanguage == "ar") "صندوق العلامات" else "Saved Bookmarks",
-                                tint = Color(0xFF0D6B4B),
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = if (currentLanguage == "ar") "صندوق العلامات" else "Saved Bookmarks",
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = if (currentLanguage == "ar") "العلامات المحفوظة" else "Your saved items",
-                                    color = Color.Gray,
-                                    fontSize = 9.sp
-                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
     }
