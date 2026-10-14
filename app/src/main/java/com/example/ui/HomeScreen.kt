@@ -2,6 +2,8 @@ package com.example.ui
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -72,150 +74,130 @@ fun HomeScreen(
         contentPadding = PaddingValues(top = 0.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // --- 1. IMMERSIVE TOP SKY SECTION WITH INTEGRATED CLOCK & BANNER ---
+        // --- 1. DYNAMIC SKY HEADER WITH NEXT PRAYER COUNTDOWN ---
         item {
+            val hour = liveClockTime.take(2).toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+            val skyColors = when (hour) {
+                in 5..7 -> listOf(Color(0xFF273B67), Color(0xFFDF8C68), Color(0xFFFFD6A0))
+                in 8..15 -> listOf(Color(0xFF1976A8), Color(0xFF55B6D8), Color(0xFFB6E4F2))
+                in 16..18 -> listOf(Color(0xFF49366F), Color(0xFFCE765E), Color(0xFFFFC078))
+                in 19..23, in 0..4 -> listOf(Color(0xFF101A36), Color(0xFF263B63), Color(0xFF46577A))
+                else -> listOf(Color(0xFF1976A8), Color(0xFF55B6D8), Color(0xFFB6E4F2))
+            }
+            val nextPrayerArabic = when (nextName.lowercase()) {
+                "fajr" -> "الفجر"
+                "dhuhr" -> "الظهر"
+                "asr" -> "العصر"
+                "maghrib" -> "المغرب"
+                "isha" -> "العشاء"
+                else -> "الصلاة القادمة"
+            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(290.dp)
+                    .height(320.dp)
+                    .background(Brush.verticalGradient(skyColors))
             ) {
-                // Mosque sky background
-                Image(
-                    painter = painterResource(id = R.drawable.img_home_banner_1783073765742),
-                    contentDescription = if (lang == "ar") "خلفية المسجد" else "Mosque background",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
-
-                // Beautiful sky overlay gradient
+                // Subtle atmospheric glow; the background palette follows the local time.
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0x334A90E2),
-                                    Color.Transparent,
-                                    Color(0x22000000)
-                                )
+                                colors = listOf(Color.White.copy(alpha = 0.10f), Color.Transparent, Color.Black.copy(alpha = 0.22f))
                             )
                         )
                 )
-
-                // Sky HUD Content Column
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.Center,
+                        .padding(horizontal = 18.dp, vertical = 10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Top Custom Header HUD
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // Grid button
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.85f))
-                                    .clickable { onNavigateToFeature("MORE_MENU") },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.GridView,
-                                    contentDescription = if (lang == "ar") "القائمة" else "Menu",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.18f))
+                                .clickable { onNavigateToFeature("MORE_MENU") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.GridView, contentDescription = "القائمة", tint = Color.White)
                         }
-
-                        // أُزيل زر العضوية المميز لأنه لم يكن مرتبطًا بميزة فعلية.
-
-                        // Notification icon with orange badge
-                        Box {
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.85f))
-                                    .clickable { onNavigateToFeature("SETTINGS") },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Settings,
-                                    contentDescription = if (lang == "ar") "الإعدادات" else "Settings",
-                                    tint = Color(0xFFD4AF37),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("أقم صلاتك", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                            Text(locationName, color = Color.White.copy(alpha = 0.86f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.18f))
+                                .clickable { onNavigateToFeature("SETTINGS") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Settings, contentDescription = "الإعدادات", tint = Color.White)
                         }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-
-                    // "Asr since" or active prayer info
-                    val currentPrayerName = when (nextName.lowercase()) {
-                        "fajr" -> if (lang == "ar") "العشاء" else "Isha"
-                        "shuruq", "dhuhr" -> if (lang == "ar") "الفجر" else "Fajr"
-                        "asr" -> if (lang == "ar") "الظهر" else "Dhuhr"
-                        "maghrib" -> if (lang == "ar") "العصر" else "Asr"
-                        else -> if (lang == "ar") "المغرب" else "Maghrib"
-                    }
+                    Text("الصلاة القادمة", color = Color.White.copy(alpha = 0.88f), fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (lang == "ar") "$currentPrayerName منذ" else "$currentPrayerName since",
-                        fontSize = 16.sp,
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontWeight = FontWeight.Medium
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // Large Digital Clock
-                    Text(
-                        text = liveClockTime,
-                        fontSize = 46.sp,
-                        fontWeight = FontWeight.Bold,
+                        nextPrayerArabic,
                         color = Color.White,
-                        letterSpacing = 2.sp
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Location Pill button with GPS pin
-                    Box(
+                    Text(
+                        text = if (nextTime.isNotBlank()) "موعدها $nextTime" else "جارٍ حساب وقت الصلاة",
+                        color = Color.White.copy(alpha = 0.92f),
+                        fontSize = 14.sp
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Column(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(Color.Black.copy(alpha = 0.45f))
-                            .clickable { onNavigateToFeature("PRAYER_TIMES") }
-                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                            .clip(RoundedCornerShape(22.dp))
+                            .background(Color(0xFF101827).copy(alpha = 0.30f))
+                            .border(1.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(22.dp))
+                            .padding(horizontal = 26.dp, vertical = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = if (locationConfigured) locationName else "حدّد موقعك لعرض المواقيت الصحيحة",
-                                fontSize = 12.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Icon(
-                                imageVector = Icons.Filled.LocationOn,
-                                contentDescription = if (lang == "ar") "الموقع" else "Location",
-                                tint = Color(0xFFD4AF37),
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
+                        Text("الوقت المتبقي", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
+                        Text(
+                            countdown,
+                            color = Color.White,
+                            fontSize = 30.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
                     }
-
-                    Spacer(modifier = Modifier.weight(0.5f))
+                    Spacer(modifier = Modifier.weight(1f))
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color.Black.copy(alpha = 0.20f))
+                            .clickable { onNavigateToFeature("PRAYER_TIMES") }
+                            .padding(horizontal = 13.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.LocationOn, contentDescription = "الموقع", tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            if (locationConfigured) locationName else "حدّد موقعك لعرض المواقيت الصحيحة",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
@@ -282,144 +264,72 @@ fun HomeScreen(
             }
         }
 
-        // --- 3. PREMIUM PRAYER TIMES CARD WITH HIGHLIGHTED ACTIVE CELL ---
+        // --- 3. HORIZONTAL PRAYER TIME SLIDER ---
         item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
+            val prayerCards = listOf(
+                Triple("fajr", "الفجر", times?.fajr ?: "--:--"),
+                Triple("dhuhr", "الظهر", times?.dhuhr ?: "--:--"),
+                Triple("asr", "العصر", times?.asr ?: "--:--"),
+                Triple("maghrib", "المغرب", times?.maghrib ?: "--:--"),
+                Triple("isha", "العشاء", times?.isha ?: "--:--")
+            )
+            val nextKey = nextName.lowercase()
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    "مواقيت الصلوات",
+                    modifier = Modifier.padding(start = 18.dp, end = 18.dp, bottom = 8.dp),
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp)
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // 6 Prayer Columns
-                    val activePrayer = nextName.lowercase()
-                    val columns = listOf(
-                        Triple("fajr", if (lang == "ar") "الفجر" else "Fajr", times?.fajr ?: "--:--"),
-                        Triple("shuruq", if (lang == "ar") "الشروق" else "Shuruq", times?.sunrise ?: "--:--"),
-                        Triple("dhuhr", if (lang == "ar") "الظهر" else "Dhuhr", times?.dhuhr ?: "--:--"),
-                        Triple("asr", if (lang == "ar") "العصر" else "Asr", times?.asr ?: "--:--"),
-                        Triple("maghrib", if (lang == "ar") "المغرب" else "Maghrib", times?.maghrib ?: "--:--"),
-                        Triple("isha", if (lang == "ar") "العشاء" else "Isha", times?.isha ?: "--:--")
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        columns.forEach { (key, title, timeStr) ->
-                            // Determine if this column is the active/current prayer
-                            // In real-world, active is the one currently elapsed.
-                            // Let's make "Asr" or the one right before nextName active.
-                            val isActive = when (activePrayer) {
-                                "fajr" -> key == "isha"
-                                "shuruq" -> key == "fajr"
-                                "dhuhr" -> key == "shuruq"
-                                "asr" -> key == "dhuhr"
-                                "maghrib" -> key == "asr"
-                                else -> key == "maghrib"
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(if (isActive) Color(0xFFF0EBF8) else Color.Transparent)
-                                    .border(
-                                        width = if (isActive) 1.dp else 0.dp,
-                                        color = if (isActive) Color(0xFF0D6B4B).copy(alpha = 0.15f) else Color.Transparent,
-                                        shape = RoundedCornerShape(16.dp)
-                                    )
-                                    .padding(vertical = 10.dp, horizontal = 4.dp),
-                                contentAlignment = Alignment.Center
+                    prayerCards.forEach { (key, title, timeText) ->
+                        val isNext = key == nextKey
+                        Card(
+                            modifier = Modifier
+                                .width(100.dp)
+                                .then(
+                                    if (isNext) Modifier.border(2.dp, Color(0xFFB99A55), RoundedCornerShape(18.dp))
+                                    else Modifier
+                                )
+                                .testTag("prayer_time_$key"),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isNext) Color(0xFFF4EBDD) else MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = if (isNext) 4.dp else 1.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(7.dp)
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text(
-                                        text = title,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isActive) Color(0xFF0D6B4B) else Color(0xFF666666)
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Icon(
-                                        imageVector = when (key) {
-                                            "fajr" -> Icons.Filled.NightsStay
-                                            "shuruq" -> Icons.Filled.WbTwilight
-                                            "dhuhr" -> Icons.Filled.WbSunny
-                                            "asr" -> Icons.Filled.WbCloudy
-                                            "maghrib" -> Icons.Filled.WbTwilight
-                                            else -> Icons.Filled.NightsStay
-                                        },
-                                        contentDescription = title,
-                                        tint = if (isActive) Color(0xFF0D6B4B) else Color(0xFFFFB300),
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Text(
-                                        text = timeStr,
-                                        fontSize = 10.5.sp,
-                                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isActive) Color(0xFF0D6B4B) else Color(0xFF333333)
-                                    )
+                                if (isNext) {
+                                    Text("القادمة", color = Color(0xFF755B25), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                } else {
+                                    Spacer(modifier = Modifier.height(14.dp))
                                 }
+                                Icon(
+                                    imageVector = when (key) {
+                                        "fajr" -> Icons.Filled.NightsStay
+                                        "dhuhr" -> Icons.Filled.WbSunny
+                                        "asr" -> Icons.Filled.WbCloudy
+                                        "maghrib" -> Icons.Filled.WbTwilight
+                                        else -> Icons.Filled.NightsStay
+                                    },
+                                    contentDescription = title,
+                                    tint = if (isNext) Color(0xFF755B25) else MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Text(title, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                Text(timeText, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Midnight and Last Third indicators
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Midnight
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFFE3F2FD))
-                                .padding(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            val midnightTime = times?.midnight ?: "—"
-                            Text(
-                                text = if (lang == "ar") "منتصف الليل : $midnightTime" else "Midnight: $midnightTime",
-                                color = Color(0xFF1E88E5),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        // Vertical separator divider
-                        Box(
-                            modifier = Modifier
-                                .height(16.dp)
-                                .width(1.dp)
-                                .background(Color.LightGray)
-                        )
-
-                        // Last Third
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xFFE0F7FA))
-                                .padding(horizontal = 14.dp, vertical = 6.dp)
-                        ) {
-                            val lastThirdTime = times?.lastThird ?: "—"
-                            Text(
-                                text = if (lang == "ar") "الثلث الأخير : $lastThirdTime" else "Last Third: $lastThirdTime",
-                                color = Color(0xFF00ACC1),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
                         }
                     }
                 }
