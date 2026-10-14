@@ -212,7 +212,7 @@ fun AqimSalahApp(
                     NavigationBar(
                         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
                         tonalElevation = 0.dp,
-                        windowInsets = androidx.compose.foundation.layout.WindowInsets(0.dp),
+                        windowInsets = androidx.compose.foundation.layout.WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(70.dp)
