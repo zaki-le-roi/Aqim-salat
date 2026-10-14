@@ -336,32 +336,28 @@ fun HomeScreen(
             }
         }
 
-        // --- NEW INNOVATIVE: INTERACTIVE DAILY PRAYER ESTABLISHMENT TRACKER ---
+        // --- Compact daily prayer tracker with a centered progress ring ---
         item {
             val loggedPrayers by viewModel.loggedPrayers.collectAsState()
-            
-            // Calculate completed prayers
             val prayersList = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
             val completedCount = prayersList.count { key ->
                 val status = loggedPrayers[key] ?: "NOT_YET"
-                status == "PRAYED_ON_TIME" || status == "PRAYED_LATE"
+                status == "PRAYED_ON_TIME" || status == "PRAYED_LATE" || status == "CONGREGATION"
             }
             val percentage = completedCount * 20
-            
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Header Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -371,87 +367,71 @@ fun HomeScreen(
                             Icon(
                                 imageVector = Icons.Filled.Verified,
                                 contentDescription = null,
-                                tint = Color(0xFF4CAF50),
+                                tint = Color(0xFF0D6B4B),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (lang == "ar") "سجل إقامة الصلاة اليومية" else "Daily Prayer Tracker",
+                                text = if (lang == "ar") "متابعة صلوات اليوم" else "Today's Prayer Tracker",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        
-                        // Small Badge
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFE8F5E9))
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
-                        ) {
-                            Text(
-                                text = "$completedCount / 5",
-                                color = Color(0xFF2E7D32),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Progress HUD Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Motivational text based on progress
                         Text(
-                            text = when (completedCount) {
-                                5 -> if (lang == "ar") "ما شاء الله! أتممت صلواتك اليوم كاملة 🌟" else "Masha'Allah! All prayers completed today! 🌟"
-                                4 -> if (lang == "ar") "رائع! صلاة واحدة تفصلك عن اليوم الكامل 💪" else "Great! Just one prayer left today! 💪"
-                                0 -> if (lang == "ar") "حافظ على صلاتك لتنير يومك وحياتك 🌱" else "Keep your prayers to illuminate your day! 🌱"
-                                else -> if (lang == "ar") "أقم صلاتك في وقتها تنل رضا ربك ✨" else "Establish your prayers on time for Allah's pleasure! ✨"
-                            },
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                            textAlign = if (lang == "ar") TextAlign.Right else TextAlign.Left
+                            text = if (lang == "ar") "الإحصائيات التفصيلية ←" else "Detailed statistics →",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { onNavigateToFeature("PRAYER_STATS") }
+                                .padding(horizontal = 7.dp, vertical = 8.dp)
+                                .testTag("open_prayer_statistics"),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
-                        
-                        Spacer(modifier = Modifier.width(12.dp))
-                        
-                        // Circular Progress Indicator with centered text
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(54.dp)
-                        ) {
-                            CircularProgressIndicator(
-                                progress = { percentage / 100f },
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color(0xFF0D6B4B),
-                                strokeWidth = 4.dp,
-                                trackColor = Color(0xFFE2E8F0)
-                            )
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    Box(
+                        modifier = Modifier.size(112.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            progress = { percentage / 100f },
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color(0xFF0D6B4B),
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeWidth = 8.dp
+                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
                                 text = "$percentage%",
-                                fontSize = 11.sp,
+                                fontSize = 25.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF0D6B4B)
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = if (lang == "ar") "$completedCount/5 صلوات" else "$completedCount/5 prayers",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(14.dp))
-                    
-                    // 5 Prayer Interactive Buttons Row
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = when (completedCount) {
+                            5 -> if (lang == "ar") "ما شاء الله، أتممت صلوات اليوم" else "All five prayers recorded"
+                            0 -> if (lang == "ar") "سجّل صلاتك بلمسة واحدة" else "Record a prayer with one tap"
+                            else -> if (lang == "ar") "تقبّل الله طاعتك" else "May your prayers be accepted"
+                        },
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -464,175 +444,54 @@ fun HomeScreen(
                             Triple("Maghrib", if (lang == "ar") "المغرب" else "Maghrib", Color(0xFF43A047)),
                             Triple("Isha", if (lang == "ar") "العشاء" else "Isha", Color(0xFF5E35B1))
                         )
-                        
                         prayersMap.forEach { (key, name, baseColor) ->
                             val status = loggedPrayers[key] ?: "NOT_YET"
-                            
+                            val isCompleted = status == "PRAYED_ON_TIME" || status == "PRAYED_LATE" || status == "CONGREGATION"
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier
                                     .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
                                     .clickable { viewModel.togglePrayerStatus(key, status) }
                                     .testTag("interactive_tracker_$key")
+                                    .padding(vertical = 4.dp)
                             ) {
                                 Text(
                                     text = name,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF6C757D)
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
                                 )
-                                
-                                Spacer(modifier = Modifier.height(6.dp))
-                                
-                                // Beautiful circular status button
+                                Spacer(modifier = Modifier.height(7.dp))
                                 Box(
                                     modifier = Modifier
-                                        .size(38.dp)
+                                        .size(36.dp)
                                         .clip(CircleShape)
-                                        .background(
-                                            when (status) {
-                                                "PRAYED_ON_TIME" -> Color(0xFFE8F5E9)
-                                                "PRAYED_LATE" -> Color(0xFFFFF8E1)
-                                                "MISSED" -> Color(0xFFFFEBEE)
-                                                else -> Color(0xFFF1F3F5)
-                                            }
-                                        )
+                                        .background(if (isCompleted) Color(0xFFE4F3E9) else MaterialTheme.colorScheme.surfaceVariant)
                                         .border(
                                             width = 1.dp,
-                                            color = when (status) {
-                                                "PRAYED_ON_TIME" -> Color(0xFF4CAF50)
-                                                "PRAYED_LATE" -> Color(0xFFFFB300)
-                                                "MISSED" -> Color(0xFFF44336)
-                                                else -> Color(0xFFCED4DA)
-                                            },
+                                            color = if (isCompleted) Color(0xFF4B9A6A) else MaterialTheme.colorScheme.outlineVariant,
                                             shape = CircleShape
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
-                                        imageVector = when (status) {
-                                            "PRAYED_ON_TIME" -> Icons.Filled.Check
-                                            "PRAYED_LATE" -> Icons.Filled.Schedule
-                                            "MISSED" -> Icons.Filled.Close
-                                            else -> Icons.Filled.Add
-                                        },
-                                        contentDescription = status,
-                                        tint = when (status) {
-                                            "PRAYED_ON_TIME" -> Color(0xFF4CAF50)
-                                            "PRAYED_LATE" -> Color(0xFFFFB300)
-                                            "MISSED" -> Color(0xFFF44336)
-                                            else -> Color(0xFFADB5BD)
-                                        },
+                                        imageVector = if (isCompleted) Icons.Filled.Check else Icons.Filled.Add,
+                                        contentDescription = if (lang == "ar") "تسجيل $name" else "Record $name",
+                                        tint = if (isCompleted) Color(0xFF267348) else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
-                                
                                 Spacer(modifier = Modifier.height(4.dp))
-                                
-                                // Label text under the icon
                                 Text(
-                                    text = when (status) {
-                                        "PRAYED_ON_TIME" -> if (lang == "ar") "في وقتها" else "On Time"
-                                        "PRAYED_LATE" -> if (lang == "ar") "قضاء" else "Late"
-                                        "MISSED" -> if (lang == "ar") "فاتتني" else "Missed"
-                                        else -> if (lang == "ar") "لم تسجل" else "Unlogged"
+                                    text = if (isCompleted) {
+                                        if (lang == "ar") "تمت" else "Done"
+                                    } else {
+                                        if (lang == "ar") "تسجيل" else "Log"
                                     },
                                     fontSize = 9.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = when (status) {
-                                        "PRAYED_ON_TIME" -> Color(0xFF2E7D32)
-                                        "PRAYED_LATE" -> Color(0xFFF57F17)
-                                        "MISSED" -> Color(0xFFC62828)
-                                        else -> Color(0xFF6C757D)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // --- Weekly prayer analytics ---
-        item {
-            val weeklyStats by viewModel.weeklyPrayerSummary.collectAsState()
-            val weeklyCompleted = weeklyStats.sumOf { it.completedCount }
-            val weeklyOnTime = weeklyStats.sumOf { it.onTimeCount }
-            val weeklyLate = weeklyStats.sumOf { it.lateCount }
-            val weeklyMissed = weeklyStats.sumOf { it.missedCount }
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "ملخص الصلوات خلال 7 أيام",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "${weeklyCompleted} / 35",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text("في وقتها: ${weeklyOnTime}", fontSize = 11.sp, color = Color(0xFF2E7D32))
-                        Text("قضاء: ${weeklyLate}", fontSize = 11.sp, color = Color(0xFFB77900))
-                        Text("فاتت: ${weeklyMissed}", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
-                    }
-                    if (weeklyStats.isEmpty()) {
-                        Text(
-                            text = "سيظهر ملخص الأسبوع بعد تسجيل الصلوات.",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    } else {
-                        weeklyStats.forEach { day ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp)
-                            ) {
-                                Text(
-                                    text = day.dayNameAr,
-                                    fontSize = 11.sp,
-                                    modifier = Modifier.width(62.dp),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                LinearProgressIndicator(
-                                    progress = { day.completedCount / 5f },
-                                    modifier = Modifier.weight(1f).height(7.dp),
-                                    color = when {
-                                        day.completedCount == 5 -> Color(0xFF2E7D32)
-                                        day.completedCount >= 3 -> Color(0xFF689F38)
-                                        else -> MaterialTheme.colorScheme.primary
-                                    },
-                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                Text(
-                                    text = "${day.completedCount}/5",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (isCompleted) Color(0xFF267348) else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
