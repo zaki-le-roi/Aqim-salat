@@ -735,7 +735,7 @@ fun HomeScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Close",
+                                    contentDescription = "إغلاق",
                                     tint = Color.White,
                                     modifier = Modifier.size(12.dp)
                                 )
@@ -869,7 +869,7 @@ fun HomeScreen(
 
                         Icon(
                             imageVector = Icons.Filled.WbTwilight,
-                            contentDescription = "Day/Night",
+                            contentDescription = "تبديل الليل والنهار",
                             tint = Color(0xFFFFD700),
                             modifier = Modifier.size(34.dp)
                         )
