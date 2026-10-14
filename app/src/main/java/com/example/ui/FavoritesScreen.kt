@@ -57,7 +57,7 @@ fun FavoritesScreen(
         ) {
             if (onBack != null) {
                 IconButton(onClick = onBack, modifier = Modifier.testTag("favorites_back_button")) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
             }
@@ -166,7 +166,7 @@ fun FavoritesScreen(
                                                 onClick = { viewModel.toggleBookmark(b.type, b.referenceId, b.title, b.subtitle ?: "") },
                                                 modifier = Modifier.size(32.dp)
                                             ) {
-                                                Icon(Icons.Filled.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+                                                Icon(Icons.Filled.Delete, contentDescription = "إزالة", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
@@ -219,7 +219,7 @@ fun FavoritesScreen(
                                                 onClick = { viewModel.toggleBookmark(b.type, b.referenceId, b.title, b.subtitle ?: "") },
                                                 modifier = Modifier.size(32.dp)
                                             ) {
-                                                Icon(Icons.Filled.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+                                                Icon(Icons.Filled.Delete, contentDescription = "إزالة", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
                                             }
                                         }
                                         Spacer(modifier = Modifier.height(8.dp))
@@ -269,7 +269,7 @@ fun FavoritesScreen(
                                                 onClick = { viewModel.deleteFavoriteMosque(m.id) },
                                                 modifier = Modifier.size(32.dp)
                                             ) {
-                                                Icon(Icons.Filled.Delete, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
+                                                Icon(Icons.Filled.Delete, contentDescription = "إزالة", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
                                             }
                                         }
 
@@ -292,7 +292,7 @@ fun FavoritesScreen(
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                             ) {
-                                                Icon(Icons.Filled.DirectionsCar, contentDescription = "Drive", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                                Icon(Icons.Filled.DirectionsCar, contentDescription = "القيادة", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 Text(if (lang == "ar") "سيارة" else "Drive", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
                                             }
@@ -305,7 +305,7 @@ fun FavoritesScreen(
                                                 shape = RoundedCornerShape(8.dp),
                                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                                             ) {
-                                                Icon(Icons.Filled.DirectionsWalk, contentDescription = "Walk", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                                Icon(Icons.Filled.DirectionsWalk, contentDescription = "المشي", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                                 Spacer(modifier = Modifier.width(4.dp))
                                                 Text(if (lang == "ar") "مشياً" else "Walk", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
                                             }
@@ -328,7 +328,7 @@ fun EmptyStatePlaceholder(icon: androidx.compose.ui.graphics.vector.ImageVector,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(icon, contentDescription = "Empty", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+        Icon(icon, contentDescription = "فارغ", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = text,
