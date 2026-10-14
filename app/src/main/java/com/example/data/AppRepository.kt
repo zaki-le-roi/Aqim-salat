@@ -116,7 +116,12 @@ class AppRepository(
     }
 
     val appLocationConfigured: Flow<Boolean> = context.dataStore.data.map { pref ->
-        pref[KEY_LOCATION_CONFIGURED] ?: (pref[KEY_LATITUDE] != null && pref[KEY_LONGITUDE] != null && (pref[KEY_LATITUDE] != 36.7538 || pref[KEY_LONGITUDE] != 3.0588))
+        // Recover older installs that stored real coordinates but retained an explicit
+        // false configuration flag. Saved coordinates must work with GPS switched off.
+        val hasSavedCoordinates = pref[KEY_LATITUDE] != null &&
+            pref[KEY_LONGITUDE] != null &&
+            (pref[KEY_LATITUDE] != 36.7538 || pref[KEY_LONGITUDE] != 3.0588)
+        pref[KEY_LOCATION_CONFIGURED] == true || hasSavedCoordinates
     }
 
     val appLocationName: Flow<String> = context.dataStore.data.map { pref ->
