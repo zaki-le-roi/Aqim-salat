@@ -643,6 +643,94 @@ fun HomeScreen(
             }
         }
 
+        // --- Weekly prayer analytics ---
+        item {
+            val weeklyStats by viewModel.weeklyPrayerSummary.collectAsState()
+            val weeklyCompleted = weeklyStats.sumOf { it.completedCount }
+            val weeklyOnTime = weeklyStats.sumOf { it.onTimeCount }
+            val weeklyLate = weeklyStats.sumOf { it.lateCount }
+            val weeklyMissed = weeklyStats.sumOf { it.missedCount }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "ملخص الصلوات خلال 7 أيام",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "${weeklyCompleted} / 35",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text("في وقتها: ${weeklyOnTime}", fontSize = 11.sp, color = Color(0xFF2E7D32))
+                        Text("قضاء: ${weeklyLate}", fontSize = 11.sp, color = Color(0xFFB77900))
+                        Text("فاتت: ${weeklyMissed}", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
+                    }
+                    if (weeklyStats.isEmpty()) {
+                        Text(
+                            text = "سيظهر ملخص الأسبوع بعد تسجيل الصلوات.",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        weeklyStats.forEach { day ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(
+                                    text = day.dayNameAr,
+                                    fontSize = 11.sp,
+                                    modifier = Modifier.width(62.dp),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                LinearProgressIndicator(
+                                    progress = { day.completedCount / 5f },
+                                    modifier = Modifier.weight(1f).height(7.dp),
+                                    color = when {
+                                        day.completedCount == 5 -> Color(0xFF2E7D32)
+                                        day.completedCount >= 3 -> Color(0xFF689F38)
+                                        else -> MaterialTheme.colorScheme.primary
+                                    },
+                                    trackColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                Text(
+                                    text = "${day.completedCount}/5",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // --- 6. HIGH-FIDELITY 12-ICON CIRCULAR GRID ---
         item {
             Column(
