@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.QuranApiClient
 import com.example.data.QuranData
+import com.example.data.QuranOfflineData
 import com.example.data.QuranFontLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -679,25 +680,29 @@ fun SurahReader(
     }
 
     DisposableEffect(surah.id, lang, retryToken) {
-
-        if (QuranData.localAyahs.containsKey(surah.id)) {
-            val localList = QuranData.localAyahs[surah.id]!!.map {
-                val paddedSurah = String.format(Locale.US, "%03d", surah.id)
-                val paddedAyah = String.format(Locale.US, "%03d", it.number)
-                QuranApiClient.ApiAyah(
-                    numberInSurah = it.number,
-                    arabicText = it.text,
-                    translationText = if (lang == "en") it.translation else "",
-                    audioUrl = "https://everyayah.com/data/Alafasy_128kbps/$paddedSurah$paddedAyah.mp3"
-                )
-            }
-            verses = localList
-            isLoading = false
-        } else {
-            coroutineScope.launch {
-                try {
-                    isLoading = true
-                    errorMsg = null
+        coroutineScope.launch {
+            isLoading = true
+            errorMsg = null
+            try {
+                val offlineList = withContext(Dispatchers.IO) {
+                    QuranOfflineData.loadSurah(context, surah.id)
+                }
+                if (offlineList != null && offlineList.size == surah.totalAyahs) {
+                    // Full Quran text is bundled locally; reading does not require a network connection.
+                    verses = offlineList
+                } else if (QuranData.localAyahs.containsKey(surah.id)) {
+                    val localList = QuranData.localAyahs[surah.id]!!.map {
+                        val paddedSurah = String.format(Locale.US, "%03d", surah.id)
+                        val paddedAyah = String.format(Locale.US, "%03d", it.number)
+                        QuranApiClient.ApiAyah(
+                            numberInSurah = it.number,
+                            arabicText = it.text,
+                            translationText = if (lang == "en") it.translation else "",
+                            audioUrl = "https://everyayah.com/data/Alafasy_128kbps/$paddedSurah$paddedAyah.mp3"
+                        )
+                    }
+                    verses = localList
+                } else {
                     val cached = loadCachedSurah(context, surah.id, lang)
                     if (cached != null) {
                         verses = cached
@@ -706,15 +711,15 @@ fun SurahReader(
                         verses = apiResult
                         saveCachedSurah(context, surah.id, lang, apiResult)
                     }
-                } catch (_: Exception) {
-                    errorMsg = if (lang == "en") {
-                        "This surah is not cached yet. Connect to the internet once to load it; after that it is available offline."
-                    } else {
-                        "هذه السورة غير محفوظة بعد. اتصل بالإنترنت مرة واحدة لتحميلها، وبعد ذلك ستصبح متاحة دون اتصال."
-                    }
-                } finally {
-                    isLoading = false
                 }
+            } catch (_: Exception) {
+                errorMsg = if (lang == "en") {
+                    "This surah could not be loaded. Check the bundled Quran data or connect to the internet."
+                } else {
+                    "تعذر تحميل السورة. تحقق من بيانات المصحف المضمّنة أو اتصل بالإنترنت."
+                }
+            } finally {
+                isLoading = false
             }
         }
 
