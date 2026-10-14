@@ -59,7 +59,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val context = application.applicationContext
     private val db = AppDatabase.getDatabase(context)
     private val repo = AppRepository(db, context)
-    private val pollsPrefs = context.getSharedPreferences("local_polls", Context.MODE_PRIVATE)
     private val audioPrefs = context.getSharedPreferences("audio_preferences", Context.MODE_PRIVATE)
     private val accessibilityPrefs = context.getSharedPreferences("accessibility_preferences", Context.MODE_PRIVATE)
     private val _hapticsEnabled = MutableStateFlow(accessibilityPrefs.getBoolean("haptics_enabled", true))
@@ -139,13 +138,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _hijriDateString = MutableStateFlow("")
     val hijriDateString: StateFlow<String> = _hijriDateString.asStateFlow()
 
-    // --- Community, Polls & Fajr Tracker State ---
-    private val _communityPosts = MutableStateFlow<List<CommunityPost>>(emptyList())
-    val communityPosts: StateFlow<List<CommunityPost>> = _communityPosts.asStateFlow()
-
-    private val _communityPolls = MutableStateFlow<List<CommunityPoll>>(emptyList())
-    val communityPolls: StateFlow<List<CommunityPoll>> = _communityPolls.asStateFlow()
-
+    // --- Prayer tracking state ---
     private val _fajrRecords = MutableStateFlow<List<FajrDayRecord>>(emptyList())
     val fajrRecords: StateFlow<List<FajrDayRecord>> = _fajrRecords.asStateFlow()
 
@@ -220,7 +213,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         calculateRamadanCountdown()
         val fastingKey = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         _isFastingToday.value = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE).getBoolean(fastingKey, false)
-        initCommunityAndPolls()
+        loadFajrRecords()
 
         // Nearby mosques are loaded only after a real device location is acquired.
         // This prevents the old fallback coordinates from showing unrelated mosques.
@@ -1295,59 +1288,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         stopAthan()
     }
 
-    fun initCommunityAndPolls() {
-        // Never fabricate community members, posts, votes, or prayer history.
-        _communityPosts.value = emptyList()
-
-        // Poll questions are app content; vote state is persisted locally on this device.
-        val basePolls = listOf(
-            CommunityPoll(
-                id = 1,
-                questionAr = "ما هو أنسب وقت تفضله لقراءة وردك اليومي من القرآن الكريم؟",
-                questionEn = "What is the best time you prefer to read your daily Quran portion?",
-                optionsAr = listOf("بعد صلاة الفجر", "بعد صلاة العصر/المغرب", "قبل النوم في الليل", "في أوقات متفرقة خلال اليوم"),
-                optionsEn = listOf("After Fajr prayer", "After Asr/Maghrib prayer", "Before sleeping at night", "At separate times during the day"),
-                votes = List(4) { 0 },
-                totalVotes = 0,
-                votedOptionIndex = null
-            ),
-            CommunityPoll(
-                id = 2,
-                questionAr = "هل قمت بتفعيل تنبيهات الأذان والأذكار في التطبيق؟",
-                questionEn = "Have you activated Athan and Adhkar notifications in the app?",
-                optionsAr = listOf("نعم", "بعضها فقط", "لا", "سأفعلها الآن"),
-                optionsEn = listOf("Yes", "Some of them", "No", "I will enable them now"),
-                votes = List(4) { 0 },
-                totalVotes = 0,
-                votedOptionIndex = null
-            ),
-            CommunityPoll(
-                id = 3,
-                questionAr = "كم جزءاً أو حزباً تخطط لإتمامه في ختمتك الحالية؟",
-                questionEn = "How much do you plan to complete in your current Khatmah?",
-                optionsAr = listOf("جزء واحد يومياً", "نصف جزء يومياً", "حزب واحد يومياً", "أكثر من جزء يومياً"),
-                optionsEn = listOf("One Juz' daily", "Half Juz' daily", "One Hizb daily", "More than one Juz' daily"),
-                votes = List(4) { 0 },
-                totalVotes = 0,
-                votedOptionIndex = null
-            )
-        )
-        _communityPolls.value = basePolls.map { poll ->
-            val voted = pollsPrefs.getInt("poll_${poll.id}_voted", -1).takeIf { it >= 0 }
-            val storedVotes = poll.optionsAr.indices.map { index ->
-                pollsPrefs.getInt("poll_${poll.id}_votes_$index", 0)
-            }
-            val hasStoredVotes = storedVotes.any { it > 0 }
-            poll.copy(
-                votes = if (hasStoredVotes) storedVotes else poll.votes,
-                totalVotes = if (hasStoredVotes) storedVotes.sum() else poll.totalVotes,
-                votedOptionIndex = voted
-            )
-        }
-
-        loadFajrRecords()
-    }
-
     private fun loadFajrRecords() {
         viewModelScope.launch {
             repo.getAllLogs().collect { logs ->
@@ -1375,63 +1315,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
                 _fajrRecords.value = records
-            }
-        }
-    }
-
-    fun addCommunityPost(content: String) {
-        val member = loggedInMember.value
-        val name = member?.name ?: "مستخدم أقم صلاتك"
-        val country = member?.country?.takeIf { it.isNotBlank() } ?: "غير محدد"
-        val newPost = CommunityPost(
-            id = _communityPosts.value.size + 1,
-            authorName = name,
-            authorCountry = country,
-            content = content,
-            likesCount = 0,
-            isLiked = false,
-            timestamp = System.currentTimeMillis()
-        )
-        _communityPosts.value = listOf(newPost) + _communityPosts.value
-        
-        // Reward user with 5 Barakah points for contributing to the community!
-        member?.let {
-            updateMemberPoints(it.id, 5)
-        }
-    }
-
-    fun likeCommunityPost(postId: Int) {
-        _communityPosts.value = _communityPosts.value.map { post ->
-            if (post.id == postId) {
-                if (post.isLiked) {
-                    post.copy(likesCount = post.likesCount - 1, isLiked = false)
-                } else {
-                    post.copy(likesCount = post.likesCount + 1, isLiked = true)
-                }
-            } else {
-                post
-            }
-        }
-    }
-
-    fun voteInPoll(pollId: Int, optionIndex: Int) {
-        _communityPolls.value = _communityPolls.value.map { poll ->
-            if (poll.id == pollId && poll.votedOptionIndex == null) {
-                val newVotes = poll.votes.mapIndexed { idx, v -> if (idx == optionIndex) v + 1 else v }
-                poll.copy(
-                    votes = newVotes,
-                    totalVotes = poll.totalVotes + 1,
-                    votedOptionIndex = optionIndex
-                ).also {
-                    val editor = pollsPrefs.edit()
-                        .putInt("poll_${poll.id}_voted", optionIndex)
-                    newVotes.forEachIndexed { index, value ->
-                        editor.putInt("poll_${poll.id}_votes_$index", value)
-                    }
-                    editor.apply()
-                }
-            } else {
-                poll
             }
         }
     }
