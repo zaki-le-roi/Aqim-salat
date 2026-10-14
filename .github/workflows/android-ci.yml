@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI (APK only)
 # Continuous verification for every main/security-hardening change
 
 on:
@@ -53,13 +53,3 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
-      - name: Release AAB
-        run: gradle --no-daemon bundleRelease
-
-      - name: Upload Release AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: Aqim-Salat-release-aab
-          path: app/build/outputs/bundle/release/app-release.aab
-          if-no-files-found: error
-          retention-days: 3
