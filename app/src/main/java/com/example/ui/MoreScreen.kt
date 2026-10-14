@@ -79,7 +79,7 @@ fun MoreScreen(
         ServicesGridItem("FAQ", "الأسئلة الشائعة", Icons.Filled.QuestionMark, Color.Unspecified),
         ServicesGridItem("SUPPORT", "الدعم الفني", Icons.Filled.ContactSupport, Color.Unspecified),
         ServicesGridItem("ABOUT_US", "من نحن", Icons.Filled.Info, Color.Unspecified),
-        ServicesGridItem("RATE_SHARE", "مشاركة التطبيق", Icons.Filled.Share, Color.Unspecified),
+        ServicesGridItem("SHARE_APP", "مشاركة التطبيق", Icons.Filled.Share, Color.Unspecified),
         ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color.Unspecified),
         ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color.Unspecified)
     )
