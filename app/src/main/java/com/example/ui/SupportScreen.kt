@@ -50,7 +50,7 @@ fun SupportScreen(
     var isSending by remember { mutableStateOf(false) }
     var supportSuccess by remember { mutableStateOf(false) }
 
-    // Rating star state
+    // نموذج دعم فني فقط، دون تقييم أو مراجعات عامة.
 
     Scaffold(
         topBar = {
