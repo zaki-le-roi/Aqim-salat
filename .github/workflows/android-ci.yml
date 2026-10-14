@@ -36,6 +36,9 @@ jobs:
           gradle-version: "9.7.1"
           validate-wrappers: false
 
+      - name: Validate bundled Quran text
+        run: python3 scripts/validate_quran_assets.py
+
       - name: Unit tests
         run: gradle --no-daemon test
 
