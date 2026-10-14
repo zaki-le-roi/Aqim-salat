@@ -156,6 +156,9 @@ fun AqimSalahApp(
                 selectedTab = "PRAYER_TIMES"
                 activeDetailScreen = null
             }
+            "PRAYER_STATS" -> {
+                activeDetailScreen = "PRAYER_STATS"
+            }
             "QURAN" -> {
                 selectedTab = "QURAN"
                 initialSurahIdParam = null
@@ -256,6 +259,7 @@ fun AqimSalahApp(
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
+                    "PRAYER_STATS" -> PrayerStatisticsScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "ZAKAT" -> ZakatCalculatorScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "ACCOUNTABILITY" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "DEEDS" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null }, challenge = true)
