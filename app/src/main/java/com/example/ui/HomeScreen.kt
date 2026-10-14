@@ -50,7 +50,6 @@ fun HomeScreen(
     val isPlaying by viewModel.isAthanPlaying.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
     val locationConfigured by viewModel.locationConfigured.collectAsState()
-    val loggedInMember by viewModel.loggedInMember.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
     // Clock state
@@ -64,7 +63,6 @@ fun HomeScreen(
     }
 
     val homePrefs = remember { context.getSharedPreferences("home_ui_state", android.content.Context.MODE_PRIVATE) }
-    var showOnboarding by remember { mutableStateOf(!homePrefs.getBoolean("onboarding_dismissed", false) && loggedInMember == null) }
     var showWhatsNew by remember { mutableStateOf(!homePrefs.getBoolean("whats_new_dismissed", false)) }
 
     LazyColumn(
@@ -137,23 +135,7 @@ fun HomeScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
-                            // Avatar button
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .clip(CircleShape)
-                                    .background(if (loggedInMember != null) Color(0xFFD4AF37).copy(alpha = 0.15f) else Color.White)
-                                    .border(1.5.dp, Color(0xFFD4AF37), CircleShape)
-                                    .clickable { onNavigateToFeature("AUTH") },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = if (loggedInMember != null) Icons.Filled.AccountCircle else Icons.Filled.Person,
-                                    contentDescription = if (lang == "ar") "الملف الشخصي" else "Profile",
-                                    tint = if (loggedInMember != null) Color(0xFF1B5E20) else Color(0xFF666666),
-                                    modifier = Modifier.size(22.dp)
-                                )
-                            }
+
                         }
 
                         // أُزيل زر العضوية المميز لأنه لم يكن مرتبطًا بميزة فعلية.
@@ -660,74 +642,6 @@ fun HomeScreen(
                 }
             }
         }
-
-        // --- 4. PROFILE COMPLETION ONBOARDING CARD ---
-        if (showOnboarding) {
-            item {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .clickable { onNavigateToFeature("AUTH") },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEEEEEE)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Left Close 'X' Button
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .clickable { showOnboarding = false; homePrefs.edit().putBoolean("onboarding_dismissed", true).apply() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = if (lang == "ar") "إغلاق" else "Close",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        // Text and progress bar
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = if (lang == "ar") "إعداد العضوية والبيانات الشخصية" else "Set up your membership and profile",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = if (lang == "ar") "سجّل الدخول أو أكمل بياناتك الشخصية الآن" else "Sign in or complete your personal details now",
-                                fontSize = 12.sp,
-                                color = Color(0xFFFF9800),
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Text(
-                                text = if (lang == "ar") "يمكنك تسجيل الدخول الآن، أو متابعة استخدام التطبيق دون عضوية." else "You can sign in now, or continue using the app without membership.",
-                                fontSize = 12.sp,
-                                color = Color.Gray
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-
 
         // --- 6. HIGH-FIDELITY 12-ICON CIRCULAR GRID ---
         item {
