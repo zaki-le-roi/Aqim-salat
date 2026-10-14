@@ -11,6 +11,8 @@ import com.example.adhan.AdhanScheduler
 import kotlinx.coroutines.launch
 import androidx.core.content.ContextCompat
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +25,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalDensity
@@ -195,54 +200,66 @@ fun AqimSalahApp(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            // Keep screen space beautifully uncluttered when operating in specific tools
+            // Floating, softly translucent pill navigation with five primary destinations.
             if (activeDetailScreen == null) {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 8.dp,
-                    modifier = Modifier.testTag("app_navigation_bar")
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                        .testTag("floating_navigation_container")
                 ) {
-                    val tabs = listOf(
-                        Triple("HOME", Translations.get("home", lang), Icons.Filled.Home),
-                        Triple("QURAN", Translations.get("quran", lang), Icons.Filled.MenuBook),
-                        Triple("PRAYER_TIMES", if (lang == "ar") "المواقيت" else "Prayers", Icons.Filled.AccessTime),
-                        Triple("ZAKAT", if (lang == "ar") "الزكاة" else "Zakat", Icons.Filled.Percent),
-                        Triple("MORE", if (lang == "ar") "المزيد" else "More", Icons.Filled.MoreHoriz)
-                    )
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                        tonalElevation = 0.dp,
+                        windowInsets = androidx.compose.foundation.layout.WindowInsets(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(70.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
+                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.16f), CircleShape)
+                            .shadow(12.dp, CircleShape)
+                            .testTag("app_navigation_bar")
+                    ) {
+                        val tabs = listOf(
+                            Triple("HOME", if (lang == "ar") "الرئيسية" else "Home", Icons.Filled.Home),
+                            Triple("QURAN", if (lang == "ar") "القرآن" else "Quran", Icons.Filled.MenuBook),
+                            Triple("PRAYER_TIMES", if (lang == "ar") "المواقيت والقبلة" else "Prayer & Qibla", Icons.Filled.Explore),
+                            Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Icons.Filled.Spa),
+                            Triple("MORE", if (lang == "ar") "المزيد" else "Services", Icons.Filled.Apps)
+                        )
 
-                    tabs.forEach { (route, label, icon) ->
-                        val isSelected = selectedTab == route
-                        NavigationBarItem(
-                            selected = isSelected,
-                            onClick = {
-                                if (route == "ZAKAT") {
-                                    activeDetailScreen = "ZAKAT"
-                                } else {
+                        tabs.forEach { (route, label, icon) ->
+                            val isSelected = selectedTab == route || (route == "PRAYER_TIMES" && selectedTab == "QIBLA")
+                            NavigationBarItem(
+                                selected = isSelected,
+                                onClick = {
                                     selectedTab = route
                                     activeDetailScreen = null
-                                }
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = label,
-                                    tint = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = label,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                            ),
-                            modifier = Modifier.testTag("nav_item_$route")
-                        )
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = label,
+                                        tint = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f),
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = label,
+                                        fontSize = if (route == "PRAYER_TIMES") 9.sp else 10.sp,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
+                                    )
+                                },
+                                alwaysShowLabel = true,
+                                colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
+                                modifier = Modifier.testTag("nav_item_" + route)
+                            )
+                        }
                     }
                 }
             }
@@ -383,6 +400,7 @@ fun AqimSalahApp(
                         lang = lang, 
                         initialSurahId = initialSurahIdParam
                     )
+                    "ADHKAR" -> AdhkarTool(viewModel, lang)
                     "PRAYER_TIMES" -> PrayerTimesScreen(
                         viewModel = viewModel, 
                         lang = lang
