@@ -347,7 +347,7 @@ fun SupportScreen(
                                                 .background(Color(0xFFD4AF37).copy(alpha = 0.1f)),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Icon(Icons.Filled.Star, contentDescription = "Logo", tint = Color(0xFFD4AF37), modifier = Modifier.size(40.dp))
+                                            Icon(Icons.Filled.Star, contentDescription = "شعار التطبيق", tint = Color(0xFFD4AF37), modifier = Modifier.size(40.dp))
                                         }
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Text(
