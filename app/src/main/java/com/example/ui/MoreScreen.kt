@@ -59,7 +59,6 @@ fun MoreScreen(
         ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color.Unspecified),
         ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color.Unspecified),
         ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color.Unspecified),
-        ServicesGridItem("FAJR_LIST", "متابعة الفجر", Icons.Filled.Cloud, Color.Unspecified),
         ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color.Unspecified)
     )
 
