@@ -540,7 +540,7 @@ fun SupportScreen(
                                         Icon(Icons.Filled.Share, contentDescription = if (lang == "ar") "مشاركة" else "Share", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            if (lang == "ar") "شارك التطبيق للدلالة على الخير",
+                                            "شارك التطبيق للدلالة على الخير",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
                                             color = MaterialTheme.colorScheme.primary
