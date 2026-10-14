@@ -2,21 +2,20 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Aqim Salat: calm, high-contrast Islamic palette.
-// Keep semantic tokens centralized so every screen uses the same design language.
-val EmeraldPrimary = Color(0xFF126B45)
-val EmeraldLight = Color(0xFF2D9468)
-val EmeraldDark = Color(0xFF08452D)
+// Aqim Salat visual identity: emerald, muted gold, and calm neutral surfaces.
+val EmeraldPrimary = Color(0xFF0F4C3A)
+val EmeraldLight = Color(0xFF2D8065)
+val EmeraldDark = Color(0xFF083629)
 
-val GoldAccent = Color(0xFFD6B15E)
-val AmberAccent = Color(0xFFF2C66D)
+val GoldAccent = Color(0xFFD97706)
+val AmberAccent = Color(0xFFE6A23C)
 
-val DarkSlateBackground = Color(0xFF0A100D)
-val DarkSlateSurface = Color(0xFF141D18)
+val DarkSlateBackground = Color(0xFF111827)
+val DarkSlateSurface = Color(0xFF1B2534)
 
-val LightMintBackground = Color(0xFFF5F8F5)
+val LightMintBackground = Color(0xFFF9FAFB)
 val LightMintSurface = Color(0xFFFFFFFF)
 
-val TextWhite = Color(0xFFF5F7F5)
+val TextWhite = Color(0xFFF9FAFB)
 val TextDark = Color(0xFF17231C)
-val TextGold = Color(0xFFE4C477)
+val TextGold = Color(0xFFD97706)
