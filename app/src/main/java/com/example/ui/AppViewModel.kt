@@ -35,6 +35,16 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import android.location.Geocoder
 
+data class WeeklyPrayerSummary(
+    val dateString: String,
+    val dayNameAr: String,
+    val onTimeCount: Int,
+    val lateCount: Int,
+    val missedCount: Int
+) {
+    val completedCount: Int get() = onTimeCount + lateCount
+}
+
 data class LocalMosque(
     val id: Long,
     val nameAr: String,
@@ -163,6 +173,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _loggedPrayers = MutableStateFlow<Map<String, String>>(emptyMap())
     val loggedPrayers: StateFlow<Map<String, String>> = _loggedPrayers.asStateFlow()
 
+    private val _weeklyPrayerSummary = MutableStateFlow<List<WeeklyPrayerSummary>>(emptyList())
+    val weeklyPrayerSummary: StateFlow<List<WeeklyPrayerSummary>> = _weeklyPrayerSummary.asStateFlow()
+
     // --- Ramadan Tracking State ---
     private val _ramadanDaysRemaining = MutableStateFlow(0)
     val ramadanDaysRemaining: StateFlow<Int> = _ramadanDaysRemaining.asStateFlow()
@@ -210,6 +223,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
         // Initialize Today's Prayer logs
         loadTodayLogs()
+        loadWeeklyPrayerSummary()
         calculateRamadanCountdown()
         val fastingKey = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         _isFastingToday.value = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE).getBoolean(fastingKey, false)
@@ -620,6 +634,43 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repo.getLogsForDate(todayStr).collect { logs ->
                 val logMap = logs.associate { it.prayerName to it.status }
                 _loggedPrayers.value = logMap
+            }
+        }
+    }
+
+    private fun loadWeeklyPrayerSummary() {
+        viewModelScope.launch {
+            repo.getAllLogs().collect { logs ->
+                val logsByDate = logs.groupBy { it.date }
+                val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                val dayNameFormat = SimpleDateFormat("EEEE", Locale("ar"))
+                val today = Calendar.getInstance()
+                _weeklyPrayerSummary.value = (6 downTo 0).map { offset ->
+                    val day = Calendar.getInstance().apply {
+                        timeInMillis = today.timeInMillis
+                        add(Calendar.DAY_OF_YEAR, -offset)
+                    }
+                    val date = dayFormat.format(day.time)
+                    val dayLogs = logsByDate[date].orEmpty().associateBy { it.prayerName }
+                    val prayerNames = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
+                    var onTime = 0
+                    var late = 0
+                    var missed = 0
+                    prayerNames.forEach { prayer ->
+                        when (dayLogs[prayer]?.status) {
+                            "PRAYED_ON_TIME", "CONGREGATION" -> onTime++
+                            "PRAYED_LATE" -> late++
+                            "MISSED" -> missed++
+                        }
+                    }
+                    WeeklyPrayerSummary(
+                        dateString = date,
+                        dayNameAr = dayNameFormat.format(day.time),
+                        onTimeCount = onTime,
+                        lateCount = late,
+                        missedCount = missed
+                    )
+                }
             }
         }
     }
