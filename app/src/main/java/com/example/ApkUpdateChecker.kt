@@ -98,7 +98,7 @@ class ApkUpdateChecker(private val activity: Activity) {
                     !activity.packageManager.canRequestPackageInstalls()) {
                     AlertDialog.Builder(activity)
                         .setTitle("التحديث جاهز")
-                        .setMessage("تم تنزيل الإصدار $version تلقائيًا. اسمح لتطبيق أقم صلاتك بتثبيت التحديث من هذا المصدر مرة واحدة، ثم ارجع إلى التطبيق لإكمال التثبيت.")
+                        .setMessage("تم تنزيل الإصدار $version تلقائيًا. اسمح لتطبيق أقم صلاتك بتثبيت التحديث من هذا المصدر مرة واحدة، ثم أغلق التطبيق وافتحه مجددًا لإكمال التثبيت.")
                         .setNegativeButton("لاحقًا", null)
                         .setPositiveButton("فتح الإعدادات") { _, _ ->
                             val settingsIntent = Intent(
