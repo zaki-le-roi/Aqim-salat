@@ -295,7 +295,7 @@ fun AqimSalahApp(
                                 title = { Text(if (lang == "ar") "الإعدادات" else "Settings", fontWeight = FontWeight.Bold) },
                                 navigationIcon = {
                                     IconButton(onClick = { activeDetailScreen = null }) {
-                                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                                        Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                                     }
                                 }
                             )
@@ -343,7 +343,7 @@ fun AqimSalahApp(
                                     },
                                     navigationIcon = {
                                         IconButton(onClick = { activeDetailScreen = null }) {
-                                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                                            Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
                                         }
                                     }
                                 )
