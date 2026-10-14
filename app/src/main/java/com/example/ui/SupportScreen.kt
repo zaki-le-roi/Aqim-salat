@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.sp
 fun SupportScreen(
     viewModel: AppViewModel,
     lang: String,
-    initialTab: String = "FAQ", // "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "RATE_SHARE"
+    initialTab: String = "FAQ", // "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "SHARE_APP"
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -63,7 +63,7 @@ fun SupportScreen(
                             "ABOUT_US" -> if (lang == "ar") "من نحن وقيمنا" else "About Us & Mission"
                             "PARTNERS" -> if (lang == "ar") "شركاؤنا والإعلان معنا" else "Partners & Advertisements"
                             "OUR_APPS" -> if (lang == "ar") "سلسلة تطبيقاتنا الدعوية" else "Our Islamic Sibling Apps"
-                            "RATE_SHARE" -> "مشاركة التطبيق"
+                            "SHARE_APP" -> "مشاركة التطبيق"
                             else -> if (lang == "ar") "مركز المساعدة" else "Support Center"
                         },
                         fontWeight = FontWeight.Bold,
@@ -93,7 +93,7 @@ fun SupportScreen(
                     "ABOUT_US" -> 2
                     "PARTNERS" -> 3
                     "OUR_APPS" -> 4
-                    "RATE_SHARE" -> 5
+                    "SHARE_APP" -> 5
                     else -> 0
                 },
                 containerColor = MaterialTheme.colorScheme.surface,
@@ -126,8 +126,8 @@ fun SupportScreen(
                     text = { Text(if (lang == "ar") "📱 تطبيقاتنا" else "Sister Apps") }
                 )
                 Tab(
-                    selected = selectedTab == "RATE_SHARE",
-                    onClick = { selectedTab = "RATE_SHARE" },
+                    selected = selectedTab == "SHARE_APP",
+                    onClick = { selectedTab = "SHARE_APP" },
                     text = { Text("مشاركة التطبيق") }
                 )
             }
@@ -159,9 +159,9 @@ fun SupportScreen(
                                 else "Navigate to Settings, then click on 'Prayer Calculation' where you can fully customize the Athan voice for Fajr (e.g., Medina Athan) and standard prayers (e.g., Makkah Athan)."
                             ),
                             Pair(
-                                if (lang == "ar") "ما هي نقاط البركة (Barakah Points) وكيف أستفيد منها؟" else "What are Barakah Points and how to use them?",
-                                if (lang == "ar") "هي نظام تشجيعي يهدف لمساعدتك على الالتزام. تكسب النقاط عند توثيق صلواتك في وقتها، قراءة وردك من القرآن الكريم، مشاركة تذكيرات الخير في المجتمع، أو التصويت في الاستطلاعات وتظهر في قائمة المتصدرين."
-                                else "It is an encouraging rewarding mechanism. You accumulate points by completing prayers, reading Quran, publishing reminders in the community forum, and voting on weekly polls."
+                                if (lang == "ar") "كيف أتابع صلواتي اليومية؟" else "How can I track my daily prayers?",
+                                if (lang == "ar") "يمكنك تسجيل حالة كل صلاة من الصفحة الرئيسية، ومراجعة سجلك اليومي لمتابعة انتظامك في أداء الصلوات."
+                                else "Record each prayer from the home screen and review your daily prayer log."
                             )
                         )
 
@@ -524,7 +524,7 @@ fun SupportScreen(
                         }
                     }
 
-                    "RATE_SHARE" -> {
+                    "SHARE_APP" -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                             contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
@@ -540,7 +540,7 @@ fun SupportScreen(
                                         Icon(Icons.Filled.Share, contentDescription = if (lang == "ar") "مشاركة" else "Share", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
                                         Spacer(modifier = Modifier.height(12.dp))
                                         Text(
-                                            if (lang == "ar") "الأجر بالنشر والدعوة للخير" else "Share the App & Earn Rewards",
+                                            if (lang == "ar") "شارك التطبيق للدلالة على الخير",
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 15.sp,
                                             color = MaterialTheme.colorScheme.primary
