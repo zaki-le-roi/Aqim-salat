@@ -84,7 +84,7 @@ fun MoreScreen(
         ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color.Unspecified)
     )
 
-    val currentLanguage by viewModel.language.collectAsState()
+    val currentLanguage = "ar"
 
     CompositionLocalProvider(
         LocalLayoutDirection provides LayoutDirection.Rtl
@@ -174,7 +174,7 @@ fun MoreScreen(
             // Section 3: Support and Interaction Card
             item {
                 ServicesSectionCard(
-                    title = if (currentLanguage == "ar") "الدعم والتفاعل" else "Support & Community",
+                    title = "المساعدة والمعلومات",
                     items = supportServices,
                     lang = currentLanguage,
                     onItemClick = onNavigateToFeature
