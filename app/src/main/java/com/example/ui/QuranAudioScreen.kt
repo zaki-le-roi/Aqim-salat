@@ -359,7 +359,7 @@ fun QuranAudioScreen(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
                     ) {
-                        Icon(Icons.Filled.SkipNext, contentDescription = if (lang == "ar") "التالي" else "Next", modifier = Modifier.size(24.dp))
+                        Icon(Icons.Filled.SkipNext, contentDescription = if (lang == "ar") "التالي" else "التالي", modifier = Modifier.size(24.dp))
                     }
 
                     // Favorite/Bookmark indicator
@@ -367,14 +367,14 @@ fun QuranAudioScreen(
                         onClick = {
                             Toast.makeText(
                                 context,
-                                if (lang == "ar") "التنزيل دون اتصال غير متاح حاليًا." else "Offline download is not available yet.",
+                                if (lang == "ar") "التنزيل دون اتصال غير متاح حاليًا." else "التنزيل دون اتصال غير متاح حاليًا.",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                     ) {
                         Icon(
                             Icons.Filled.Download,
-                            contentDescription = if (lang == "ar") "التنزيل غير متاح" else "Offline download unavailable",
+                            contentDescription = if (lang == "ar") "التنزيل غير متاح" else "التنزيل غير متاح",
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
                         )
                     }                }
@@ -432,13 +432,13 @@ fun QuranAudioScreen(
 
                         Column {
                             Text(
-                                text = s.englishName,
+                                text = s.name,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 15.sp,
                                 color = if (isActive) Color(0xFFC59B27) else MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "Surah • ${s.totalAyahs} verses",
+                                text = "سورة • ${s.totalAyahs} آية",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
