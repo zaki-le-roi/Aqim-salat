@@ -1115,7 +1115,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                 color = Color(0xFFD4AF37)
             )
             Text(
-                text = "ربط حسابات Firebase الموجودة بصلاحيات الإدارة. هذه الشاشة لا تنشئ حساب Firebase أو كلمة مرور جديدة.",
+                text = "ربط حسابات الإدارة الموجودة مسبقًا بصلاحيات المشرفين. هذه الشاشة لا تنشئ حسابًا أو كلمة مرور جديدة.",
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 modifier = Modifier.padding(top = 4.dp)
@@ -1132,7 +1132,7 @@ fun SecurityTab(viewModel: AppViewModel) {
             ) {
                 Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(
-                        text = "ربط حساب Firebase موجود بصلاحيات مشرف", 
+                        text = "ربط حساب موجود بصلاحيات مشرف", 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 15.sp, 
                         color = Color(0xFFD4AF37)
@@ -1215,7 +1215,7 @@ fun SecurityTab(viewModel: AppViewModel) {
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("حفظ الربط والصلاحيات في التطبيق وFirestore", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
+                        Text("حفظ الربط والصلاحيات في التطبيق وقاعدة البيانات السحابية", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 15.sp)
                     }
                 }
             }
@@ -1439,7 +1439,7 @@ fun MembersTab(viewModel: AppViewModel) {
                             // Delete Member
                             IconButton(onClick = {
                                 viewModel.deleteMember(member.id)
-                                Toast.makeText(context, "تم حذف سجل العضوية من بيانات التطبيق. لا يُحذف حساب Firebase تلقائيًا.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "تم حذف سجل العضوية من بيانات التطبيق. لا يُحذف حساب المصادقة تلقائيًا.", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(Icons.Filled.Delete, contentDescription = "حذف العضوية", tint = Color(0xFFCF6679))
                             }
