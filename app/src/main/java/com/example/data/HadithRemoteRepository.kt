@@ -83,9 +83,8 @@ object HadithRemoteRepository {
                     val chapterTitle = chapterNames[chapterId] ?: "أحاديث الكتاب"
                     val arabic = item.optString("arabic").trim()
                     if (arabic.isBlank()) continue
-                    val english = item.optJSONObject("english")
-                    val narrator = english?.optString("narrator").orEmpty()
-                        .takeIf { it.isNotBlank() } ?: "راوي الحديث"
+                    // The interface is Arabic-only; do not leak the dataset's English narrator field.
+                    val narrator = "إسناد الحديث"
                     grouped.getOrPut(chapterId) { mutableListOf() }.add(
                         HadithData.BookHadith(
                             id = "${book.id}_source_${number}",
