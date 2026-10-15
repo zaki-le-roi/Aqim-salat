@@ -122,14 +122,19 @@ fun HadithScreen(
             if (isLoadingFullBook) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
-                    text = "جارٍ تحميل النص الكامل الموثق للكتاب…",
+                    text = "جارٍ تحميل النص الكامل من المصدر…",
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             } else if (downloadedBook == null) {
+                val message = if (HadithRemoteRepository.supportsFullText(selectedBook.id)) {
+                    "تُعرض النصوص المتاحة دون اتصال. اتصل بالإنترنت لتحميل بقية الكتاب وحفظه للقراءة لاحقًا."
+                } else {
+                    "المتاح حاليًا لهذا الكتاب مقتطفات فقط؛ لم يُضف مصدر كامل له بعد."
+                }
                 Text(
-                    text = "تُعرض النصوص المتاحة دون اتصال؛ اتصل بالإنترنت لتحميل بقية الكتاب وحفظه للقراءة لاحقًا.",
+                    text = message,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
