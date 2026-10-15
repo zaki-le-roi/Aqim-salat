@@ -919,7 +919,6 @@ fun SurahReader(
         QuranData.surahs.firstOrNull { it.id == ref.surah }?.name
     } ?: surah.name
     val juzNumber = firstRef?.let { getJuzNumber(it.surah, it.ayah) } ?: 1
-    val imageUrl = "https://android.quran.com/data/width_1260/page${(pagerState.currentPage + 1).toString().padStart(3, '0')}.png"
 
     Box(
         modifier = Modifier
@@ -1006,30 +1005,21 @@ fun SurahReader(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    @Composable
-                    fun ReaderControl(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
-                        TextButton(onClick = onClick, contentPadding = PaddingValues(horizontal = 3.dp, vertical = 3.dp)) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(icon, contentDescription = label, tint = Color(0xFFF0D89A), modifier = Modifier.size(21.dp))
-                                Text(label, color = Color.White, fontSize = 9.sp, maxLines = 1)
-                            }
-                        }
-                    }
-                    ReaderControl(Icons.Filled.List, "الفهرس") { showIndex = true }
-                    ReaderControl(Icons.Filled.Bookmarks, "الأجزاء") { showJuzIndex = true }
-                    ReaderControl(Icons.Filled.BookmarkAdd, "حفظ علامة") {
+                    MushafBottomControl(Icons.Filled.List, "الفهرس") { showIndex = true }
+                    MushafBottomControl(Icons.Filled.Bookmarks, "الأجزاء") { showJuzIndex = true }
+                    MushafBottomControl(Icons.Filled.BookmarkAdd, "حفظ علامة") {
                         bookmarkPage = pagerState.currentPage + 1
                         prefs.edit().putInt("bookmark_page", bookmarkPage).apply()
                         Toast.makeText(context, "تم حفظ العلامة عند الصفحة $bookmarkPage", Toast.LENGTH_SHORT).show()
                     }
-                    ReaderControl(Icons.Filled.Bookmark, "الانتقال للعلامة") {
+                    MushafBottomControl(Icons.Filled.Bookmark, "الانتقال للعلامة") {
                         if (bookmarkPage in 1..604) {
                             scope.launch { pagerState.animateScrollToPage(bookmarkPage - 1) }
                         } else {
                             Toast.makeText(context, "لم تحفظ علامة بعد", Toast.LENGTH_SHORT).show()
                         }
                     }
-                    ReaderControl(Icons.Filled.Search, "البحث") { showSearch = true }
+                    MushafBottomControl(Icons.Filled.Search, "البحث") { showSearch = true }
                 }
             }
         }
@@ -1115,7 +1105,6 @@ fun SurahReader(
                                 ) {
                                     Column(Modifier.fillMaxWidth()) {
                                         Text("سورة ${resultSurah?.name.orEmpty()} — الآية ${result.second}", fontWeight = FontWeight.Bold)
-                                        Text(result.third, maxLines = 2, overflow = TextOverflow.Ellipsis, fontSize = 12.sp)
                                     }
                                 }
                             }
@@ -1129,6 +1118,28 @@ fun SurahReader(
 }
 
           }
+        }
+    }
+}
+
+@Composable
+private fun MushafBottomControl(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = onClick,
+        contentPadding = PaddingValues(horizontal = 3.dp, vertical = 3.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color(0xFFF0D89A),
+                modifier = Modifier.size(21.dp)
+            )
+            Text(label, color = Color.White, fontSize = 9.sp, maxLines = 1)
         }
     }
 }
