@@ -959,7 +959,7 @@ fun SurahReader(
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
                     .statusBarsPadding(),
-                color = Color(0xF22C1D11),
+                color = Color(0xF2115E3F),
                 shadowElevation = 3.dp
             ) {
                 Row(
@@ -971,7 +971,9 @@ fun SurahReader(
                     Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                         Text(
                             text = "سورة $pageSurahName",
-                            color = Color.White,
+                            color = Color(0xFFD4AF37),
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
@@ -980,7 +982,8 @@ fun SurahReader(
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         Text(
                             text = "صفحة ${pagerState.currentPage + 1}",
-                            color = Color(0xFFF0D89A),
+                            color = Color(0xFFD4AF37),
+                            fontFamily = FontFamily.Serif,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -988,7 +991,9 @@ fun SurahReader(
                     Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                         Text(
                             text = "الجزء $juzNumber",
-                            color = Color.White,
+                            color = Color(0xFFD4AF37),
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
                     }
@@ -1000,7 +1005,7 @@ fun SurahReader(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .navigationBarsPadding(),
-                color = Color(0xF22C1D11),
+                color = Color(0xF2115E3F),
                 shadowElevation = 5.dp
             ) {
                 Row(
@@ -1033,17 +1038,17 @@ fun SurahReader(
             AlertDialog(
                 onDismissRequest = { showIndex = false },
                 shape = RoundedCornerShape(20.dp),
-                containerColor = Color(0xFFFAF6ED),
-                titleContentColor = Color(0xFF2C1D11),
-                textContentColor = Color(0xFF1A1A1A),
-                iconContentColor = Color(0xFF2C1D11),
-                title = { Text("فهرس السور", fontWeight = FontWeight.Bold) },
+                containerColor = Color(0xFFFAF8F5),
+                titleContentColor = Color(0xFF115E3F),
+                textContentColor = Color(0xFF2C1D11),
+                iconContentColor = Color(0xFF115E3F),
+                title = { Text("فهرس السور", color = Color(0xFF115E3F), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items(QuranData.surahs, key = { it.id }) { item ->
                             Column {
                             TextButton(
-                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11)),
+                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F)),
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
                                     val target = QuranPageMap.pageFor(context, item.id, 1).coerceIn(1, 604)
@@ -1056,6 +1061,7 @@ fun SurahReader(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Start,
                                     color = Color(0xFF2C1D11),
+                                    fontFamily = FontFamily.Serif,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
@@ -1067,8 +1073,8 @@ fun SurahReader(
                 confirmButton = {
                     TextButton(
                         onClick = { showIndex = false },
-                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11))
-                    ) { Text("إغلاق", fontWeight = FontWeight.Bold) }
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F))
+                    ) { Text("إغلاق", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFF115E3F)) }
                 }
             )
         }
@@ -1077,17 +1083,17 @@ fun SurahReader(
             AlertDialog(
                 onDismissRequest = { showJuzIndex = false },
                 shape = RoundedCornerShape(20.dp),
-                containerColor = Color(0xFFFAF6ED),
-                titleContentColor = Color(0xFF2C1D11),
-                textContentColor = Color(0xFF1A1A1A),
-                iconContentColor = Color(0xFF2C1D11),
-                title = { Text("الانتقال إلى الجزء", fontWeight = FontWeight.Bold) },
+                containerColor = Color(0xFFFAF8F5),
+                titleContentColor = Color(0xFF115E3F),
+                textContentColor = Color(0xFF2C1D11),
+                iconContentColor = Color(0xFF115E3F),
+                title = { Text("الانتقال إلى الجزء", color = Color(0xFF115E3F), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items((1..30).toList()) { juz ->
                             Column {
                             TextButton(
-                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11)),
+                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F)),
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
                                     val startSurah = JUZ_START_SURAHS[juz - 1]
@@ -1101,6 +1107,7 @@ fun SurahReader(
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = TextAlign.Start,
                                     color = Color(0xFF2C1D11),
+                                    fontFamily = FontFamily.Serif,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
@@ -1112,8 +1119,8 @@ fun SurahReader(
                 confirmButton = {
                     TextButton(
                         onClick = { showJuzIndex = false },
-                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11))
-                    ) { Text("إغلاق", fontWeight = FontWeight.Bold) }
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F))
+                    ) { Text("إغلاق", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFF115E3F)) }
                 }
             )
         }
@@ -1122,11 +1129,11 @@ fun SurahReader(
             AlertDialog(
                 onDismissRequest = { showSearch = false },
                 shape = RoundedCornerShape(20.dp),
-                containerColor = Color(0xFFFAF6ED),
-                titleContentColor = Color(0xFF2C1D11),
-                textContentColor = Color(0xFF1A1A1A),
-                iconContentColor = Color(0xFF2C1D11),
-                title = { Text("البحث في القرآن", fontWeight = FontWeight.Bold) },
+                containerColor = Color(0xFFFAF8F5),
+                titleContentColor = Color(0xFF115E3F),
+                textContentColor = Color(0xFF2C1D11),
+                iconContentColor = Color(0xFF115E3F),
+                title = { Text("البحث في القرآن", color = Color(0xFF115E3F), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) },
                 text = {
                     Column {
                         OutlinedTextField(
@@ -1147,7 +1154,7 @@ fun SurahReader(
                                 val resultSurah = QuranData.surahs.firstOrNull { it.id == result.first }
                                 TextButton(
                                     modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11)),
+                                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F)),
                                     onClick = {
                                         val target = QuranPageMap.pageFor(context, result.first, result.second).coerceIn(1, 604)
                                         showSearch = false
@@ -1169,8 +1176,8 @@ fun SurahReader(
                 confirmButton = {
                     TextButton(
                         onClick = { showSearch = false },
-                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11))
-                    ) { Text("إغلاق", fontWeight = FontWeight.Bold) }
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F))
+                    ) { Text("إغلاق", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFF115E3F)) }
                 }
             )
         }
@@ -1192,10 +1199,10 @@ private fun MushafBottomControl(
             Icon(
                 imageVector = icon,
                 contentDescription = label,
-                tint = Color(0xFFF0D89A),
+                tint = Color(0xFFD4AF37),
                 modifier = Modifier.size(21.dp)
             )
-            Text(label, color = Color(0xFFF8E8BD), fontSize = 9.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            Text(label, color = Color(0xFFD4AF37), fontFamily = FontFamily.Serif, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
     }
 }
