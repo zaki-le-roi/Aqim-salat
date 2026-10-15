@@ -668,6 +668,9 @@ fun HomeScreen(
 
 
 
+    }
+}
+
 // Helper Composable for the circular grid items
 @Composable
 fun CircularGridItem(
