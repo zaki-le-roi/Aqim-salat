@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.QuranApiClient
 import com.example.data.QuranData
 import com.example.data.QuranOfflineData
+import com.example.data.QuranPageMap
 import com.example.data.QuranFontLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -856,6 +857,23 @@ fun SurahReader(
     }
 
     var currentSurah by remember(surah.id) { mutableStateOf(surah) }
+    var currentAyahNumber by remember(surah.id) { mutableIntStateOf(1) }
+    var showQuranSearch by remember { mutableStateOf(false) }
+    var quranSearchQuery by remember { mutableStateOf("") }
+    var quranSearchResults by remember { mutableStateOf<List<Triple<Int, Int, String>>>(emptyList()) }
+    var isSearchingQuran by remember { mutableStateOf(false) }
+    val mushafPages = remember(context) { QuranPageMap.load(context) }
+    var savedMushafPage by remember {
+        mutableIntStateOf(context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE).getInt("saved_page", 1).coerceIn(1, 604))
+    }
+    var allOfflineSurahs by remember { mutableStateOf<Map<Int, List<QuranApiClient.ApiAyah>>>(emptyMap()) }
+    LaunchedEffect(Unit) {
+        allOfflineSurahs = withContext(Dispatchers.IO) {
+            QuranData.surahs.mapNotNull { s ->
+                QuranOfflineData.loadSurah(context, s.id)?.let { s.id to it }
+            }.toMap()
+        }
+    }
     var customFontSize by remember { mutableIntStateOf(24) }
 
     // Configuration Settings
@@ -884,6 +902,7 @@ fun SurahReader(
     }
 
     DisposableEffect(currentSurah.id, lang, retryToken) {
+        currentAyahNumber = currentAyahNumber.coerceIn(1, currentSurah.totalAyahs)
         coroutineScope.launch {
             isLoading = true
             errorMsg = null
@@ -1078,6 +1097,35 @@ fun SurahReader(
                         IconButton(onClick = { releaseAudio() }) {
                             Icon(Icons.Filled.Stop, contentDescription = if (lang == "en") "Stop" else "إيقاف", tint = MaterialTheme.colorScheme.error)
                         }
+                    }
+
+                    IconButton(onClick = { showQuranSearch = true }, modifier = Modifier.testTag("quran_verse_search_button")) {
+                        Icon(Icons.Filled.Search, contentDescription = if (lang == "en") "Search Quran" else "البحث في القرآن", tint = goldAccent)
+                    }
+                    IconButton(
+                        onClick = {
+                            val page = if (!verticalScroll && isMushafMode) savedMushafPage else QuranPageMap.pageFor(context, currentSurah.id, currentAyahNumber)
+                            savedMushafPage = page.coerceIn(1, 604)
+                            context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE)
+                                .edit().putInt("saved_page", savedMushafPage).putInt("saved_surah", currentSurah.id).putInt("saved_ayah", currentAyahNumber).apply()
+                            Toast.makeText(context, "تم حفظ الصفحة $savedMushafPage", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier.testTag("bookmark_mushaf_page_button")
+                    ) {
+                        Icon(Icons.Filled.BookmarkAdd, contentDescription = "حفظ صفحة المصحف", tint = goldAccent)
+                    }
+                    IconButton(
+                        onClick = {
+                            val prefs = context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE)
+                            val page = prefs.getInt("saved_page", savedMushafPage).coerceIn(1, 604)
+                            savedMushafPage = page
+                            currentSurah = QuranData.surahs.find { it.id == prefs.getInt("saved_surah", currentSurah.id) } ?: currentSurah
+                            currentAyahNumber = prefs.getInt("saved_ayah", 1).coerceAtLeast(1)
+                            verticalScroll = false
+                        },
+                        modifier = Modifier.testTag("restore_mushaf_page_button")
+                    ) {
+                        Icon(Icons.Filled.Bookmark, contentDescription = "العودة إلى الصفحة المحفوظة", tint = goldAccent)
                     }
 
                     // Reading Options Sheet toggle (Font Size, Theme, Layout)
@@ -1417,97 +1465,100 @@ fun SurahReader(
                                     }
                                 }
                             } else {
-                                // 2. Horizontal Page Flipping Layout
-                                val versesPerPage = 8
-                                val pagesCount = (verses.size + versesPerPage - 1) / versesPerPage
-                                val pagerState = rememberPagerState(pageCount = { pagesCount })
-
+                                // 2. Real 604-page Madani Mushaf pagination.
+                                val initialPage = QuranPageMap.pageFor(context, currentSurah.id, currentAyahNumber).coerceIn(1, 604)
+                                val pagerState = rememberPagerState(initialPage = initialPage - 1, pageCount = { 604 })
+                                LaunchedEffect(pagerState.currentPage) {
+                                    val pageRefs = mushafPages.getOrNull(pagerState.currentPage).orEmpty()
+                                    pageRefs.firstOrNull()?.let { first ->
+                                        val pageSurah = QuranData.surahs.find { it.id == first.surah }
+                                        if (pageSurah != null) {
+                                            currentSurah = pageSurah
+                                            currentAyahNumber = first.ayah
+                                            viewModel.saveLastReadSurah(first.surah, first.ayah, pageSurah.name)
+                                        }
+                                    }
+                                }
                                 HorizontalPager(
                                     state = pagerState,
                                     modifier = Modifier.fillMaxSize()
                                 ) { pageIdx ->
-                                    val startIdx = pageIdx * versesPerPage
-                                    val endIdx = (startIdx + versesPerPage).coerceAtLeast(0).coerceAtMost(verses.size)
-                                    val pageVerses = verses.subStringSafely(startIdx, endIdx)
-                                    val pageNum = startPage + pageIdx
-
+                                    val pageRefs = mushafPages.getOrNull(pageIdx).orEmpty()
+                                    val groupedRefs = pageRefs.groupBy { it.surah }
                                     MushafPageFrame(
-                                        isNightMode = (readingTheme == "NIGHT"),
+                                        isNightMode = readingTheme == "NIGHT",
                                         modifier = Modifier.fillMaxSize()
                                     ) {
                                         Column(
-                                            modifier = Modifier.fillMaxSize(),
+                                            modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 14.dp),
                                             verticalArrangement = Arrangement.SpaceBetween,
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             Row(
-                                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                                modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
-                                                Text(
-                                                    text = if (lang == "en") "Juz ${getJuzNumber(surah.id, startIdx + 1)}" else "الجزء ${getJuzNumber(surah.id, startIdx + 1)}",
-                                                    fontSize = 11.sp,
-                                                    color = goldAccent,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                Text(
-                                                    text = if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}",
-                                                    fontSize = 12.sp,
-                                                    color = goldAccent,
-                                                    fontWeight = FontWeight.Bold
-                                                )
+                                                Text("الجزء ${pageRefs.firstOrNull()?.let { getJuzNumber(it.surah, it.ayah) } ?: 1}", fontSize = 11.sp, color = goldAccent, fontWeight = FontWeight.Bold)
+                                                Text("المصحف الشريف", fontSize = 12.sp, color = goldAccent, fontWeight = FontWeight.Bold)
                                             }
-
                                             Column(
-                                                modifier = Modifier.weight(1f),
-                                                verticalArrangement = Arrangement.Center,
+                                                modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                                                 horizontalAlignment = Alignment.CenterHorizontally
                                             ) {
-                                                if (pageIdx == 0) {
-                                                    SurahHeaderBlock(surah = surah, lang = lang, goldColor = goldAccent, txtColor = txtColor)
-                                                    Spacer(modifier = Modifier.height(16.dp))
-                                                    if (surah.id != 9 && surah.id != 1) {
-                                                        Text(
-                                                            text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                                                            fontSize = 22.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = goldAccent,
-                                                            textAlign = TextAlign.Center,
-                                                            modifier = Modifier.padding(bottom = 12.dp)
+                                                groupedRefs.forEach { (surahId, refs) ->
+                                                    val pageSurah = QuranData.surahs.find { it.id == surahId }
+                                                    val pageAyahs = refs.mapNotNull { ref ->
+                                                        allOfflineSurahs[surahId]?.find { it.numberInSurah == ref.ayah }
+                                                    }
+                                                    if (pageSurah != null && pageAyahs.isNotEmpty()) {
+                                                        if (refs.firstOrNull()?.ayah == 1) {
+                                                            Spacer(modifier = Modifier.height(8.dp))
+                                                            SurahHeaderBlock(surah = pageSurah, lang = "ar", goldColor = goldAccent, txtColor = txtColor)
+                                                            if (surahId != 1 && surahId != 9) {
+                                                                Text(
+                                                                    text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                                                                    fontSize = 21.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = goldAccent,
+                                                                    textAlign = TextAlign.Center,
+                                                                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                                                                )
+                                                            }
+                                                        }
+                                                        TextFlowContainer(
+                                                            verses = pageAyahs,
+                                                            txtColor = txtColor,
+                                                            goldColor = goldAccent,
+                                                            fontSize = customFontSize.sp,
+                                                            fontFamily = quranFontFamily ?: FontFamily.Serif,
+                                                            onVerseClick = { ayah ->
+                                                                currentSurah = pageSurah
+                                                                currentAyahNumber = ayah.numberInSurah
+                                                                selectedAyahDetails = ayah
+                                                                viewModel.saveLastReadSurah(pageSurah.id, ayah.numberInSurah, pageSurah.name)
+                                                            }
                                                         )
                                                     }
                                                 }
-
-                                                TextFlowContainer(
-                                                    verses = pageVerses,
-                                                    txtColor = txtColor,
-                                                    goldColor = goldAccent,
-                                                    fontSize = customFontSize.sp,
-                                                    fontFamily = quranFontFamily ?: FontFamily.Serif,
-                                                    onVerseClick = {
-                                                         selectedAyahDetails = it
-                                                         viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
-                                                    }
-                                                )
                                             }
-
                                             Row(
                                                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                                                horizontalArrangement = Arrangement.Center,
+                                                horizontalArrangement = Arrangement.SpaceBetween,
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
+                                                TextButton(onClick = { coroutineScope.launch { pagerState.animateScrollToPage((pagerState.currentPage - 1).coerceAtLeast(0)) } , enabled = pageIdx > 0) {
+                                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = goldAccent)
+                                                    Text("السابق", color = goldAccent)
+                                                }
                                                 Box(
-                                                    modifier = Modifier
-                                                        .border(width = 1.dp, color = goldAccent.copy(alpha = 0.5f), shape = CircleShape)
-                                                        .padding(horizontal = 10.dp, vertical = 2.dp)
+                                                    modifier = Modifier.border(1.dp, goldAccent.copy(alpha = 0.6f), CircleShape).padding(horizontal = 14.dp, vertical = 4.dp)
                                                 ) {
-                                                    Text(
-                                                        text = "$pageNum",
-                                                        fontSize = 12.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        color = goldAccent
-                                                    )
+                                                    Text("صفحة ${pageIdx + 1} / 604", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = goldAccent)
+                                                }
+                                                TextButton(onClick = { coroutineScope.launch { pagerState.animateScrollToPage((pagerState.currentPage + 1).coerceAtMost(603)) } , enabled = pageIdx < 603) {
+                                                    Text("التالي", color = goldAccent)
+                                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = goldAccent)
                                                 }
                                             }
                                         }
@@ -1878,6 +1929,78 @@ fun SurahReader(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+
+    if (showQuranSearch) {
+        AlertDialog(
+            onDismissRequest = { showQuranSearch = false },
+            title = { Text("البحث في القرآن الكريم", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = quranSearchQuery,
+                        onValueChange = { quranSearchQuery = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text("اكتب كلمة أو عبارة قرآنية") },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val query = quranSearchQuery.trim()
+                                if (query.isNotEmpty()) {
+                                    coroutineScope.launch {
+                                        isSearchingQuran = true
+                                        quranSearchResults = withContext(Dispatchers.IO) {
+                                            QuranData.surahs.flatMap { s ->
+                                                QuranOfflineData.loadSurah(context, s.id).orEmpty()
+                                                    .filter { it.arabicText.contains(query, ignoreCase = true) }
+                                                    .take(30)
+                                                    .map { Triple(s.id, it.numberInSurah, it.arabicText) }
+                                            }.take(100)
+                                        }
+                                        isSearchingQuran = false
+                                    }
+                                }
+                            }) { Icon(Icons.Filled.Search, contentDescription = "بحث") }
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (isSearchingQuran) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    } else if (quranSearchResults.isNotEmpty()) {
+                        LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
+                            items(quranSearchResults) { result ->
+                                val resultSurah = QuranData.surahs.find { it.id == result.first }
+                                TextButton(
+                                    onClick = {
+                                        val targetSurah = resultSurah
+                                        if (targetSurah != null) {
+                                            currentSurah = targetSurah
+                                            currentAyahNumber = result.second
+                                            viewModel.saveLastReadSurah(targetSurah.id, result.second, targetSurah.name)
+                                            selectedAyahDetails = allOfflineSurahs[targetSurah.id]?.find { it.numberInSurah == result.second }
+                                            verticalScroll = false
+                                            showQuranSearch = false
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        Text("سورة ${resultSurah?.name ?: result.first} • الآية ${result.second}", fontWeight = FontWeight.Bold, color = goldAccent)
+                                        Text(result.third, maxLines = 2, overflow = TextOverflow.Ellipsis, color = txtColor)
+                                    }
+                                }
+                                HorizontalDivider()
+                            }
+                        }
+                    } else {
+                        Text("ابحث عن كلمة من نص الآية ثم اختر النتيجة للانتقال إليها.", color = Color.Gray, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showQuranSearch = false }) { Text("إغلاق") }
+            }
+        )
     }
 
     // --- Interactive Verse Details Sheets (Tafsir Al-Muyassar) ---
