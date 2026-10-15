@@ -78,7 +78,7 @@ fun HomeScreen(
         item {
             val hour = liveClockTime.take(2).toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
             // ألوان ثابتة متناسقة مع الهوية العاجية والخضراء والذهبية.
-            val skyColors = listOf(Color(0xFF0A3E2F), Color(0xFF0D4F3A), Color(0xFF26765A))
+            val skyColors = listOf(Color(0xFFF8F2E7), Color(0xFFECE0C8), Color(0xFFF8F6F0))
             val nextPrayerArabic = when (nextName.lowercase()) {
                 "fajr" -> "الفجر"
                 "dhuhr" -> "الظهر"
@@ -90,8 +90,8 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(320.dp)
-                    .background(Brush.verticalGradient(skyColors))
+                    .height(370.dp)
+                    .background(Brush.verticalGradient(listOf(Color(0xFFF8F2E7), Color(0xFFECE0C8), Color(0xFFF8F6F0))))
             ) {
                 // Subtle atmospheric glow; the background palette follows the local time.
                 Box(
@@ -99,7 +99,7 @@ fun HomeScreen(
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.White.copy(alpha = 0.10f), Color.Transparent, Color.Black.copy(alpha = 0.22f))
+                                colors = listOf(Color.White.copy(alpha = 0.28f), Color.Transparent, Color(0xFFB89A52).copy(alpha = 0.06f))
                             )
                         )
                 )
@@ -119,15 +119,15 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.18f))
+                                .background(Color(0xFF0D4F3A).copy(alpha = 0.08f))
                                 .clickable { onNavigateToFeature("MORE_MENU") },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Filled.GridView, contentDescription = "القائمة", tint = Color.White)
+                            Icon(Icons.Filled.GridView, contentDescription = "القائمة", tint = Color(0xFF0D4F3A))
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("أقم صلاتك", color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                            Text(locationName, color = Color.White.copy(alpha = 0.86f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("أقم صلاتك", color = Color(0xFF0D4F3A), fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                            Text(locationName, color = Color(0xFF20352B).copy(alpha = 0.78f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         Box(
                             modifier = Modifier
@@ -137,35 +137,35 @@ fun HomeScreen(
                                 .clickable { onNavigateToFeature("SETTINGS") },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Filled.Settings, contentDescription = "الإعدادات", tint = Color.White)
+                            Icon(Icons.Filled.Settings, contentDescription = "الإعدادات", tint = Color(0xFF0D4F3A))
                         }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Text("الصلاة القادمة", color = Color.White.copy(alpha = 0.88f), fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                    Text("الصلاة القادمة", color = Color(0xFF8C7139), fontSize = 15.sp, fontWeight = FontWeight.Medium)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         nextPrayerArabic,
-                        color = Color.White,
+                        color = Color(0xFF0D4F3A),
                         fontSize = 38.sp,
                         fontWeight = FontWeight.ExtraBold,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = if (nextTime.isNotBlank()) "موعدها $nextTime" else "جارٍ حساب وقت الصلاة",
-                        color = Color.White.copy(alpha = 0.92f),
+                        color = Color(0xFF20352B).copy(alpha = 0.86f),
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     Column(
                         modifier = Modifier
                             .clip(RoundedCornerShape(22.dp))
-                            .background(Color(0xFF101827).copy(alpha = 0.30f))
-                            .border(1.dp, Color.White.copy(alpha = 0.28f), RoundedCornerShape(22.dp))
+                            .background(Color(0xFF0D4F3A))
+                            .border(2.dp, Color(0xFFB89A52), RoundedCornerShape(22.dp))
                             .padding(horizontal = 26.dp, vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("الوقت المتبقي", color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
+                        Text("الوقت المتبقي", color = Color(0xFFE8D7A8), fontSize = 12.sp)
                         Text(
                             countdown,
                             color = Color.White,
@@ -178,12 +178,13 @@ fun HomeScreen(
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(18.dp))
-                            .background(Color.Black.copy(alpha = 0.20f))
+                            .background(Color(0xFF0D4F3A))
+                            .border(1.dp, Color(0xFFB89A52), RoundedCornerShape(18.dp))
                             .clickable { onNavigateToFeature("PRAYER_TIMES") }
                             .padding(horizontal = 13.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.LocationOn, contentDescription = "الموقع", tint = Color.White, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.LocationOn, contentDescription = "الموقع", tint = Color(0xFFE8D7A8), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             if (locationConfigured) locationName else "حدّد موقعك لعرض المواقيت الصحيحة",
