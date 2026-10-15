@@ -5,3 +5,6 @@
 نصوص الآيات محفوظة كما وردت في المصدر دون تعديل.
 رابط الترخيص: https://creativecommons.org/licenses/by-sa/4.0/
 يرجى الرجوع إلى README.md وLICENSE.txt في مستودع المصدر لمعرفة بيانات المصدر والشروط الإضافية ذات الصلة.
+
+خريطة صفحات المصحف المدني (604 صفحات): quran-meta عبر مستودع quran-content، مع المحافظة على أرقام السور والآيات والصفحات كما في المصدر.
+المصدر: https://github.com/hyjaak/noor/tree/main/packages/quran-content
