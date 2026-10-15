@@ -918,6 +918,12 @@ fun SurahReader(
         }
     }
 
+    val dialogColors = AlertDialogDefaults.colors(
+        containerColor = Color(0xFFFAF6ED),
+        titleContentColor = Color(0xFF2C1D11),
+        textContentColor = Color(0xFF1A1A1A)
+    )
+
     val pageRefs = pages.getOrNull(pagerState.currentPage).orEmpty()
     val firstRef = pageRefs.firstOrNull()
     val pageSurahName = firstRef?.let { ref ->
@@ -959,7 +965,7 @@ fun SurahReader(
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
                     .statusBarsPadding(),
-                color = Color(0xCC173D32),
+                color = Color(0xF22C1D11),
                 shadowElevation = 3.dp
             ) {
                 Row(
@@ -1000,7 +1006,7 @@ fun SurahReader(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .navigationBarsPadding(),
-                color = Color(0xCC173D32),
+                color = Color(0xF22C1D11),
                 shadowElevation = 5.dp
             ) {
                 Row(
@@ -1032,11 +1038,15 @@ fun SurahReader(
         if (showIndex) {
             AlertDialog(
                 onDismissRequest = { showIndex = false },
-                title = { Text("فهرس السور") },
+                shape = RoundedCornerShape(20.dp),
+                colors = dialogColors,
+                title = { Text("فهرس السور", fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items(QuranData.surahs, key = { it.id }) { item ->
+                            Column {
                             TextButton(
+                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11)),
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
                                     val target = QuranPageMap.pageFor(context, item.id, 1).coerceIn(1, 604)
@@ -1044,23 +1054,40 @@ fun SurahReader(
                                     scope.launch { pagerState.animateScrollToPage(target - 1) }
                                 }
                             ) {
-                                Text("${item.id}. سورة ${item.name}", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+                                Text(
+                                    "${item.id}. سورة ${item.name}",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Start,
+                                    color = Color(0xFF2C1D11),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            HorizontalDivider(color = Color(0x332C1D11), thickness = 0.7.dp)
                             }
                         }
                     }
                 },
-                confirmButton = { TextButton(onClick = { showIndex = false }) { Text("إغلاق") } }
+                confirmButton = {
+                    TextButton(
+                        onClick = { showIndex = false },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11))
+                    ) { Text("إغلاق", fontWeight = FontWeight.Bold) }
+                }
             )
         }
 
         if (showJuzIndex) {
             AlertDialog(
                 onDismissRequest = { showJuzIndex = false },
-                title = { Text("الانتقال إلى الجزء") },
+                shape = RoundedCornerShape(20.dp),
+                colors = dialogColors,
+                title = { Text("الانتقال إلى الجزء", fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items((1..30).toList()) { juz ->
+                            Column {
                             TextButton(
+                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11)),
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
                                     val startSurah = JUZ_START_SURAHS[juz - 1]
@@ -1069,19 +1096,34 @@ fun SurahReader(
                                     scope.launch { pagerState.animateScrollToPage(target - 1) }
                                 }
                             ) {
-                                Text("الجزء $juz", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Start)
+                                Text(
+                                    "الجزء $juz",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Start,
+                                    color = Color(0xFF2C1D11),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                            HorizontalDivider(color = Color(0x332C1D11), thickness = 0.7.dp)
                             }
                         }
                     }
                 },
-                confirmButton = { TextButton(onClick = { showJuzIndex = false }) { Text("إغلاق") } }
+                confirmButton = {
+                    TextButton(
+                        onClick = { showJuzIndex = false },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11))
+                    ) { Text("إغلاق", fontWeight = FontWeight.Bold) }
+                }
             )
         }
 
         if (showSearch) {
             AlertDialog(
                 onDismissRequest = { showSearch = false },
-                title = { Text("البحث في القرآن") },
+                shape = RoundedCornerShape(20.dp),
+                colors = dialogColors,
+                title = { Text("البحث في القرآن", fontWeight = FontWeight.Bold) },
                 text = {
                     Column {
                         OutlinedTextField(
@@ -1102,6 +1144,7 @@ fun SurahReader(
                                 val resultSurah = QuranData.surahs.firstOrNull { it.id == result.first }
                                 TextButton(
                                     modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11)),
                                     onClick = {
                                         val target = QuranPageMap.pageFor(context, result.first, result.second).coerceIn(1, 604)
                                         showSearch = false
@@ -1109,7 +1152,11 @@ fun SurahReader(
                                     }
                                 ) {
                                     Column(Modifier.fillMaxWidth()) {
-                                        Text("سورة ${resultSurah?.name.orEmpty()} — الآية ${result.second}", fontWeight = FontWeight.Bold)
+                                        Text(
+                                            "سورة ${resultSurah?.name.orEmpty()} — الآية ${result.second}",
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF2C1D11)
+                                        )
                                     }
                                 }
                             }
@@ -1140,7 +1187,7 @@ private fun MushafBottomControl(
                 tint = Color(0xFFF0D89A),
                 modifier = Modifier.size(21.dp)
             )
-            Text(label, color = Color.White, fontSize = 9.sp, maxLines = 1)
+            Text(label, color = Color(0xFFF8E8BD), fontSize = 9.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
         }
     }
 }
