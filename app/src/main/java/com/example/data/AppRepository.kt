@@ -115,8 +115,11 @@ class AppRepository(
         pref[KEY_LONGITUDE] ?: 3.0588
     }
 
-    val appLocationConfigured: Flow<Boolean> = context.dataStore.data.map { _ ->
-        true
+    // لا نعتبر الموقع مضبوطاً في التثبيت الجديد إلا إذا اختار المستخدم مدينة/موقعاً.
+    // نحافظ على اختيار المستخدم القديم، ولا نفرض GPS في كل تشغيل.
+    val appLocationConfigured: Flow<Boolean> = context.dataStore.data.map { pref ->
+        pref[KEY_LOCATION_CONFIGURED]
+            ?: (pref[KEY_LATITUDE] != null && pref[KEY_LONGITUDE] != null && pref[KEY_LOCATION_NAME] != null)
     }
 
     val appLocationName: Flow<String> = context.dataStore.data.map { pref ->

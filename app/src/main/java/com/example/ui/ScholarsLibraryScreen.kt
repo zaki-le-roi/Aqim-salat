@@ -1,6 +1,7 @@
 package com.example.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -373,7 +374,7 @@ fun ScholarsLibraryScreen(
 
                     item {
                         Text(
-                            text = "المؤلفات المعتمدة الكبرى (${filteredBooks.size})",
+                            text = "مكتبة الكتب والمختارات (${filteredBooks.size})",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -396,6 +397,10 @@ fun ScholarsLibraryScreen(
                                     .padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
+                                ScholarBookCover(
+                                    book = book,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -447,7 +452,7 @@ fun ScholarsLibraryScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "${book.chapters.size} فصول نصوص معتمدة",
+                                        text = "${book.chapters.size} مقاطع نصية متاحة",
                                         fontSize = 11.sp,
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.SemiBold
@@ -464,6 +469,68 @@ fun ScholarsLibraryScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+
+/**
+ * غلاف توضيحي مصمم داخل التطبيق، وليس صورة مخطوطة أو طبعة تاريخية.
+ * يُعرض لكل كتاب عنوانه ومؤلفه حتى لا تتكرر صورة واحدة بلا تمييز.
+ */
+@Composable
+private fun ScholarBookCover(
+    book: ScholarsLibraryData.ScholarBook,
+    modifier: Modifier = Modifier
+) {
+    val coverColor = when (book.categoryAr) {
+        "العقيدة والتوحيد" -> Color(0xFF174B3A)
+        "شروح الحديث" -> Color(0xFF17365D)
+        "علوم القرآن والتزكية" -> Color(0xFF5B3428)
+        "السيرة النبوية والفقه" -> Color(0xFF4A3A73)
+        else -> Color(0xFF3E4A3A)
+    }
+
+    Box(
+        modifier = modifier
+            .width(116.dp)
+            .height(148.dp)
+            .clip(RoundedCornerShape(9.dp))
+            .background(
+                androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(coverColor, coverColor.copy(alpha = 0.78f))
+                )
+            )
+            .border(1.dp, Color(0xFFD4AF37), RoundedCornerShape(9.dp))
+            .padding(7.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .border(1.dp, Color(0x99D4AF37), RoundedCornerShape(5.dp))
+                .padding(horizontal = 6.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Text("❖", color = Color(0xFFD4AF37), fontSize = 18.sp)
+            Text(
+                text = book.titleAr,
+                color = Color.White,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = book.authorAr,
+                color = Color(0xFFE8DDBB),
+                fontSize = 8.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text("✦", color = Color(0xFFD4AF37), fontSize = 13.sp)
         }
     }
 }
