@@ -62,7 +62,7 @@ import java.util.Locale
 
 private const val QURAN_CACHE_PREFS = "quran_surah_cache"
 
-private val ArabicFontFamily = FontFamily.SansSerif
+private val ArabicFontFamily = FontFamily.Serif
 
 private fun loadCachedSurah(context: android.content.Context, surahId: Int, lang: String): List<QuranApiClient.ApiAyah>? {
     val raw = context.getSharedPreferences(QURAN_CACHE_PREFS, android.content.Context.MODE_PRIVATE)
@@ -1056,27 +1056,57 @@ fun SurahReader(
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items(QuranData.surahs, key = { it.id }) { item ->
-                            Column {
-                            TextButton(
-                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F)),
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    val target = QuranPageMap.pageFor(context, item.id, 1).coerceIn(1, 604)
-                                    showIndex = false
-                                    scope.launch { pagerState.animateScrollToPage(target - 1) }
-                                }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable {
+                                        val target = QuranPageMap.pageFor(context, item.id, 1).coerceIn(1, 604)
+                                        showIndex = false
+                                        scope.launch { pagerState.animateScrollToPage(target - 1) }
+                                    },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD4AF37).copy(alpha = 0.7f)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                             ) {
-                                Text(
-                                    "${item.id}. سورة ${item.name}",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Start,
-                                    color = Color(0xFF2C1D11),
-                                    fontFamily = FontFamily.Serif,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp
-                                )
-                            }
-                            HorizontalDivider(color = Color(0x332C1D11), thickness = 0.7.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFF115E3F)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = item.id.toString(),
+                                            color = Color(0xFFD4AF37),
+                                            fontFamily = ArabicFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp
+                                        )
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "سورة ${item.name}",
+                                            color = Color(0xFF115E3F),
+                                            fontFamily = ArabicFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 17.sp
+                                        )
+                                        Text(
+                                            text = "اضغط للانتقال إلى السورة",
+                                            color = Color(0xFF82796C),
+                                            fontFamily = ArabicFontFamily,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                    Text("۞", color = Color(0xFFD4AF37), fontSize = 23.sp, fontFamily = ArabicFontFamily)
+                                }
                             }
                         }
                     }
@@ -1111,28 +1141,58 @@ fun SurahReader(
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items((1..30).toList()) { juz ->
-                            Column {
-                            TextButton(
-                                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F)),
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    val startSurah = JUZ_START_SURAHS[juz - 1]
-                                    val target = QuranPageMap.pageFor(context, startSurah, 1).coerceIn(1, 604)
-                                    showJuzIndex = false
-                                    scope.launch { pagerState.animateScrollToPage(target - 1) }
-                                }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable {
+                                        val startSurah = JUZ_START_SURAHS[juz - 1]
+                                        val target = QuranPageMap.pageFor(context, startSurah, 1).coerceIn(1, 604)
+                                        showJuzIndex = false
+                                        scope.launch { pagerState.animateScrollToPage(target - 1) }
+                                    },
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD4AF37).copy(alpha = 0.7f)),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                             ) {
-                                Text(
-                                    "الجزء $juz",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Start,
-                                    color = Color(0xFF2C1D11),
-                                    fontFamily = FontFamily.Serif,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp
-                                )
-                            }
-                            HorizontalDivider(color = Color(0x332C1D11), thickness = 0.7.dp)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(Color(0xFF115E3F)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = juz.toString(),
+                                            color = Color(0xFFD4AF37),
+                                            fontFamily = ArabicFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp
+                                        )
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "الجزء $juz",
+                                            color = Color(0xFF115E3F),
+                                            fontFamily = ArabicFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 17.sp
+                                        )
+                                        Text(
+                                            text = "اضغط للانتقال إلى الجزء",
+                                            color = Color(0xFF82796C),
+                                            fontFamily = ArabicFontFamily,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                    Text("۞", color = Color(0xFFD4AF37), fontSize = 23.sp, fontFamily = ArabicFontFamily)
+                                }
                             }
                         }
                     }
