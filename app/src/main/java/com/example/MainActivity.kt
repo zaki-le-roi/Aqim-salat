@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -219,14 +220,14 @@ fun AqimSalahApp(
                         .testTag("floating_navigation_container")
                 ) {
                     NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
+                        containerColor = Color(0xFF115E3F),
                         tonalElevation = 0.dp,
                         windowInsets = androidx.compose.foundation.layout.WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(70.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
+                            .background(Color(0xFF115E3F))
                             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.16f), CircleShape)
                             .shadow(12.dp, CircleShape)
                             .testTag("app_navigation_bar")
@@ -251,22 +252,29 @@ fun AqimSalahApp(
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = label,
-                                        tint = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f),
+                                        tint = Color(0xFFD4AF37),
                                         modifier = Modifier.size(22.dp)
                                     )
                                 },
                                 label = {
                                     Text(
                                         text = label,
-                                        fontSize = if (route == "PRAYER_TIMES") 9.sp else 10.sp,
+                                        fontFamily = FontFamily.Serif,
+                                         fontSize = 12.sp,
                                         maxLines = 1,
                                         softWrap = false,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFFD4AF37)
                                     )
                                 },
                                 alwaysShowLabel = true,
-                                colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
+                                colors = NavigationBarItemDefaults.colors(
+                                     indicatorColor = Color(0xFF115E3F),
+                                     selectedIconColor = Color(0xFFD4AF37),
+                                     selectedTextColor = Color(0xFFD4AF37),
+                                     unselectedIconColor = Color(0xFFD4AF37),
+                                     unselectedTextColor = Color(0xFFD4AF37)
+                                 ),
                                 modifier = Modifier.testTag("nav_item_" + route)
                             )
                         }
