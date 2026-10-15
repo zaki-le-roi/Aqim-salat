@@ -918,12 +918,6 @@ fun SurahReader(
         }
     }
 
-    val dialogColors = AlertDialogDefaults.colors(
-        containerColor = Color(0xFFFAF6ED),
-        titleContentColor = Color(0xFF2C1D11),
-        textContentColor = Color(0xFF1A1A1A)
-    )
-
     val pageRefs = pages.getOrNull(pagerState.currentPage).orEmpty()
     val firstRef = pageRefs.firstOrNull()
     val pageSurahName = firstRef?.let { ref ->
@@ -1039,7 +1033,10 @@ fun SurahReader(
             AlertDialog(
                 onDismissRequest = { showIndex = false },
                 shape = RoundedCornerShape(20.dp),
-                colors = dialogColors,
+                containerColor = Color(0xFFFAF6ED),
+                titleContentColor = Color(0xFF2C1D11),
+                textContentColor = Color(0xFF1A1A1A),
+                iconContentColor = Color(0xFF2C1D11),
                 title = { Text("فهرس السور", fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
@@ -1080,7 +1077,10 @@ fun SurahReader(
             AlertDialog(
                 onDismissRequest = { showJuzIndex = false },
                 shape = RoundedCornerShape(20.dp),
-                colors = dialogColors,
+                containerColor = Color(0xFFFAF6ED),
+                titleContentColor = Color(0xFF2C1D11),
+                textContentColor = Color(0xFF1A1A1A),
+                iconContentColor = Color(0xFF2C1D11),
                 title = { Text("الانتقال إلى الجزء", fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
@@ -1122,7 +1122,10 @@ fun SurahReader(
             AlertDialog(
                 onDismissRequest = { showSearch = false },
                 shape = RoundedCornerShape(20.dp),
-                colors = dialogColors,
+                containerColor = Color(0xFFFAF6ED),
+                titleContentColor = Color(0xFF2C1D11),
+                textContentColor = Color(0xFF1A1A1A),
+                iconContentColor = Color(0xFF2C1D11),
                 title = { Text("البحث في القرآن", fontWeight = FontWeight.Bold) },
                 text = {
                     Column {
@@ -1163,7 +1166,12 @@ fun SurahReader(
                         }
                     }
                 },
-                confirmButton = { TextButton(onClick = { showSearch = false }) { Text("إغلاق") } }
+                confirmButton = {
+                    TextButton(
+                        onClick = { showSearch = false },
+                        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF2C1D11))
+                    ) { Text("إغلاق", fontWeight = FontWeight.Bold) }
+                }
             )
         }
     }
