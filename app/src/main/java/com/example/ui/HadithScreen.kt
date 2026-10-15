@@ -89,14 +89,21 @@ fun HadithScreen(
     }
 
     var downloadedBook by remember { mutableStateOf<HadithData.HadithBook?>(null) }
+    var isLoadingFullBook by remember { mutableStateOf(false) }
 
     // Load the complete sourced corpus when a book is opened. Keep the bundled
     // excerpts visible as a safe fallback while downloading or when offline.
     LaunchedEffect(selectedBookId) {
         downloadedBook = null
+        isLoadingFullBook = false
         val id = selectedBookId ?: return@LaunchedEffect
         val baseBook = HadithData.getBookById(id) ?: return@LaunchedEffect
-        downloadedBook = HadithRemoteRepository.loadFullBook(context, baseBook)
+        isLoadingFullBook = true
+        try {
+            downloadedBook = HadithRemoteRepository.loadFullBook(context, baseBook)
+        } finally {
+            isLoadingFullBook = false
+        }
     }
 
     val selectedBook = remember(selectedBookId, downloadedBook) {
@@ -111,7 +118,26 @@ fun HadithScreen(
 
     if (selectedBook != null) {
         // --- Dedicated Book Screen ---
-        HadithBookDetailScreen(
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (isLoadingFullBook) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = "جارٍ تحميل النص الكامل الموثق للكتاب…",
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelMedium,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            } else if (downloadedBook == null) {
+                Text(
+                    text = "تُعرض النصوص المتاحة دون اتصال؛ اتصل بالإنترنت لتحميل بقية الكتاب وحفظه للقراءة لاحقًا.",
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                HadithBookDetailScreen(
             book = selectedBook,
             viewModel = viewModel,
             lang = lang,
@@ -124,7 +150,9 @@ fun HadithScreen(
                 saveLastRead(selectedBook, hadith)
                 Toast.makeText(context, "تم حفظ موضع القراءة في ${selectedBook.title} (حديث ${hadith.numberInBook})", Toast.LENGTH_SHORT).show()
             }
-        )
+                )
+            }
+        }
     } else {
         // --- Library Grid Screen (All 10 Books) ---
         val categories = listOf(
