@@ -3,6 +3,7 @@ package com.example.ui
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -855,6 +856,7 @@ fun SurahReader(
     lang: String,
     onBack: () -> Unit
 ) {
+    BackHandler { onBack() }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val pages = remember(context) { QuranPageMap.load(context) }
