@@ -29,6 +29,8 @@ object HadithRemoteRepository {
         "nawawi40" to "forties/nawawi40.json"
     )
 
+    fun supportsFullText(bookId: String): Boolean = sourcePaths.containsKey(bookId)
+
     suspend fun loadFullBook(context: Context, book: HadithData.HadithBook): HadithData.HadithBook? =
         withContext(Dispatchers.IO) {
             val relativePath = sourcePaths[book.id] ?: return@withContext null
