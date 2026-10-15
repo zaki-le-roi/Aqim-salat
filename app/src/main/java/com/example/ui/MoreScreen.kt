@@ -48,40 +48,20 @@ fun MoreScreen(
         ServicesGridItem("HOME", "الرئيسية", Icons.Filled.Home, Color.Unspecified),
         ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color.Unspecified),
         ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color.Unspecified),
-        ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color.Unspecified),
-        ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color.Unspecified),
         ServicesGridItem("HADITH", "الفوائد والحديث", Icons.Filled.Lightbulb, Color.Unspecified),
-        ServicesGridItem("ACCOUNTABILITY", "ورد المحاسبة", Icons.Filled.FactCheck, Color.Unspecified),
-        ServicesGridItem("DEEDS", "أعمال اليوم والليلة", Icons.Filled.TaskAlt, Color.Unspecified),
         ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color.Unspecified),
-        ServicesGridItem("TRAVEL", "وجهة المسافر", Icons.Filled.Flight, Color.Unspecified),
         ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color.Unspecified),
-        ServicesGridItem("HALAL_FOOD", "المطاعم الحلال", Icons.Filled.Restaurant, Color.Unspecified),
-        ServicesGridItem("ON_THIS_DAY", "حدث في مثل هذا اليوم", Icons.Filled.History, Color.Unspecified),
-        ServicesGridItem("RAMADAN", "رمضان", Icons.Filled.NightsStay, Color.Unspecified)
     )
 
     val quranDhikrServices = listOf(
         ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color.Unspecified),
         ServicesGridItem("FAVORITES", "صندوق العلامات", Icons.Filled.Bookmark, Color.Unspecified),
         ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color.Unspecified),
-        ServicesGridItem("DAILY_DUA", "الأدعية", Icons.Filled.AutoAwesome, Color.Unspecified),
         ServicesGridItem("NAMES", "أسماء الله الحسنى", Icons.Filled.Favorite, Color.Unspecified),
         ServicesGridItem("HADITH", "الحديث", Icons.Filled.MenuBook, Color.Unspecified),
-        ServicesGridItem("DEEDS", "طاعاتك", Icons.Filled.VolunteerActivism, Color.Unspecified),
-        ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color.Unspecified),
         ServicesGridItem("SEERAH", "السيرة", Icons.Filled.Campaign, Color.Unspecified),
         ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color.Unspecified),
         ServicesGridItem("SCHOLARS_LIBRARY", "مكتبة العلماء", Icons.Filled.LocalLibrary, Color.Unspecified)
-    )
-
-    val supportServices = listOf(
-        ServicesGridItem("FAQ", "الأسئلة الشائعة", Icons.Filled.QuestionMark, Color.Unspecified),
-        ServicesGridItem("SUPPORT", "الدعم الفني", Icons.Filled.ContactSupport, Color.Unspecified),
-        ServicesGridItem("ABOUT_US", "من نحن", Icons.Filled.Info, Color.Unspecified),
-        ServicesGridItem("SHARE_APP", "مشاركة التطبيق", Icons.Filled.Share, Color.Unspecified),
-        ServicesGridItem("OUR_APPS", "برامجنا", Icons.Filled.Apps, Color.Unspecified),
-        ServicesGridItem("PARTNERS", "شركاؤنا", Icons.Filled.Handshake, Color.Unspecified)
     )
 
     val currentLanguage = "ar"
@@ -171,15 +151,6 @@ fun MoreScreen(
                 )
             }
 
-            // Section 3: Support and Interaction Card
-            item {
-                ServicesSectionCard(
-                    title = "المساعدة والمعلومات",
-                    items = supportServices,
-                    lang = currentLanguage,
-                    onItemClick = onNavigateToFeature
-                )
-            }
 
         }
     }

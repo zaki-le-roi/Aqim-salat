@@ -72,7 +72,7 @@ fun ToolsScreen(
     lang: String,
     modifier: Modifier = Modifier
 ) {
-    var activeTool by remember { mutableStateOf<String?>(null) } // "TASBIH", "QIBLA", "ADHKAR", "NAMES", "RAMADAN"
+    var activeTool by remember { mutableStateOf<String?>(null) } // "TASBIH", "QIBLA", "ADHKAR", "NAMES"
 
     AnimatedContent(
         targetState = activeTool,
@@ -108,11 +108,9 @@ fun ToolsScreen(
                     Triple("QIBLA", Translations.get("qibla", lang), Icons.Filled.Explore),
                     Triple("ADHKAR", Translations.get("adhkar", lang), Icons.Filled.SelfImprovement),
                     Triple("NAMES", Translations.get("names_of_allah", lang), Icons.Filled.AutoAwesome),
-                    Triple("RAMADAN", Translations.get("ramadan", lang), Icons.Filled.Bedtime),
                     Triple("MOSQUES", if (lang == "ar") "المساجد القريبة" else if (lang == "tr") "Yakındaki Camiler" else "Nearby Mosques", Icons.Filled.LocationOn),
                     Triple("KHATMAH", if (lang == "ar") "خاتمة القرآن" else if (lang == "tr") "Kuran Hatim" else "Ramadan Khatmah", Icons.Filled.LibraryBooks),
                     Triple("HISN_AL_MUSLIM", if (lang == "ar") "حصن المسلم" else if (lang == "tr") "Hisnul Muslim" else "Hisn Al Muslim", Icons.Filled.Book),
-                    Triple("HALAL_FOOD", if (lang == "ar") "المطاعم الحلال" else "Nearby Halal Food", Icons.Filled.Restaurant)
                 )
 
                 items(toolItems) { (toolKey, title, icon) ->
@@ -159,11 +157,9 @@ fun ToolsScreen(
                                     "QIBLA" -> Translations.get("qibla", lang)
                                     "ADHKAR" -> Translations.get("adhkar", lang)
                                     "NAMES" -> Translations.get("names_of_allah", lang)
-                                    "RAMADAN" -> Translations.get("ramadan", lang)
                                     "MOSQUES" -> if (lang == "ar") "المساجد القريبة" else if (lang == "tr") "Yakındaki Camiler" else "Nearby Mosques"
                                     "KHATMAH" -> if (lang == "ar") "خاتمة القرآن الكريم" else if (lang == "tr") "Kuran Hatim" else "Ramadan Khatmah"
                                     "HISN_AL_MUSLIM" -> if (lang == "ar") "حصن المسلم" else if (lang == "tr") "Hisnul Muslim" else "Hisn Al Muslim"
-                                    "HALAL_FOOD" -> if (lang == "ar") "المطاعم الحلال القريبة" else "Nearby Halal Food"
                                     else -> ""
                                 },
                                 fontWeight = FontWeight.Bold,
@@ -185,11 +181,9 @@ fun ToolsScreen(
                         "QIBLA" -> QiblaTool(viewModel, lang)
                         "ADHKAR" -> AdhkarTool(viewModel, lang)
                         "NAMES" -> NamesOfAllahTool(viewModel, lang)
-                        "RAMADAN" -> RamadanTool(viewModel, lang)
                         "MOSQUES" -> MosquesTool(viewModel, lang)
                         "KHATMAH" -> KhatmahTool(viewModel, lang)
                         "HISN_AL_MUSLIM" -> HisnAlMuslimTool(viewModel, lang)
-                        "HALAL_FOOD" -> HalalFoodTool(viewModel, lang)
                     }
                 }
             }
@@ -1011,166 +1005,6 @@ fun NamesOfAllahTool(viewModel: AppViewModel, lang: String) {
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ==========================================
-// 5. RAMADAN TRACKER TOOL
-// ==========================================
-@Composable
-fun RamadanTool(viewModel: AppViewModel, lang: String) {
-    val remainingDays by viewModel.ramadanDaysRemaining.collectAsState()
-    val isFasting by viewModel.isFastingToday.collectAsState()
-
-    // Charity & prayers logged
-    val context = LocalContext.current
-    val ramadanPrefs = remember { context.getSharedPreferences("ramadan_progress", android.content.Context.MODE_PRIVATE) }
-    var charityLogged by remember { mutableStateOf(ramadanPrefs.getInt("charity_logged", 0)) }
-    var qiyamLogged by remember { mutableStateOf(ramadanPrefs.getInt("qiyam_logged", 0)) }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
-        contentPadding = PaddingValues(bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Countdown Banner
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Filled.Bedtime, contentDescription = "رمضان", tint = Color(0xFFD4AF37), modifier = Modifier.size(36.dp))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = Translations.get("ramadan_countdown", lang),
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                    Text(
-                        text = "$remainingDays ${Translations.get("days", lang)}",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD4AF37)
-                    )
-                }
-            }
-        }
-
-        // Interactive Fasting Logger Checkbox
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewModel.toggleFastingToday() }
-                        .padding(20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = Translations.get("fasting_tracker", lang),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = Translations.get("fast_today", lang),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
-
-                    Switch(
-                        checked = isFasting,
-                        onCheckedChange = { viewModel.toggleFastingToday() },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFD4AF37), checkedTrackColor = MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.testTag("fasting_switch")
-                    )
-                }
-            }
-        }
-
-        // Qiyam and Charity loggers (interactive, real statistics)
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Charity Card
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Filled.VolunteerActivism, contentDescription = "الصدقة", tint = Color(0xFFD4AF37))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(if (lang == "ar") "الصدقات المسجلة" else "Sadaqah Logged", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                        Text(if (lang == "ar") "$charityLogged مرة" else "$charityLogged Times", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = {
-                                charityLogged++
-                                ramadanPrefs.edit().putInt("charity_logged", charityLogged).apply()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.testTag("log_charity_button")
-                        ) {
-                            Text(if (lang == "ar") "+ تسجيل" else "+ Log")
-                        }
-                    }
-                }
-
-                // Qiyam (Night prayers) Card
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Filled.MenuBook, contentDescription = "قيام الليل", tint = Color(0xFFD4AF37))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(if (lang == "ar") "قيام الليل / التراويح" else "Qiyam / Tarawih", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
-                        Text(if (lang == "ar") "$qiyamLogged جلسة" else "$qiyamLogged Sessions", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = {
-                                qiyamLogged++
-                                ramadanPrefs.edit().putInt("qiyam_logged", qiyamLogged).apply()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.testTag("log_qiyam_button")
-                        ) {
-                            Text("+ تسجيل")
-                        }
                     }
                 }
             }

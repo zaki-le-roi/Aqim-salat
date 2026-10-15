@@ -23,49 +23,6 @@ import java.util.Date
 
 
 
-@Composable
-fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boolean = false) {
-    val items = remember(lang) { if (lang == "ar") listOf("الفجر", "الظهر", "العصر", "المغرب", "العشاء", "قراءة القرآن", "أذكار اليوم") else listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha", "Quran reading", "Daily adhkar") }
-    val context = LocalContext.current
-    val prefs = remember { context.getSharedPreferences("daily_accountability", android.content.Context.MODE_PRIVATE) }
-    val dayKey = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
-    val checked = remember(dayKey, lang, challenge) {
-        mutableStateMapOf<String, Boolean>().apply {
-            items.forEach { item ->
-                if (prefs.getBoolean("${if (challenge) "challenge" else "accountability"}_${dayKey}_${item}", false)) {
-                    this[item] = true
-                }
-            }
-        }
-    }
-    val done = items.count { checked[it] == true }
-
-    SimpleExtraScaffold(if (challenge) "تحدي الطاعات" else "ورد المحاسبة", onBack) {
-        Text(if (lang == "ar") { if (challenge) "سجّل إنجازك اليومي وحافظ على الاستمرارية." else "راجع أعمال يومك وسجّل ما أتممته." } else { if (challenge) "Track your daily progress and keep your streak." else "Review your daily deeds and record what you completed." }, fontSize = 14.sp)
-        Spacer(Modifier.height(10.dp))
-        LinearProgressIndicator(progress = { done.toFloat() / items.size }, modifier = Modifier.fillMaxWidth())
-        Text("$done / ${items.size}", modifier = Modifier.padding(vertical = 8.dp), fontWeight = FontWeight.Bold)
-        items.forEach { item ->
-            Card(Modifier.fillMaxWidth().padding(vertical = 4.dp), shape = RoundedCornerShape(12.dp)) {
-                Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = checked[item] == true,
-                        onCheckedChange = { value ->
-                            checked[item] = value
-                            prefs.edit().putBoolean(
-                                "${if (challenge) "challenge" else "accountability"}_${dayKey}_${item}",
-                                value
-                            ).apply()
-                        }
-                    )
-                    Text(item, Modifier.weight(1f), fontSize = 15.sp)
-                    if (checked[item] == true) Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF2E7D32))
-                }
-            }
-        }
-    }
-}
-
 data class WorldCity(val nameAr: String, val nameEn: String, val lat: Double, val lon: Double, val timeZoneId: String)
 
 @OptIn(ExperimentalMaterial3Api::class)

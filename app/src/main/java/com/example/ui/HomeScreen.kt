@@ -666,58 +666,7 @@ fun HomeScreen(
 
 
 
-        // --- 8. "DEED OF DAY & NIGHT" GRADIENT CARD ---
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFF26765A), Color(0xFF0A3E2F))
-                            )
-                        )
-                        .clickable { onNavigateToFeature("DAILY_DUA") }
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = if (lang == "ar") "عمل اليوم والليلة" else "Deed of Day & Night",
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = if (lang == "ar") "نرجو أن نكون خير معين لك في طريقك إلى الله" else "We hope to be your best helper on your path",
-                                color = Color.White.copy(alpha = 0.85f),
-                                fontSize = 11.sp
-                            )
-                        }
 
-                        Icon(
-                            imageVector = Icons.Filled.WbTwilight,
-                            contentDescription = "تبديل الليل والنهار",
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(34.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 // Helper Composable for the circular grid items
 @Composable

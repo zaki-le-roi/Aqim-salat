@@ -184,7 +184,7 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = null
             }
-            "TASBIH", "NAMES", "RAMADAN", "KHATMAH", "HISN_AL_MUSLIM", "TRAVEL", "HALAL_FOOD" -> {
+            "TASBIH", "NAMES", "KHATMAH", "HISN_AL_MUSLIM" -> {
                 activeDetailScreen = "TOOLS"
                 initialToolParam = routeKey
             }
@@ -192,9 +192,8 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = "MOSQUES"
             }
-            "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS",
-            "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "SHARE_APP", "ON_THIS_DAY", "SEERAH",
-            "ACCOUNTABILITY", "DEEDS", "SCHOLARS_LIBRARY" -> {
+            "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "SEERAH",
+            "SCHOLARS_LIBRARY" -> {
                 activeDetailScreen = routeKey
             }
         }
@@ -294,12 +293,8 @@ fun AqimSalahApp(
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
-                    "ACCOUNTABILITY" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null })
-                    "DEEDS" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null }, challenge = true)
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
-                    "DAILY_DUA" -> DailyDuaScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "ADMIN" -> AdminScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
-                    "DONATIONS" -> DonationsScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "FAVORITES" -> FavoritesScreen(
                         viewModel = viewModel, 
                         lang = lang, 
@@ -343,21 +338,6 @@ fun AqimSalahApp(
                     "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "SCHOLARS_LIBRARY" -> ScholarsLibraryScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
 
-                    "ON_THIS_DAY" -> {
-                        OnThisDayScreen(
-                            viewModel = viewModel,
-                            lang = lang,
-                            onBack = { activeDetailScreen = null }
-                        )
-                    }
-                    "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "SHARE_APP" -> {
-                        SupportScreen(
-                            viewModel = viewModel,
-                            lang = lang,
-                            initialTab = activeDetailScreen!!,
-                            onBack = { activeDetailScreen = null }
-                        )
-                    }
                     "TOOLS" -> {
                         Scaffold(
                             topBar = {
@@ -368,12 +348,9 @@ fun AqimSalahApp(
                                                 "TASBIH" -> Translations.get("tasbih", lang)
                                                 "ADHKAR" -> Translations.get("adhkar", lang)
                                                 "NAMES" -> Translations.get("names_of_allah", lang)
-                                                "RAMADAN" -> Translations.get("ramadan", lang)
                                                 "MOSQUES" -> if (lang == "ar") "المساجد القريبة" else "Nearby Mosques"
                                                 "KHATMAH" -> if (lang == "ar") "خاتمة القرآن" else "Ramadan Khatmah"
                                                 "HISN_AL_MUSLIM" -> if (lang == "ar") "حصن المسلم" else "Hisn Al Muslim"
-                                                "TRAVEL" -> if (lang == "ar") "حقيبة المسافر" else "Travel Companion"
-                                                "HALAL_FOOD" -> if (lang == "ar") "المطاعم الحلال القريبة" else "Nearby Halal Food"
                                                 else -> if (lang == "ar") "الخدمات الإسلامية" else "Islamic Services"
                                             },
                                             fontWeight = FontWeight.Bold
@@ -392,12 +369,9 @@ fun AqimSalahApp(
                                     "TASBIH" -> TasbihTool(viewModel, lang)
                                     "ADHKAR" -> AdhkarTool(viewModel, lang)
                                     "NAMES" -> NamesOfAllahTool(viewModel, lang)
-                                    "RAMADAN" -> RamadanTool(viewModel, lang)
                                     "MOSQUES" -> MosquesTool(viewModel, lang)
                                     "KHATMAH" -> KhatmahTool(viewModel, lang)
                                     "HISN_AL_MUSLIM" -> HisnAlMuslimTool(viewModel, lang)
-                                    "TRAVEL" -> TravelTool(viewModel, lang)
-                                    "HALAL_FOOD" -> HalalFoodTool(viewModel, lang)
                                     else -> ToolsScreen(viewModel = viewModel, lang = lang)
                                 }
                             }
