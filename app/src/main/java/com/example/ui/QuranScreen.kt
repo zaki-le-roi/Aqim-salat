@@ -850,6 +850,10 @@ fun SurahReader(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val bookmarks by viewModel.bookmarks.collectAsState()
+    var quranFontFamily by remember { mutableStateOf<FontFamily?>(null) }
+    LaunchedEffect(Unit) {
+        quranFontFamily = QuranFontLoader.load(context)
+    }
 
     var currentSurah by remember(surah.id) { mutableStateOf(surah) }
     var customFontSize by remember { mutableIntStateOf(24) }
@@ -1339,6 +1343,7 @@ fun SurahReader(
                                             txtColor = txtColor,
                                             goldColor = goldAccent,
                                             fontSize = customFontSize.sp,
+                                            fontFamily = quranFontFamily ?: FontFamily.Serif,
                                             onVerseClick = {
                                                 selectedAyahDetails = it
                                                 viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
@@ -1475,6 +1480,7 @@ fun SurahReader(
                                                     txtColor = txtColor,
                                                     goldColor = goldAccent,
                                                     fontSize = customFontSize.sp,
+                                                    fontFamily = quranFontFamily ?: FontFamily.Serif,
                                                     onVerseClick = {
                                                          selectedAyahDetails = it
                                                          viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
@@ -2024,6 +2030,7 @@ fun TextFlowContainer(
     txtColor: Color,
     goldColor: Color,
     fontSize: androidx.compose.ui.unit.TextUnit = 24.sp,
+    fontFamily: FontFamily = FontFamily.Serif,
     onVerseClick: (QuranApiClient.ApiAyah) -> Unit
 ) {
     val annotatedString = remember(verses) {
@@ -2058,7 +2065,7 @@ fun TextFlowContainer(
             color = txtColor,
             lineHeight = (fontSize.value * 2.0f).sp,
             textAlign = TextAlign.Justify,
-            fontFamily = FontFamily.Serif
+            fontFamily = fontFamily
         ),
         modifier = Modifier
             .fillMaxWidth()
