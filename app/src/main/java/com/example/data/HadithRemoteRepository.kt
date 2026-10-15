@@ -25,7 +25,7 @@ object HadithRemoteRepository {
         "nasai" to "the_9_books/nasai.json",
         "ibnmajah" to "the_9_books/ibnmajah.json",
         "malik" to "the_9_books/malik.json",
-        "ahmad" to "the_9_books/ahmad.json",
+        "riyad" to "other_books/riyad_assalihin.json",
         "nawawi40" to "forties/nawawi40.json"
     )
 
