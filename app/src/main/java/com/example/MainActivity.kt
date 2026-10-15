@@ -220,14 +220,14 @@ fun AqimSalahApp(
                         .testTag("floating_navigation_container")
                 ) {
                     NavigationBar(
-                        containerColor = Color(0xFF115E3F),
+                        containerColor = Color(0xFFFAF8F5),
                         tonalElevation = 0.dp,
                         windowInsets = androidx.compose.foundation.layout.WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(70.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF115E3F))
+                            .background(Color(0xFFFAF8F5))
                             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.16f), CircleShape)
                             .shadow(12.dp, CircleShape)
                             .testTag("app_navigation_bar")
@@ -272,8 +272,8 @@ fun AqimSalahApp(
                                      indicatorColor = Color(0xFF115E3F),
                                      selectedIconColor = Color(0xFFD4AF37),
                                      selectedTextColor = Color(0xFFD4AF37),
-                                     unselectedIconColor = Color(0xFFD4AF37),
-                                     unselectedTextColor = Color(0xFFD4AF37)
+                                     unselectedIconColor = Color(0xFF115E3F),
+                                     unselectedTextColor = Color(0xFF115E3F)
                                  ),
                                 modifier = Modifier.testTag("nav_item_" + route)
                             )
