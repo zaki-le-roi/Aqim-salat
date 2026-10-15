@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -249,40 +250,132 @@ fun QuranScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                // --- Islamic Rich Header ---
+                // --- Refined Quran library hero ---
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
-                        .background(Color(0xFF042B1D)) // Deep Emerald Green
-                        .padding(horizontal = 20.dp, vertical = 24.dp)
+                        .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color(0xFF0F4C3A), Color(0xFF0B382C), Color(0xFF082B22))
+                            )
+                        )
+                        .statusBarsPadding()
+                        .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 22.dp)
                 ) {
+                    // Quiet decorative motif, kept behind the readable content.
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 8.dp, end = 2.dp)
+                            .size(112.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.035f))
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 25.dp, end = 19.dp)
+                            .size(78.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, Color(0xFFD7B56D).copy(alpha = 0.22f), CircleShape)
+                    )
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.Start
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(Color.White.copy(alpha = 0.10f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.MenuBook,
+                                        contentDescription = null,
+                                        tint = Color(0xFFE3C47D),
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(11.dp))
+                                Column {
+                                    Text(
+                                        text = "المصحف الشريف",
+                                        color = Color.White,
+                                        fontSize = 19.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "رفيق تلاوتك وتدبّرك",
+                                        color = Color.White.copy(alpha = 0.70f),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(50),
+                                color = Color.White.copy(alpha = 0.10f),
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp, Color.White.copy(alpha = 0.10f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.AutoStories,
+                                        contentDescription = null,
+                                        tint = Color(0xFFE3C47D),
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("١١٤ سورة", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(23.dp))
                         Text(
-                            text = if (lang == "en") "﴿  The Holy Quran  ﴾" else "﴿  القرآن الكريم  ﴾",
-                            fontSize = 28.sp,
+                            text = "وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ",
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFD4AF37),
-                            textAlign = TextAlign.Center
+                            color = Color(0xFFE3C47D)
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(5.dp))
                         Text(
-                            text = if (lang == "en") "The Holy Quran" else "القرآن الكريم",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            text = "اختر سورة، واستأنف رحلتك مع كتاب الله",
+                            fontSize = 12.sp,
+                            color = Color.White.copy(alpha = 0.78f)
                         )
-                        Text(
-                            text = "كِتَابٌ أَنزَلْنَاهُ إِلَيْكَ مُبَارَكٌ لِّيَدَّبَّرُوا آيَاتِهِ",
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                        Spacer(modifier = Modifier.height(17.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(9.dp)
+                        ) {
+                            listOf("٣٠ جزءًا", "٦٠٤ صفحات", "قراءة دون اتصال").forEach { label ->
+                                Surface(
+                                    color = Color.White.copy(alpha = 0.075f),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        1.dp, Color.White.copy(alpha = 0.08f)
+                                    )
+                                ) {
+                                    Text(
+                                        text = label,
+                                        color = Color.White.copy(alpha = 0.88f),
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
