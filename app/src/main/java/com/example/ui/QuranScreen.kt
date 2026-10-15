@@ -849,7 +849,10 @@ private fun normalizeQuranSearch(text: String): String =
         .replace('آ', 'ا')
         .replace('ٱ', 'ا')
         .replace('ى', 'ي')
-        .replace(Regex(@Composable
+        .replace(Regex("\\s+"), " ")
+        .trim()
+
+@Composable
 fun SurahReader(
     viewModel: AppViewModel,
     surah: QuranData.Surah,
@@ -1119,10 +1122,6 @@ fun SurahReader(
     }
 }
 
-          }
-        }
-    }
-}
 
 @Composable
 private fun MushafBottomControl(
