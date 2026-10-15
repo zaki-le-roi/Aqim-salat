@@ -88,8 +88,21 @@ fun HadithScreen(
         lastBookTitle = book.title
     }
 
-    val selectedBook = remember(selectedBookId) {
-        selectedBookId?.let { HadithData.getBookById(it) }
+    var downloadedBook by remember { mutableStateOf<HadithData.HadithBook?>(null) }
+
+    // Load the complete sourced corpus when a book is opened. Keep the bundled
+    // excerpts visible as a safe fallback while downloading or when offline.
+    LaunchedEffect(selectedBookId) {
+        downloadedBook = null
+        val id = selectedBookId ?: return@LaunchedEffect
+        val baseBook = HadithData.getBookById(id) ?: return@LaunchedEffect
+        downloadedBook = HadithRemoteRepository.loadFullBook(context, baseBook)
+    }
+
+    val selectedBook = remember(selectedBookId, downloadedBook) {
+        val id = selectedBookId
+        if (id == null) null
+        else downloadedBook?.takeIf { it.id == id } ?: HadithData.getBookById(id)
     }
 
     BackHandler(enabled = selectedBook != null) {
