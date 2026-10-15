@@ -1123,7 +1123,7 @@ fun SurahReader(
                         },
                         modifier = Modifier.testTag("bookmark_mushaf_page_button")
                     ) {
-                        Icon(Icons.Filled.BookmarkAdd, contentDescription = "حفظ صفحة المصحف", tint = goldAccent)
+                        Icon(Icons.Filled.BookmarkBorder, contentDescription = "حفظ صفحة المصحف", tint = goldAccent)
                     }
                     IconButton(
                         onClick = {
@@ -1410,6 +1410,7 @@ fun SurahReader(
                                             fontFamily = quranFontFamily ?: FontFamily.Serif,
                                             onVerseClick = {
                                                 selectedAyahDetails = it
+                                                currentAyahNumber = it.numberInSurah
                                                 viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
                                             }
                                         )
@@ -1648,6 +1649,7 @@ fun SurahReader(
 
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     IconButton(onClick = {
+                                                        currentAyahNumber = ayah.numberInSurah
                                                         viewModel.saveLastReadSurah(surah.id, ayah.numberInSurah, surah.name)
                                                         playRecitation(verses.indexOf(ayah), ayah.audioUrl)
                                                     }) {
