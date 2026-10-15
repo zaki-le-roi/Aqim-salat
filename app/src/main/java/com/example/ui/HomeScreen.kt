@@ -77,13 +77,8 @@ fun HomeScreen(
         // --- 1. DYNAMIC SKY HEADER WITH NEXT PRAYER COUNTDOWN ---
         item {
             val hour = liveClockTime.take(2).toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-            val skyColors = when (hour) {
-                in 5..7 -> listOf(Color(0xFF273B67), Color(0xFFDF8C68), Color(0xFFFFD6A0))
-                in 8..15 -> listOf(Color(0xFF1976A8), Color(0xFF55B6D8), Color(0xFFB6E4F2))
-                in 16..18 -> listOf(Color(0xFF49366F), Color(0xFFCE765E), Color(0xFFFFC078))
-                in 19..23, in 0..4 -> listOf(Color(0xFF101A36), Color(0xFF263B63), Color(0xFF46577A))
-                else -> listOf(Color(0xFF1976A8), Color(0xFF55B6D8), Color(0xFFB6E4F2))
-            }
+            // ألوان ثابتة متناسقة مع الهوية العاجية والخضراء والذهبية.
+            val skyColors = listOf(Color(0xFF0A3E2F), Color(0xFF0D4F3A), Color(0xFF26765A))
             val nextPrayerArabic = when (nextName.lowercase()) {
                 "fajr" -> "الفجر"
                 "dhuhr" -> "الظهر"
@@ -224,7 +219,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Filled.DateRange,
                             contentDescription = if (lang == "ar") "التقويم" else "Calendar",
-                            tint = Color(0xFF4A90E2),
+                            tint = Color(0xFFB89A52),
                             modifier = Modifier
                                 .size(20.dp)
                                 .clickable { onNavigateToFeature("CALENDAR") }
@@ -367,7 +362,7 @@ fun HomeScreen(
                             Icon(
                                 imageVector = Icons.Filled.Verified,
                                 contentDescription = null,
-                                tint = Color(0xFF0D6B4B),
+                                tint = Color(0xFF0D4F3A),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -870,7 +865,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.linearGradient(
-                                colors = listOf(Color(0xFF2E7D5B), Color(0xFF0D6B4B))
+                                colors = listOf(Color(0xFF26765A), Color(0xFF0A3E2F))
                             )
                         )
                         .clickable { onNavigateToFeature("DAILY_DUA") }
