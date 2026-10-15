@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.HadithData
+import com.example.data.HadithRemoteRepository
 
 private const val HADITH_PREFS = "hadith_reading_prefs"
 private const val KEY_LAST_BOOK = "last_read_book_id"
