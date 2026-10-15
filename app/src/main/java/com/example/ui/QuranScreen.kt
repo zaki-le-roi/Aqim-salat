@@ -840,6 +840,16 @@ fun IslamicStarBadge(number: Int, modifier: Modifier = Modifier) {
     }
 }
 
+private fun normalizeQuranSearch(text: String): String =
+    text.replace(Regex("[\\u064B-\\u065F\\u0670\\u06D6-\\u06ED]"), "")
+        .replace('أ', 'ا')
+        .replace('إ', 'ا')
+        .replace('آ', 'ا')
+        .replace('ٱ', 'ا')
+        .replace('ى', 'ي')
+        .replace(Regex("\\s+"), " ")
+        .trim()
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SurahReader(
@@ -866,6 +876,7 @@ fun SurahReader(
     var savedMushafPage by remember {
         mutableIntStateOf(context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE).getInt("saved_page", 1).coerceIn(1, 604))
     }
+    var requestedMushafPage by remember { mutableIntStateOf(0) }
     var allOfflineSurahs by remember { mutableStateOf<Map<Int, List<QuranApiClient.ApiAyah>>>(emptyMap()) }
     LaunchedEffect(Unit) {
         allOfflineSurahs = withContext(Dispatchers.IO) {
@@ -1119,6 +1130,7 @@ fun SurahReader(
                             val prefs = context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE)
                             val page = prefs.getInt("saved_page", savedMushafPage).coerceIn(1, 604)
                             savedMushafPage = page
+                            requestedMushafPage = page
                             currentSurah = QuranData.surahs.find { it.id == prefs.getInt("saved_surah", currentSurah.id) } ?: currentSurah
                             currentAyahNumber = prefs.getInt("saved_ayah", 1).coerceAtLeast(1)
                             verticalScroll = false
@@ -1468,7 +1480,16 @@ fun SurahReader(
                                 // 2. Real 604-page Madani Mushaf pagination.
                                 val initialPage = QuranPageMap.pageFor(context, currentSurah.id, currentAyahNumber).coerceIn(1, 604)
                                 val pagerState = rememberPagerState(initialPage = initialPage - 1, pageCount = { 604 })
+                                LaunchedEffect(requestedMushafPage) {
+                                    if (requestedMushafPage in 1..604) {
+                                        pagerState.animateScrollToPage(requestedMushafPage - 1)
+                                        requestedMushafPage = 0
+                                    }
+                                }
                                 LaunchedEffect(pagerState.currentPage) {
+                                    savedMushafPage = pagerState.currentPage + 1
+                                    context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE)
+                                        .edit().putInt("saved_page", savedMushafPage).apply()
                                     val pageRefs = mushafPages.getOrNull(pagerState.currentPage).orEmpty()
                                     pageRefs.firstOrNull()?.let { first ->
                                         val pageSurah = QuranData.surahs.find { it.id == first.surah }
@@ -1952,7 +1973,7 @@ fun SurahReader(
                                         quranSearchResults = withContext(Dispatchers.IO) {
                                             QuranData.surahs.flatMap { s ->
                                                 QuranOfflineData.loadSurah(context, s.id).orEmpty()
-                                                    .filter { it.arabicText.contains(query, ignoreCase = true) }
+                                                    .filter { normalizeQuranSearch(it.arabicText).contains(normalizeQuranSearch(query)) }
                                                     .take(30)
                                                     .map { Triple(s.id, it.numberInSurah, it.arabicText) }
                                             }.take(100)
