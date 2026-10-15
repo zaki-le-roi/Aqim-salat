@@ -884,7 +884,6 @@ fun SurahReader(
     }
 
     DisposableEffect(currentSurah.id, lang, retryToken) {
-        viewModel.saveLastReadSurah(currentSurah.id, 1, currentSurah.name)
         coroutineScope.launch {
             isLoading = true
             errorMsg = null
@@ -2047,7 +2046,7 @@ fun TextFlowContainer(
                 withStyle(style = SpanStyle(color = goldColor, fontWeight = FontWeight.Bold)) {
                     append(" ﴿${ayah.numberInSurah}﴾ ")
                 }
-                append("   ")
+                append(" ")
                 pop()
             }
         }
@@ -2068,8 +2067,8 @@ fun TextFlowContainer(
             fontSize = fontSize,
             fontWeight = FontWeight.Bold,
             color = txtColor,
-            lineHeight = (fontSize.value * 2.0f).sp,
-            textAlign = TextAlign.Justify,
+            lineHeight = (fontSize.value * 1.75f).sp,
+            textAlign = TextAlign.Right,
             fontFamily = fontFamily
         ),
         modifier = Modifier
