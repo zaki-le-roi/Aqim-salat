@@ -331,7 +331,7 @@ fun QuranScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.AutoStories,
+                                        imageVector = Icons.Filled.MenuBook,
                                         contentDescription = null,
                                         tint = Color(0xFFE3C47D),
                                         modifier = Modifier.size(15.dp)
@@ -475,8 +475,8 @@ fun QuranScreen(
                         },
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFD4AF37),
-                            unfocusedBorderColor = Color(0xFFE2E2E2),
+                            focusedBorderColor = Color(0xFF0F4C3A),
+                            unfocusedBorderColor = Color(0xFFD8E4DD),
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         ),
@@ -505,7 +505,7 @@ fun QuranScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) MaterialTheme.colorScheme.surface else Color.Transparent)
+                                    .background(if (isSelected) Color(0xFF0F4C3A) else Color.Transparent)
                                     .clickable { selectedTab = key }
                                     .padding(vertical = 8.dp),
                                 contentAlignment = Alignment.Center
@@ -514,7 +514,7 @@ fun QuranScreen(
                                     text = title,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 12.sp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -1035,7 +1035,7 @@ fun SurahReader(
             TopAppBar(
                 title = {
                     Column {
-                        Text(if (lang == "en") "Surah ${currentSurah.name}" else "سورة ${currentSurah.name}", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = MaterialTheme.colorScheme.primary)
+                        Text(if (lang == "en") "Surah ${currentSurah.name}" else "سورة ${currentSurah.name}", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = txtColor)
                         Text(
                             text = if (lang == "en") "Ayahs: ${currentSurah.totalAyahs} • ${if (currentSurah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan"}" else "آياتها: ${currentSurah.totalAyahs} • نزولها: ${if (currentSurah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
                             fontSize = 11.sp,
@@ -1045,7 +1045,7 @@ fun SurahReader(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }, modifier = Modifier.testTag("surah_back_button")) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = goldAccent)
                     }
                 },
                 actions = {
@@ -1058,7 +1058,7 @@ fun SurahReader(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = if (lang == "en") "Previous Surah" else "السورة السابقة",
-                            tint = if (prevSurah != null) MaterialTheme.colorScheme.primary else Color.LightGray.copy(alpha = 0.5f)
+                            tint = if (prevSurah != null) goldAccent else Color.LightGray.copy(alpha = 0.5f)
                         )
                     }
 
@@ -1071,7 +1071,7 @@ fun SurahReader(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = if (lang == "en") "Next Surah" else "السورة التالية",
-                            tint = if (nextSurah != null) MaterialTheme.colorScheme.primary else Color.LightGray.copy(alpha = 0.5f)
+                            tint = if (nextSurah != null) goldAccent else Color.LightGray.copy(alpha = 0.5f)
                         )
                     }
 
@@ -1089,7 +1089,7 @@ fun SurahReader(
                         Icon(
                             imageVector = Icons.Filled.FormatSize,
                             contentDescription = if (lang == "en") "Reading options" else "خيارات القراءة وحجم الخط",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = goldAccent
                         )
                     }
 
@@ -1105,7 +1105,12 @@ fun SurahReader(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = bgColor,
+                    titleContentColor = txtColor,
+                    navigationIconContentColor = txtColor,
+                    actionIconContentColor = goldAccent
+                )
             )
         },
         bottomBar = {
