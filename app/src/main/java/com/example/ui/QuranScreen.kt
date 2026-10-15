@@ -796,8 +796,31 @@ fun SurahReader(
                     QuranOfflineData.loadSurah(context, currentSurah.id)
                 }
                 if (offlineList != null && offlineList.size == currentSurah.totalAyahs) {
-                    // Full Quran text is bundled locally; reading does not require a network connection.
+                    // Preserve the bundled Quran text; load and cache commentary separately.
                     verses = offlineList
+                    isLoading = false
+                    val cachedTafsir = loadCachedSurah(context, currentSurah.id, lang)
+                    if (cachedTafsir != null && cachedTafsir.size == offlineList.size &&
+                        cachedTafsir.any { it.translationText.isNotBlank() }) {
+                        val byAyah = cachedTafsir.associateBy { it.numberInSurah }
+                        verses = offlineList.map { ayah ->
+                            ayah.copy(translationText = byAyah[ayah.numberInSurah]?.translationText.orEmpty())
+                        }
+                    } else {
+                        try {
+                            val fetched = QuranApiClient.fetchSurah(currentSurah.id, lang)
+                            val byAyah = fetched.associateBy { it.numberInSurah }
+                            val enriched = offlineList.map { ayah ->
+                                ayah.copy(translationText = byAyah[ayah.numberInSurah]?.translationText.orEmpty())
+                            }
+                            if (enriched.any { it.translationText.isNotBlank() }) {
+                                verses = enriched
+                                saveCachedSurah(context, currentSurah.id, lang, enriched)
+                            }
+                        } catch (_: Exception) {
+                            verses = offlineList
+                        }
+                    }
                 } else if (QuranData.localAyahs.containsKey(currentSurah.id)) {
                     val localList = QuranData.localAyahs[currentSurah.id]!!.map {
                         val paddedSurah = String.format(Locale.US, "%03d", currentSurah.id)
