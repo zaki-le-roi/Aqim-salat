@@ -21,50 +21,7 @@ import java.util.Locale
 import com.example.data.PrayerCalculator
 import java.util.Date
 
-@Composable
-fun ZakatCalculatorScreen(lang: String, onBack: () -> Unit) {
-    var cash by remember { mutableStateOf("") }
-    var gold by remember { mutableStateOf("") }
-    var silver by remember { mutableStateOf("") }
-    var trade by remember { mutableStateOf("") }
-    var debts by remember { mutableStateOf("") }
-    var nisab by remember { mutableStateOf("") }
-    fun parsedValue(s: String): Double? {
-        if (s.isBlank()) return 0.0
-        val parsed = s.trim().replace(',', '.').toDoubleOrNull() ?: return null
-        return parsed.takeIf { it.isFinite() && it >= 0.0 }
-    }
-    val enteredValues = listOf(cash, gold, silver, trade, debts, nisab)
-    val hasInvalidInput = enteredValues.any { parsedValue(it) == null }
-    fun value(s: String) = parsedValue(s) ?: 0.0
-    val net = (value(cash) + value(gold) + value(silver) + value(trade) - value(debts)).coerceAtLeast(0.0)
-    val threshold = value(nisab)
-    val zakat = if (!hasInvalidInput && threshold > 0 && net >= threshold) net * 0.025 else 0.0
 
-    SimpleExtraScaffold(if (lang == "ar") "حاسبة الزكاة" else "Zakat Calculator", onBack) {
-        Text(if (lang == "ar") "تُحسب زكاة المال وعروض التجارة بنسبة 2.5% عند بلوغ النصاب وحولان الحول. هذه الحاسبة لا تحسب زكاة الزروع أو الأنعام أو مسائل الخلاف الفقهي." else "This calculator estimates 2.5% zakat on monetary/trade wealth after nisab; it does not calculate agricultural or livestock zakat.", fontSize = 13.sp)
-        Spacer(Modifier.height(12.dp))
-        ExtraNumberField(if (lang == "ar") "النقد والمدخرات" else "Cash and savings", cash) { cash = it }
-        ExtraNumberField(if (lang == "ar") "قيمة الذهب (بالعملة)" else "Gold value (currency)", gold) { gold = it }
-        ExtraNumberField(if (lang == "ar") "قيمة الفضة (بالعملة)" else "Silver value (currency)", silver) { silver = it }
-        ExtraNumberField(if (lang == "ar") "عروض التجارة" else "Trade assets", trade) { trade = it }
-        ExtraNumberField(if (lang == "ar") "الديون المستحقة القابلة للخصم" else "Deductible debts", debts) { debts = it }
-        ExtraNumberField(if (lang == "ar") "قيمة النصاب" else "Nisab value", nisab) { nisab = it }
-        if (hasInvalidInput) {
-            Text(
-                if (lang == "ar") "تحقق من جميع القيم: استخدم أرقامًا صحيحة أو عشرية غير سالبة." else "Check all values: enter valid non-negative numbers.",
-                color = MaterialTheme.colorScheme.error,
-                fontSize = 13.sp
-            )
-        }
-        Spacer(Modifier.height(12.dp))
-        ResultCard(if (lang == "ar") "صافي المال" else "Net wealth", if (hasInvalidInput) "—" else String.format(Locale.US, "%.2f", net))
-        ResultCard(if (lang == "ar") "الزكاة المقدرة 2.5%" else "Estimated Zakat 2.5%", if (hasInvalidInput) "—" else String.format(Locale.US, "%.2f", zakat))
-        Text(if (lang == "ar") "تأكد من إدخال قيمة النصاب الحالية بالعملة نفسها، ومن تحقق شروط الوجوب الشرعية قبل إخراج الزكاة." else "Verify the current nisab in the same currency and the applicable fiqh conditions before paying zakat.", fontSize = 12.sp)
-        if (threshold <= 0) Text(if (lang == "ar") "أدخل قيمة النصاب لإظهار النتيجة." else "Enter the nisab value to calculate the result.", color = MaterialTheme.colorScheme.error)
-        else if (net < threshold) Text(if (lang == "ar") "المبلغ المدخل دون النصاب المحدد." else "The entered amount is below the selected nisab.")
-    }
-}
 
 @Composable
 fun DailyAccountabilityScreen(lang: String, onBack: () -> Unit, challenge: Boolean = false) {

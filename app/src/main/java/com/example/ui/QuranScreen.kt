@@ -22,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -332,25 +334,31 @@ fun QuranScreen(
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column {
                                         Text(
-                                            text = if (lang == "en") "Continue reading" else "مواصلة القراءة",
+                                            text = if (lang == "en") "Continue reading from last position" else "مواصلة القراءة من آخر موضع",
                                             fontSize = 11.sp,
                                             color = Color.Gray,
                                             fontWeight = FontWeight.Bold
                                         )
                                         Text(
-                                            text = if (lang == "en") "Surah ${lastRead.surahName}" else "سورة ${lastRead.surahName}",
+                                            text = if (lang == "en") "Surah ${lastRead.surahName} • Ayah ${lastRead.ayahId}" else "سورة ${lastRead.surahName} • الآية ${lastRead.ayahId}",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary
                                         )
                                     }
                                 }
-                                Icon(
-                                    imageVector = Icons.Filled.ChevronLeft,
-                                    contentDescription = null,
-                                    tint = Color(0xFFD4AF37),
-                                    modifier = Modifier.size(24.dp)
-                                )
+                                FilledTonalButton(
+                                    onClick = {
+                                        val originalSurah = QuranData.surahs.find { it.id == lastRead.surahId }
+                                        if (originalSurah != null) {
+                                            selectedSurah = originalSurah
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = Color(0xFFD4AF37).copy(alpha = 0.2f))
+                                ) {
+                                    Text(if (lang == "en") "Resume" else "استكمال القراءة", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8B6B15))
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(14.dp))
@@ -471,7 +479,103 @@ fun QuranScreen(
                         contentPadding = PaddingValues(bottom = 100.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        if (filteredSurahs.isEmpty()) {
+                        if (selectedTab == "BOOKMARKS") {
+                            val quranBookmarks = bookmarks.filter { it.type == "QURAN" }
+                            if (quranBookmarks.isEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 40.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Icon(Icons.Filled.BookmarkBorder, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(44.dp))
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                            Text(
+                                                text = if (lang == "en") "No saved bookmarks yet" else "لا توجد علامات مرجعية محفوظة بعد",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp,
+                                                color = Color.Gray
+                                            )
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                text = if (lang == "en") "Tap any verse in the reader to bookmark it" else "اضغط على أي آية داخل المصحف لحفظها في العلامات المرجعية",
+                                                fontSize = 12.sp,
+                                                color = Color.LightGray
+                                            )
+                                        }
+                                    }
+                                }
+                            } else {
+                                items(quranBookmarks, key = { it.referenceId }) { bm ->
+                                    val surahId = bm.referenceId.split(":").firstOrNull()?.toIntOrNull()
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                if (surahId != null) {
+                                                    val s = QuranData.surahs.find { it.id == surahId }
+                                                    if (s != null) selectedSurah = s
+                                                }
+                                            },
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                        border = androidx.compose.foundation.BorderStroke(0.6.dp, Color(0xFFD4AF37).copy(alpha = 0.4f))
+                                    ) {
+                                        Column(modifier = Modifier.padding(14.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = bm.title,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 14.sp,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                                IconButton(
+                                                    onClick = {
+                                                        viewModel.toggleBookmark(
+                                                            type = bm.type,
+                                                            referenceId = bm.referenceId,
+                                                            title = bm.title,
+                                                            subtitle = bm.subtitle,
+                                                            arabicText = bm.arabicText,
+                                                            translationText = bm.translationText
+                                                        )
+                                                    }
+                                                ) {
+                                                    Icon(Icons.Filled.Bookmark, contentDescription = "حذف العلامة", tint = Color(0xFFD4AF37))
+                                                }
+                                            }
+                                            if (bm.arabicText.isNotBlank()) {
+                                                Spacer(modifier = Modifier.height(6.dp))
+                                                Text(
+                                                    text = bm.arabicText,
+                                                    fontSize = 17.sp,
+                                                    fontFamily = FontFamily.Serif,
+                                                    fontWeight = FontWeight.Bold,
+                                                    textAlign = TextAlign.Right,
+                                                    modifier = Modifier.fillMaxWidth()
+                                                )
+                                            }
+                                            if (bm.translationText.isNotBlank()) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = bm.translationText,
+                                                    fontSize = 12.sp,
+                                                    color = Color.Gray,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (filteredSurahs.isEmpty()) {
                             item {
                                 Box(
                                     modifier = Modifier
@@ -654,6 +758,9 @@ fun SurahReader(
     val coroutineScope = rememberCoroutineScope()
     val bookmarks by viewModel.bookmarks.collectAsState()
 
+    var currentSurah by remember(surah.id) { mutableStateOf(surah) }
+    var customFontSize by remember { mutableIntStateOf(24) }
+
     // Configuration Settings
     var isMushafMode by remember { mutableStateOf(true) }
     var verticalScroll by remember { mutableStateOf(true) }
@@ -679,20 +786,21 @@ fun SurahReader(
         currentlyPlayingIndex = -1
     }
 
-    DisposableEffect(surah.id, lang, retryToken) {
+    DisposableEffect(currentSurah.id, lang, retryToken) {
+        viewModel.saveLastReadSurah(currentSurah.id, 1, currentSurah.name)
         coroutineScope.launch {
             isLoading = true
             errorMsg = null
             try {
                 val offlineList = withContext(Dispatchers.IO) {
-                    QuranOfflineData.loadSurah(context, surah.id)
+                    QuranOfflineData.loadSurah(context, currentSurah.id)
                 }
-                if (offlineList != null && offlineList.size == surah.totalAyahs) {
+                if (offlineList != null && offlineList.size == currentSurah.totalAyahs) {
                     // Full Quran text is bundled locally; reading does not require a network connection.
                     verses = offlineList
-                } else if (QuranData.localAyahs.containsKey(surah.id)) {
-                    val localList = QuranData.localAyahs[surah.id]!!.map {
-                        val paddedSurah = String.format(Locale.US, "%03d", surah.id)
+                } else if (QuranData.localAyahs.containsKey(currentSurah.id)) {
+                    val localList = QuranData.localAyahs[currentSurah.id]!!.map {
+                        val paddedSurah = String.format(Locale.US, "%03d", currentSurah.id)
                         val paddedAyah = String.format(Locale.US, "%03d", it.number)
                         QuranApiClient.ApiAyah(
                             numberInSurah = it.number,
@@ -703,13 +811,13 @@ fun SurahReader(
                     }
                     verses = localList
                 } else {
-                    val cached = loadCachedSurah(context, surah.id, lang)
+                    val cached = loadCachedSurah(context, currentSurah.id, lang)
                     if (cached != null) {
                         verses = cached
                     } else {
-                        val apiResult = QuranApiClient.fetchSurah(surah.id, lang)
+                        val apiResult = QuranApiClient.fetchSurah(currentSurah.id, lang)
                         verses = apiResult
-                        saveCachedSurah(context, surah.id, lang, apiResult)
+                        saveCachedSurah(context, currentSurah.id, lang, apiResult)
                     }
                 }
             } catch (_: Exception) {
@@ -798,14 +906,18 @@ fun SurahReader(
         else -> Color(0xFFC5A059)
     }
 
+    val currentIdx = QuranData.surahs.indexOfFirst { it.id == currentSurah.id }.coerceAtLeast(0)
+    val prevSurah = if (currentIdx > 0) QuranData.surahs[currentIdx - 1] else null
+    val nextSurah = if (currentIdx < QuranData.surahs.size - 1) QuranData.surahs[currentIdx + 1] else null
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text(if (lang == "en") "Surah ${surah.name}" else "سورة ${surah.name}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                        Text(if (lang == "en") "Surah ${currentSurah.name}" else "سورة ${currentSurah.name}", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = MaterialTheme.colorScheme.primary)
                         Text(
-                            text = if (lang == "en") "Ayahs: ${surah.totalAyahs} • ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan"}" else "آياتها: ${surah.totalAyahs} • نزولها: ${if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
+                            text = if (lang == "en") "Ayahs: ${currentSurah.totalAyahs} • ${if (currentSurah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan"}" else "آياتها: ${currentSurah.totalAyahs} • نزولها: ${if (currentSurah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية"}",
                             fontSize = 11.sp,
                             color = Color.Gray
                         )
@@ -813,24 +925,50 @@ fun SurahReader(
                 },
                 navigationIcon = {
                     IconButton(onClick = { onBack() }, modifier = Modifier.testTag("surah_back_button")) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (lang == "en") "Back" else "رجوع", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 actions = {
+                    // Navigation to Previous Surah
+                    IconButton(
+                        onClick = { prevSurah?.let { currentSurah = it; releaseAudio() } },
+                        enabled = prevSurah != null,
+                        modifier = Modifier.testTag("top_prev_surah_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = if (lang == "en") "Previous Surah" else "السورة السابقة",
+                            tint = if (prevSurah != null) MaterialTheme.colorScheme.primary else Color.LightGray.copy(alpha = 0.5f)
+                        )
+                    }
+
+                    // Navigation to Next Surah
+                    IconButton(
+                        onClick = { nextSurah?.let { currentSurah = it; releaseAudio() } },
+                        enabled = nextSurah != null,
+                        modifier = Modifier.testTag("top_next_surah_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = if (lang == "en") "Next Surah" else "السورة التالية",
+                            tint = if (nextSurah != null) MaterialTheme.colorScheme.primary else Color.LightGray.copy(alpha = 0.5f)
+                        )
+                    }
+
                     if (currentlyPlayingIndex != -1) {
                         IconButton(onClick = { releaseAudio() }) {
                             Icon(Icons.Filled.Stop, contentDescription = if (lang == "en") "Stop" else "إيقاف", tint = MaterialTheme.colorScheme.error)
                         }
                     }
 
-                    // Reading Options Sheet toggle
+                    // Reading Options Sheet toggle (Font Size, Theme, Layout)
                     IconButton(
                         onClick = { showReadingOptionsSheet = true },
                         modifier = Modifier.testTag("open_reading_options_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = if (lang == "en") "Reading options" else "خيارات القراءة",
+                            imageVector = Icons.Filled.FormatSize,
+                            contentDescription = if (lang == "en") "Reading options" else "خيارات القراءة وحجم الخط",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -849,6 +987,84 @@ fun SurahReader(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
+        },
+        bottomBar = {
+            if (currentlyPlayingIndex != -1 && verses.isNotEmpty()) {
+                val currAyah = verses.getOrNull(currentlyPlayingIndex)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 8.dp,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD4AF37).copy(alpha = 0.4f))
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = if (lang == "en") "Surah ${currentSurah.name} • Ayah ${currAyah?.numberInSurah ?: (currentlyPlayingIndex + 1)}" else "تلاوة سورة ${currentSurah.name} • الآية ${currAyah?.numberInSurah ?: (currentlyPlayingIndex + 1)} من ${verses.size}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFD4AF37)
+                                )
+                                Text(
+                                    text = "القارئ: مشاري راشد العفاسي (حفص عن عاصم)",
+                                    fontSize = 11.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                            IconButton(onClick = { releaseAudio() }) {
+                                Icon(Icons.Filled.Close, contentDescription = "إيقاف", tint = Color.Gray)
+                            }
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    if (currentlyPlayingIndex > 0) {
+                                        playRecitation(currentlyPlayingIndex - 1, verses[currentlyPlayingIndex - 1].audioUrl)
+                                    }
+                                },
+                                enabled = currentlyPlayingIndex > 0
+                            ) {
+                                Icon(Icons.Filled.SkipPrevious, contentDescription = "الآية السابقة", tint = if (currentlyPlayingIndex > 0) MaterialTheme.colorScheme.primary else Color.LightGray)
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            FilledIconButton(
+                                onClick = {
+                                    activeAudioPlayer?.let { player ->
+                                        if (player.isPlaying) player.pause() else player.start()
+                                    }
+                                },
+                                colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Icon(
+                                    imageVector = if (activeAudioPlayer?.isPlaying == true) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                    contentDescription = "تشغيل/إيقاف مؤقت",
+                                    tint = Color.White
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            IconButton(
+                                onClick = {
+                                    if (currentlyPlayingIndex + 1 < verses.size) {
+                                        playRecitation(currentlyPlayingIndex + 1, verses[currentlyPlayingIndex + 1].audioUrl)
+                                    }
+                                },
+                                enabled = currentlyPlayingIndex + 1 < verses.size
+                            ) {
+                                Icon(Icons.Filled.SkipNext, contentDescription = "الآية التالية", tint = if (currentlyPlayingIndex + 1 < verses.size) MaterialTheme.colorScheme.primary else Color.LightGray)
+                            }
+                        }
+                    }
+                }
+            }
         }
     ) { innerPadding ->
         CompositionLocalProvider(LocalLayoutDirection provides if (lang == "en") LayoutDirection.Ltr else LayoutDirection.Rtl) {
@@ -1006,10 +1222,11 @@ fun SurahReader(
                                             verses = verses,
                                             txtColor = txtColor,
                                             goldColor = goldAccent,
+                                            fontSize = customFontSize.sp,
                                             onVerseClick = {
-                                                         selectedAyahDetails = it
-                                                         viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
-                                                     }
+                                                selectedAyahDetails = it
+                                                viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
+                                            }
                                         )
                                     }
 
@@ -1039,6 +1256,39 @@ fun SurahReader(
                                                 color = goldAccent
                                             )
                                         }
+                                        Spacer(modifier = Modifier.height(20.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            if (prevSurah != null) {
+                                                OutlinedButton(
+                                                    onClick = { currentSurah = prevSurah; releaseAudio() },
+                                                    shape = RoundedCornerShape(12.dp),
+                                                    border = androidx.compose.foundation.BorderStroke(1.dp, goldAccent)
+                                                ) {
+                                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = goldAccent)
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Text(if (lang == "en") "Prev: ${prevSurah.name}" else "السابقة: سورة ${prevSurah.name}", color = goldAccent, fontSize = 12.sp)
+                                                }
+                                            } else {
+                                                Spacer(modifier = Modifier.weight(1f))
+                                            }
+
+                                            if (nextSurah != null) {
+                                                Button(
+                                                    onClick = { currentSurah = nextSurah; releaseAudio() },
+                                                    shape = RoundedCornerShape(12.dp),
+                                                    colors = ButtonDefaults.buttonColors(containerColor = goldAccent)
+                                                ) {
+                                                    Text(if (lang == "en") "Next: ${nextSurah.name}" else "التالية: سورة ${nextSurah.name}", color = Color.White, fontSize = 12.sp)
+                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color.White)
+                                                }
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(24.dp))
                                     }
                                 }
                             } else {
@@ -1108,10 +1358,11 @@ fun SurahReader(
                                                     verses = pageVerses,
                                                     txtColor = txtColor,
                                                     goldColor = goldAccent,
+                                                    fontSize = customFontSize.sp,
                                                     onVerseClick = {
                                                          selectedAyahDetails = it
                                                          viewModel.saveLastReadSurah(surah.id, it.numberInSurah, surah.name)
-                                                     }
+                                                    }
                                                 )
                                             }
 
@@ -1234,12 +1485,12 @@ fun SurahReader(
 
                                             Text(
                                                 text = ayah.arabicText,
-                                                fontSize = 26.sp,
+                                                fontSize = customFontSize.sp,
                                                 fontFamily = quranFontFamily ?: FontFamily.Serif,
                                                 color = MaterialTheme.colorScheme.primary,
                                                 textAlign = TextAlign.Right,
                                                 modifier = Modifier.fillMaxWidth(),
-                                                lineHeight = 48.sp,
+                                                lineHeight = (customFontSize * 1.8f).sp,
                                                 fontWeight = FontWeight.Bold
                                             )
 
@@ -1249,7 +1500,7 @@ fun SurahReader(
 
                                             if (ayah.translationText.isNotBlank()) {
                                                 Text(
-                                                    text = if (lang == "ar") "التفسير الميسر:" else "Tafsir / meaning:",
+                                                    text = if (lang == "ar") "التفسير الميسر (مجمع الملك فهد):" else "Tafsir al-Muyassar:",
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = goldAccent
@@ -1265,6 +1516,42 @@ fun SurahReader(
                                             }
                                         }
                                     }
+                                }
+
+                                item {
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        if (prevSurah != null) {
+                                            OutlinedButton(
+                                                onClick = { currentSurah = prevSurah; releaseAudio() },
+                                                shape = RoundedCornerShape(12.dp),
+                                                border = androidx.compose.foundation.BorderStroke(1.dp, goldAccent)
+                                            ) {
+                                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = goldAccent)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(if (lang == "en") "Prev: ${prevSurah.name}" else "السابقة: سورة ${prevSurah.name}", color = goldAccent, fontSize = 12.sp)
+                                            }
+                                        } else {
+                                            Spacer(modifier = Modifier.weight(1f))
+                                        }
+
+                                        if (nextSurah != null) {
+                                            Button(
+                                                onClick = { currentSurah = nextSurah; releaseAudio() },
+                                                shape = RoundedCornerShape(12.dp),
+                                                colors = ButtonDefaults.buttonColors(containerColor = goldAccent)
+                                            ) {
+                                                Text(if (lang == "en") "Next: ${nextSurah.name}" else "التالية: سورة ${nextSurah.name}", color = Color.White, fontSize = 12.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color.White)
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(28.dp))
                                 }
                             }
                         }
@@ -1405,6 +1692,60 @@ fun SurahReader(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(label, fontSize = 11.sp, color = Color.Gray)
                         }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = if (lang == "en") "Font Size: ${customFontSize}sp" else "حجم خط المصحف الشريف: ${customFontSize} نقطة",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("أصغر", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Slider(
+                        value = customFontSize.toFloat(),
+                        onValueChange = { customFontSize = it.toInt() },
+                        valueRange = 18f..42f,
+                        steps = 11,
+                        modifier = Modifier.weight(1f),
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color(0xFFD4AF37),
+                            activeTrackColor = Color(0xFFD4AF37)
+                        )
+                    )
+                    Text("أكبر", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD4AF37))
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFD4AF37).copy(alpha = 0.08f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = if (lang == "en") "Source: Al-Tafsir Al-Muyassar (King Fahd Complex for Printing the Holy Quran)" else "المصدر المعتمد: التفسير الميسر الصادر عن مجمع الملك فهد لطباعة المصحف الشريف بالمدينة المنورة",
+                            fontSize = 12.sp,
+                            color = Color(0xFF7A6014),
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
 
@@ -1566,6 +1907,7 @@ fun TextFlowContainer(
     verses: List<QuranApiClient.ApiAyah>,
     txtColor: Color,
     goldColor: Color,
+    fontSize: androidx.compose.ui.unit.TextUnit = 24.sp,
     onVerseClick: (QuranApiClient.ApiAyah) -> Unit
 ) {
     val annotatedString = remember(verses) {
@@ -1595,10 +1937,10 @@ fun TextFlowContainer(
                 }
         },
         style = LocalTextStyle.current.copy(
-            fontSize = 21.sp,
+            fontSize = fontSize,
             fontWeight = FontWeight.Bold,
             color = txtColor,
-            lineHeight = 44.sp,
+            lineHeight = (fontSize.value * 2.0f).sp,
             textAlign = TextAlign.Justify,
             fontFamily = FontFamily.Serif
         ),

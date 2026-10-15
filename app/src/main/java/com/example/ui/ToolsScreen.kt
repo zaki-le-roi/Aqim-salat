@@ -200,220 +200,371 @@ fun ToolsScreen(
 // ==========================================
 // 1. TASBIH TOOL (Digital Tasbih Counter)
 // ==========================================
+// ==========================================
+// 1. TASBIH TOOL (Digital Finger Ring Tally Counter)
+// ==========================================
 @Composable
 fun TasbihTool(viewModel: AppViewModel, lang: String) {
     val counters by viewModel.tasbihCounters.collectAsState()
     var selectedCounter by remember { mutableStateOf<TasbihCounter?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var isBacklightOn by remember { mutableStateOf(false) }
+    var isPressed by remember { mutableStateOf(false) }
 
     var newName by remember { mutableStateOf("") }
     var newGoalStr by remember { mutableStateOf("33") }
 
     LaunchedEffect(counters) {
-        if (selectedCounter == null && counters.isNotEmpty()) {
-            selectedCounter = counters.first()
+        if (counters.isNotEmpty()) {
+            if (selectedCounter == null || counters.none { it.id == selectedCounter?.id }) {
+                selectedCounter = counters.first()
+            } else {
+                selectedCounter = counters.find { it.id == selectedCounter?.id }
+            }
         }
+    }
+
+    val propheticPresets = remember {
+        listOf(
+            "سُبْحَانَ اللَّهِ" to 33,
+            "الْحَمْدُ لِلَّهِ" to 33,
+            "اللَّهُ أَكْبَرُ" to 34,
+            "لَا إِلَهَ إِلَّا اللَّهُ" to 100,
+            "أَسْتَغْفِرُ اللَّهَ" to 100,
+            "الصَّلَاةُ عَلَى النَّبِيِّ" to 100,
+            "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ" to 100
+        )
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Selector row
+        // Quick Dhikr Preset Pills Row
+        Text(
+            text = "اختر صيغة الذكر:",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+        )
+
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(
-                onClick = { showAddDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.testTag("add_tasbih_button")
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "إضافة")
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(Translations.get("add_counter", lang))
+            propheticPresets.forEach { (dhikrName, goal) ->
+                val isSelected = selectedCounter?.name?.trim() == dhikrName.trim()
+                FilterChip(
+                    selected = isSelected,
+                    onClick = {
+                        val existing = counters.find { it.name.trim() == dhikrName.trim() }
+                        if (existing != null) {
+                            selectedCounter = existing
+                        } else {
+                            viewModel.createTasbih(dhikrName, goal)
+                        }
+                    },
+                    label = { Text(dhikrName, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF0F4C3A),
+                        selectedLabelColor = Color.White
+                    )
+                )
             }
+            IconButton(
+                onClick = { showAddDialog = true },
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .testTag("tasbih_custom_add_chip")
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "إضافة ذكر مخصص", tint = MaterialTheme.colorScheme.primary)
+            }
+        }
 
-            if (counters.isNotEmpty()) {
-                var expanded by remember { mutableStateOf(false) }
-                Box {
-                    Button(
-                        onClick = { expanded = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(
-                            text = selectedCounter?.name ?: "Select",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Icon(Icons.Filled.ArrowDropDown, contentDescription = "اختيار", tint = MaterialTheme.colorScheme.onSurface)
-                    }
+        Spacer(modifier = Modifier.height(14.dp))
 
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        counters.forEach { c ->
-                            DropdownMenuItem(
-                                text = { Text(c.name) },
-                                onClick = {
-                                    selectedCounter = c
-                                    expanded = false
-                                }
+        if (selectedCounter != null) {
+            val counter = selectedCounter!!
+            val laps = if (counter.goal > 0) counter.count / counter.goal else 0
+            val formattedCount = String.format(java.util.Locale.US, "%05d", counter.count)
+
+            // --- Physical Finger Tally Counter Body Simulation ---
+            Box(
+                modifier = Modifier
+                    .width(260.dp)
+                    .height(390.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // Silicone Strap Loop Visual at Top & Bottom
+                Box(
+                    modifier = Modifier
+                        .width(44.dp)
+                        .height(380.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(Color(0xFF1E2824))
+                )
+
+                // Main Ergonomic Counter Shell (Pebble Case)
+                Card(
+                    modifier = Modifier
+                        .width(240.dp)
+                        .height(340.dp),
+                    shape = RoundedCornerShape(70.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0D3B2E)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF135341),
+                                        Color(0xFF0D3B2E),
+                                        Color(0xFF07231B)
+                                    )
+                                )
                             )
+                            .border(2.dp, Color(0xFF2E7D63).copy(alpha = 0.5f), RoundedCornerShape(70.dp))
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Digital LCD Window
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(82.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(if (isBacklightOn) Color(0xFF8EEAD3) else Color(0xFF9EAA96))
+                                .border(3.dp, Color(0xFF1A2722), RoundedCornerShape(16.dp))
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Top Micro Indicators
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "الدورات: $laps",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isBacklightOn) Color(0xFF063326) else Color(0xFF283625)
+                                    )
+                                    Text(
+                                        text = "الهدف: ${counter.goal}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isBacklightOn) Color(0xFF063326) else Color(0xFF283625)
+                                    )
+                                }
+
+                                // 5-Digit Segment Display Text
+                                Text(
+                                    text = formattedCount,
+                                    fontSize = 38.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = if (isBacklightOn) Color(0xFF03241B) else Color(0xFF1C271A),
+                                    textAlign = TextAlign.Center,
+                                    letterSpacing = 4.sp,
+                                    modifier = Modifier.fillMaxWidth().testTag("tasbih_digital_display")
+                                )
+                            }
+                        }
+
+                        // Dhikr Name Display on Device
+                        Text(
+                            text = counter.name,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFF3E7C4),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center
+                        )
+
+                        // Auxiliary Control Buttons: Undo (تراجع) & Reset (تصفير) & LED
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // UNDO Button (تراجع)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            Brush.radialGradient(
+                                                listOf(Color(0xFF4A5568), Color(0xFF2D3748))
+                                            )
+                                        )
+                                        .border(1.dp, Color(0xFF718096), CircleShape)
+                                        .clickable {
+                                            viewModel.decrementTasbih(counter)
+                                        }
+                                        .testTag("tasbih_undo_button"),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Undo,
+                                        contentDescription = "تراجع",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Text("تراجع", fontSize = 10.sp, color = Color.White.copy(alpha = 0.8f))
+                            }
+
+                            // LED Backlight Toggle
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isBacklightOn) Color(0xFF8EEAD3) else Color(0xFF2D3748))
+                                        .border(1.dp, Color(0xFF718096), CircleShape)
+                                        .clickable { isBacklightOn = !isBacklightOn }
+                                        .testTag("tasbih_led_button"),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Lightbulb,
+                                        contentDescription = "إضاءة",
+                                        tint = if (isBacklightOn) Color(0xFF063326) else Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Text("LED", fontSize = 10.sp, color = Color.White.copy(alpha = 0.8f))
+                            }
+
+                            // RESET Button (تصفير)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            Brush.radialGradient(
+                                                listOf(Color(0xFFE53E3E), Color(0xFF9B2C2C))
+                                            )
+                                        )
+                                        .border(1.dp, Color(0xFFFEB2B2), CircleShape)
+                                        .clickable {
+                                            viewModel.resetTasbih(counter)
+                                        }
+                                        .testTag("tasbih_reset_button"),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Refresh,
+                                        contentDescription = "تصفير",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Text("تصفير", fontSize = 10.sp, color = Color.White.copy(alpha = 0.8f))
+                            }
+                        }
+
+                        // Large Main Count Press Button (زر العد الكبير)
+                        Box(
+                            modifier = Modifier
+                                .size(96.dp)
+                                .graphicsLayer {
+                                    scaleX = if (isPressed) 0.94f else 1.0f
+                                    scaleY = if (isPressed) 0.94f else 1.0f
+                                }
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFFD4AF37),
+                                            Color(0xFFAA8014),
+                                            Color(0xFF735406)
+                                        )
+                                    )
+                                )
+                                .border(3.dp, Color(0xFFF9E79F), CircleShape)
+                                .clickable {
+                                    isPressed = true
+                                    viewModel.incrementTasbih(counter)
+                                }
+                                .testTag("tasbih_click_zone"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LaunchedEffect(isPressed) {
+                                if (isPressed) {
+                                    kotlinx.coroutines.delay(100)
+                                    isPressed = false
+                                }
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Filled.TouchApp,
+                                    contentDescription = "تسبيح",
+                                    tint = Color(0xFF1E2824),
+                                    modifier = Modifier.size(34.dp)
+                                )
+                                Text(
+                                    text = "اضغط",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF1E2824)
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        if (selectedCounter != null) {
-            val counter = selectedCounter!!
-            val progress = remember(counter.count, counter.goal) {
-                if (counter.goal > 0) counter.count.toFloat() / counter.goal else 0f
-            }
-
-            // Big Interactive Counter Circle (Glassmorphic Ripple Button)
-            Box(
-                modifier = Modifier
-                    .size(240.dp)
-                    .clip(CircleShape)
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.02f)
-                            )
-                        )
-                    )
-                    .border(2.dp, Color(0xFFD4AF37).copy(alpha = 0.3f), CircleShape)
-                    .clickable {
-                        viewModel.incrementTasbih(counter)
-                        selectedCounter = counters.find { it.id == counter.id }?.copy(count = counter.count + 1)
-                    }
-                    .testTag("tasbih_click_zone"),
-                contentAlignment = Alignment.Center
-            ) {
-                // Circular progress arc
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawArc(
-                        color = Color(0xFFD4AF37),
-                        startAngle = -90f,
-                        sweepAngle = progress * 360f,
-                        useCenter = false,
-                        style = Stroke(width = 6.dp.toPx())
-                    )
-                }
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = counter.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = counter.count.toString(),
-                        fontSize = 54.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${Translations.get("tasbih_goal", lang)}: ${counter.goal}",
-                        fontSize = 14.sp,
-                        color = Color(0xFFD4AF37),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Action Buttons Row (Reset / Delete)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    onClick = {
-                        viewModel.resetTasbih(counter)
-                        selectedCounter = counter.copy(count = 0)
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.testTag("tasbih_reset_button")
-                ) {
-                    Icon(Icons.Filled.Refresh, contentDescription = "إعادة الضبط", tint = MaterialTheme.colorScheme.onSurface)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(Translations.get("tasbih_reset", lang), color = MaterialTheme.colorScheme.onSurface)
-                }
-
-                IconButton(
-                    onClick = {
-                        viewModel.deleteTasbih(counter)
-                        selectedCounter = null
-                    },
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
-                        .testTag("tasbih_delete_button")
-                ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
-                }
-            }
         } else {
-            // Empty State
-            Column(
-                modifier = Modifier.fillMaxHeight(0.6f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(Icons.Filled.AddCircle, contentDescription = "لا يوجد عداد", modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(if (lang == "ar") "اضغط على إضافة سبحة لبدء عداد التسبيح." else "Tap Add Counter to launch your digital Tasbih tracker.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), textAlign = TextAlign.Center)
-            }
+            // Loading or fallback state
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     }
 
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text(Translations.get("add_counter", lang)) },
+            title = { Text("إضافة ذكر أو تسبيح مخصص", fontWeight = FontWeight.Bold) },
             text = {
-                Column {
-                    TextField(
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
                         value = newName,
                         onValueChange = { newName = it },
-                        label = { Text(Translations.get("name", lang)) },
-                        modifier = Modifier.fillMaxWidth().testTag("tasbih_input_name")
+                        label = { Text("صيغة الذكر") },
+                        placeholder = { Text("مثال: لا إله إلا أنت سبحانك") },
+                        modifier = Modifier.fillMaxWidth().testTag("tasbih_input_name"),
+                        singleLine = true
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    TextField(
+                    OutlinedTextField(
                         value = newGoalStr,
                         onValueChange = { newGoalStr = it },
-                        label = { Text(Translations.get("tasbih_goal", lang)) },
-                        modifier = Modifier.fillMaxWidth().testTag("tasbih_input_goal")
+                        label = { Text("الهدف (العدد المستهدف)") },
+                        modifier = Modifier.fillMaxWidth().testTag("tasbih_input_goal"),
+                        singleLine = true
                     )
                 }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         val g = newGoalStr.toIntOrNull() ?: 33
                         if (newName.isNotBlank()) {
-                            viewModel.createTasbih(newName, g)
+                            viewModel.createTasbih(newName.trim(), g)
                             newName = ""
                             newGoalStr = "33"
                             showAddDialog = false
@@ -421,12 +572,12 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
                     },
                     modifier = Modifier.testTag("tasbih_confirm_save")
                 ) {
-                    Text(Translations.get("save", lang))
+                    Text("حفظ")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddDialog = false }) {
-                    Text(Translations.get("cancel", lang))
+                    Text("إلغاء")
                 }
             }
         )

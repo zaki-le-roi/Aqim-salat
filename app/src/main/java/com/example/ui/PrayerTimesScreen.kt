@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -583,22 +584,168 @@ fun PrayerTimesScreen(
         var customLongitude by remember { mutableStateOf("") }
         var locationError by remember { mutableStateOf("") }
         var isSearchingCity by remember { mutableStateOf(false) }
+        var citySearchFilter by remember { mutableStateOf("") }
         val locationScope = rememberCoroutineScope()
+
+        val presetCities = remember {
+            listOf(
+                Triple("مكة المكرمة", 21.4225, 39.8262),
+                Triple("المدينة المنورة", 24.4672, 39.6111),
+                Triple("القدس الشريف", 31.7683, 35.2137),
+                Triple("الرياض", 24.7136, 46.6753),
+                Triple("جدة", 21.5433, 39.1728),
+                Triple("القاهرة", 30.0444, 31.2357),
+                Triple("الإسكندرية", 31.2001, 29.9187),
+                Triple("الجزائر العاصمة", 36.7538, 3.0588),
+                Triple("وهران", 35.6987, -0.6349),
+                Triple("قسنطينة", 36.3650, 6.6147),
+                Triple("سطيف", 36.1911, 5.4137),
+                Triple("عنابة", 36.9000, 7.7667),
+                Triple("باتنة", 35.5559, 6.1741),
+                Triple("تلمسان", 34.8783, -1.3150),
+                Triple("تونس", 36.8065, 10.1815),
+                Triple("صفاقس", 34.7406, 10.7603),
+                Triple("سوسة", 35.8256, 10.6084),
+                Triple("الرباط", 34.0209, -6.8416),
+                Triple("الدار البيضاء", 33.5731, -7.5898),
+                Triple("فاس", 34.0181, -5.0078),
+                Triple("مراكش", 31.6295, -7.9811),
+                Triple("طنجة", 35.7595, -5.8340),
+                Triple("طرابلس", 32.8872, 13.1913),
+                Triple("بنغازي", 32.1167, 20.0667),
+                Triple("مصراتة", 32.3754, 15.0925),
+                Triple("الخرطوم", 15.5007, 32.5599),
+                Triple("أم درمان", 15.6445, 32.4777),
+                Triple("دمشق", 33.5138, 36.2765),
+                Triple("حلب", 36.2021, 37.1343),
+                Triple("حمص", 34.7324, 36.7137),
+                Triple("بغداد", 33.3152, 44.3661),
+                Triple("البصرة", 30.5085, 47.7804),
+                Triple("الموصل", 36.3400, 43.1300),
+                Triple("أربيل", 36.1911, 44.0091),
+                Triple("عمّان", 31.9454, 35.9284),
+                Triple("الزرقاء", 32.0728, 36.0880),
+                Triple("إربد", 32.5568, 35.8469),
+                Triple("بيروت", 33.8938, 35.5018),
+                Triple("طرابلس الشام", 34.4367, 35.8497),
+                Triple("الكويت", 29.3759, 47.9774),
+                Triple("الدوحة", 25.2854, 51.5310),
+                Triple("أبوظبي", 24.4539, 54.3773),
+                Triple("دبي", 25.2048, 55.2708),
+                Triple("الشارقة", 25.3573, 55.4033),
+                Triple("مسقط", 23.5880, 58.3829),
+                Triple("صلالة", 17.0151, 54.0924),
+                Triple("المنامة", 26.2285, 50.5860),
+                Triple("صنعاء", 15.3694, 44.1910),
+                Triple("عدن", 12.7797, 45.0367),
+                Triple("تعز", 13.5795, 44.0209),
+                Triple("إسطنبول", 41.0082, 28.9784),
+                Triple("أنقرة", 39.9334, 32.8597),
+                Triple("جاكرتا", -6.2088, 106.8456),
+                Triple("كوالالمبور", 3.1390, 101.6869)
+            )
+        }
+
+        val filteredPresetCities = remember(citySearchFilter) {
+            if (citySearchFilter.isBlank()) presetCities
+            else presetCities.filter { it.first.contains(citySearchFilter.trim()) }
+        }
 
         AlertDialog(
             onDismissRequest = { showLocationDialog = false },
             title = {
                 Text(
-                    text = if (lang == "ar") "تحديد الموقع" else if (lang == "tr") "Konum Seçimi" else "Select Location",
+                    text = if (lang == "ar") "تحديد المدينة أو الموقع" else "Select City or Location",
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Quick City Selection section
+                    item {
+                        Text(
+                            text = "اختيار مباشر من المدن الشائعة (بدون GPS):",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        OutlinedTextField(
+                            value = citySearchFilter,
+                            onValueChange = { citySearchFilter = it },
+                            placeholder = { Text("ابحث في قائمة المدن…", fontSize = 12.sp) },
+                            modifier = Modifier.fillMaxWidth().testTag("filter_preset_cities_input"),
+                            singleLine = true,
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                            trailingIcon = {
+                                if (citySearchFilter.isNotEmpty()) {
+                                    IconButton(onClick = { citySearchFilter = "" }) {
+                                        Icon(Icons.Filled.Clear, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    }
+                                }
+                            }
+                        )
+                    }
+
+                    // Horizontal / flowing quick chips of preset cities
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 140.dp)
+                        ) {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                verticalArrangement = Arrangement.spacedBy(6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(filteredPresetCities.take(20)) { city ->
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = if (locationName == city.first) Color(0xFF0F4C3A) else MaterialTheme.colorScheme.surfaceVariant,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                viewModel.setManualCity(city.first, city.second, city.third)
+                                                showLocationDialog = false
+                                            }
+                                            .testTag("city_chip_${city.first}")
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.LocationCity,
+                                                contentDescription = null,
+                                                tint = if (locationName == city.first) Color.White else MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = city.first,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = if (locationName == city.first) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Divider
+                    item {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    }
+
                     // GPS auto-detection button
                     item {
                         Button(
@@ -620,7 +767,7 @@ fun PrayerTimesScreen(
                                 Icon(Icons.Filled.MyLocation, contentDescription = if (lang == "ar") "الموقع الجغرافي" else "GPS", tint = Color.White)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = if (lang == "ar") "تحديد تلقائي عبر GPS" else if (lang == "tr") "Otomatik GPS Konumu" else "Auto Detect (GPS)",
+                                    text = if (lang == "ar") "تحديد تلقائي عبر GPS" else "Auto Detect (GPS)",
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -629,10 +776,10 @@ fun PrayerTimesScreen(
                     }
                     item {
                         Text(
-                            text = if (isTrackingLocation) "جارٍ انتظار موقع الهاتف الحقيقي… إذا لم يتغير الموقع، تحقق من تفعيل GPS." else "لا نعرض مدينة افتراضية على أنها موقعك. فعّل إذن الموقع وGPS، ثم حاول مجددًا.",
+                            text = if (isTrackingLocation) "جارٍ استقبال إحداثيات GPS من الهاتف…" else "استخدام GPS اختياري؛ يحتفظ التطبيق بموقعك المحفوظ ولا يطلب تفعيل GPS في كل مرة.",
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f),
-                            fontSize = 12.sp,
-                            lineHeight = 18.sp
+                            fontSize = 11.sp,
+                            lineHeight = 16.sp
                         )
                     }
                     item {
@@ -642,9 +789,9 @@ fun PrayerTimesScreen(
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Filled.Settings, contentDescription = null)
+                            Icon(Icons.Filled.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("فتح إعدادات الموقع في الهاتف")
+                            Text("فتح إعدادات الموقع بالهاتف", fontSize = 12.sp)
                         }
                     }
 

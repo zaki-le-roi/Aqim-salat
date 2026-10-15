@@ -48,7 +48,6 @@ fun MoreScreen(
         ServicesGridItem("HOME", "الرئيسية", Icons.Filled.Home, Color.Unspecified),
         ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color.Unspecified),
         ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color.Unspecified),
-        ServicesGridItem("ZAKAT", "حاسبة الزكاة", Icons.Filled.Percent, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "عمل اليوم والليلة", Icons.Filled.WbTwilight, Color.Unspecified),
         ServicesGridItem("DONATIONS", "بنك الصدقات", Icons.Filled.VolunteerActivism, Color.Unspecified),
         ServicesGridItem("HADITH", "الفوائد والحديث", Icons.Filled.Lightbulb, Color.Unspecified),
@@ -72,7 +71,8 @@ fun MoreScreen(
         ServicesGridItem("DEEDS", "طاعاتك", Icons.Filled.VolunteerActivism, Color.Unspecified),
         ServicesGridItem("DAILY_DUA", "الدعاء", Icons.Filled.Signpost, Color.Unspecified),
         ServicesGridItem("SEERAH", "السيرة", Icons.Filled.Campaign, Color.Unspecified),
-        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color.Unspecified)
+        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color.Unspecified),
+        ServicesGridItem("SCHOLARS_LIBRARY", "مكتبة العلماء", Icons.Filled.LocalLibrary, Color.Unspecified)
     )
 
     val supportServices = listOf(

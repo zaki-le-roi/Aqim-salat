@@ -229,8 +229,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _isFastingToday.value = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE).getBoolean(fastingKey, false)
         loadFajrRecords()
 
-        // Nearby mosques are loaded only after a real device location is acquired.
-        // This prevents the old fallback coordinates from showing unrelated mosques.
+        // Prepopulate standard prophetic tasbih counters if database is empty
+        viewModelScope.launch(Dispatchers.IO) {
+            val current = repo.allTasbihCounters.firstOrNull() ?: emptyList()
+            if (current.isEmpty()) {
+                val presets = listOf(
+                    TasbihCounter(name = "سُبْحَانَ اللَّهِ", goal = 33, count = 0, lastUpdated = System.currentTimeMillis()),
+                    TasbihCounter(name = "الْحَمْدُ لِلَّهِ", goal = 33, count = 0, lastUpdated = System.currentTimeMillis()),
+                    TasbihCounter(name = "اللَّهُ أَكْبَرُ", goal = 34, count = 0, lastUpdated = System.currentTimeMillis()),
+                    TasbihCounter(name = "لَا إِلَهَ إِلَّا اللَّهُ", goal = 100, count = 0, lastUpdated = System.currentTimeMillis()),
+                    TasbihCounter(name = "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ", goal = 100, count = 0, lastUpdated = System.currentTimeMillis()),
+                    TasbihCounter(name = "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ", goal = 100, count = 0, lastUpdated = System.currentTimeMillis()),
+                    TasbihCounter(name = "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", goal = 100, count = 0, lastUpdated = System.currentTimeMillis())
+                )
+                presets.forEach { repo.insertTasbihCounter(it) }
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -492,18 +506,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         isLocationConfigured: Boolean
     ) {
         val date = Date()
-        if (!isLocationConfigured) {
-            // لا تعرض مواقيت أو اتجاه قبلة محسوبة من إحداثيات افتراضية على أنها تخص المستخدم.
-            _prayerTimes.value = null
-            _nextPrayerName.value = ""
-            _nextPrayerTime.value = ""
-            _countdownText.value = "—"
-            _currentPrayerName.value = ""
-            _moonPhaseName.value = PrayerCalculator.getMoonPhaseName(PrayerCalculator.calculateMoonPhase(date), "ar")
-            val hijri = PrayerCalculator.getHijriDate(date, "ar")
-            _hijriDateString.value = "${hijri.day} ${hijri.monthName} ${hijri.year} هـ"
-            return
-        }
         val calendar = Calendar.getInstance()
         val zone = calendar.timeZone
         val offsetHours = zone.getOffset(date.time) / 3600000.0
@@ -750,6 +752,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     triggerHapticFeedback(long = false)
                 }
+            }
+        }
+    }
+
+    fun decrementTasbih(counter: TasbihCounter) {
+        if (counter.count <= 0) return
+        viewModelScope.launch {
+            val updated = counter.copy(
+                count = (counter.count - 1).coerceAtLeast(0),
+                lastUpdated = System.currentTimeMillis()
+            )
+            repo.updateTasbihCounter(updated)
+            if (counter.hapticEnabled) {
+                triggerHapticFeedback(long = false)
             }
         }
     }

@@ -162,12 +162,13 @@ fun AqimSalahApp(
                 selectedTab = "PRAYER_TIMES"
                 activeDetailScreen = null
             }
-            "PRAYER_STATS" -> {
-                activeDetailScreen = "PRAYER_STATS"
-            }
             "QURAN" -> {
                 selectedTab = "QURAN"
                 initialSurahIdParam = null
+                activeDetailScreen = null
+            }
+            "ADHKAR" -> {
+                selectedTab = "ADHKAR"
                 activeDetailScreen = null
             }
             "QIBLA" -> {
@@ -182,7 +183,7 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = null
             }
-            "TASBIH", "ADHKAR", "NAMES", "RAMADAN", "KHATMAH", "HISN_AL_MUSLIM", "TRAVEL", "HALAL_FOOD" -> {
+            "TASBIH", "NAMES", "RAMADAN", "KHATMAH", "HISN_AL_MUSLIM", "TRAVEL", "HALAL_FOOD" -> {
                 activeDetailScreen = "TOOLS"
                 initialToolParam = routeKey
             }
@@ -192,10 +193,18 @@ fun AqimSalahApp(
             }
             "CALENDAR", "DAILY_DUA", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "DONATIONS",
             "FAQ", "SUPPORT", "ABOUT_US", "PARTNERS", "OUR_APPS", "SHARE_APP", "ON_THIS_DAY", "SEERAH",
-            "ZAKAT", "ACCOUNTABILITY", "DEEDS" -> {
+            "ACCOUNTABILITY", "DEEDS", "SCHOLARS_LIBRARY" -> {
                 activeDetailScreen = routeKey
             }
         }
+    }
+
+    androidx.activity.compose.BackHandler(enabled = activeDetailScreen != null) {
+        activeDetailScreen = null
+    }
+
+    androidx.activity.compose.BackHandler(enabled = activeDetailScreen == null && selectedTab != "HOME") {
+        selectedTab = "HOME"
     }
 
     Scaffold(
@@ -277,8 +286,6 @@ fun AqimSalahApp(
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
-                    "PRAYER_STATS" -> PrayerStatisticsScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
-                    "ZAKAT" -> ZakatCalculatorScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "ACCOUNTABILITY" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "DEEDS" -> DailyAccountabilityScreen(lang = lang, onBack = { activeDetailScreen = null }, challenge = true)
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
@@ -326,6 +333,7 @@ fun AqimSalahApp(
                         SettingsScreen(viewModel = viewModel, lang = lang, modifier = Modifier.padding(p))
                     }
                     "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
+                    "SCHOLARS_LIBRARY" -> ScholarsLibraryScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
 
                     "ON_THIS_DAY" -> {
                         OnThisDayScreen(
