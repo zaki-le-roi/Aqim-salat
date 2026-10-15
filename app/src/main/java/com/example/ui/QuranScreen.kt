@@ -62,6 +62,8 @@ import java.util.Locale
 
 private const val QURAN_CACHE_PREFS = "quran_surah_cache"
 
+private val ArabicFontFamily = FontFamily.SansSerif
+
 private fun loadCachedSurah(context: android.content.Context, surahId: Int, lang: String): List<QuranApiClient.ApiAyah>? {
     val raw = context.getSharedPreferences(QURAN_CACHE_PREFS, android.content.Context.MODE_PRIVATE)
         .getString("${surahId}_${lang}", null) ?: return null
@@ -959,7 +961,7 @@ fun SurahReader(
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
                     .statusBarsPadding(),
-                color = Color(0xF2115E3F),
+                color = Color(0xFF115E3F),
                 shadowElevation = 3.dp
             ) {
                 Row(
@@ -1005,7 +1007,7 @@ fun SurahReader(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .navigationBarsPadding(),
-                color = Color(0xF2115E3F),
+                color = Color(0xFF115E3F),
                 shadowElevation = 5.dp
             ) {
                 Row(
@@ -1035,14 +1037,22 @@ fun SurahReader(
         }
 
         if (showIndex) {
-            AlertDialog(
+            MaterialTheme(
+                colorScheme = lightColorScheme(
+                    primary = Color(0xFF115E3F),
+                    surface = Color(0xFFFAF8F5),
+                    onSurface = Color(0xFF1A1A1A),
+                    background = Color(0xFFFAF8F5)
+                )
+            ) {
+                AlertDialog(
                 onDismissRequest = { showIndex = false },
                 shape = RoundedCornerShape(20.dp),
                 containerColor = Color(0xFFFAF8F5),
                 titleContentColor = Color(0xFF115E3F),
                 textContentColor = Color(0xFF2C1D11),
                 iconContentColor = Color(0xFF115E3F),
-                title = { Text("فهرس السور", color = Color(0xFF115E3F), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) },
+                title = { Text("فهرس السور", color = Color(0xFF115E3F), fontFamily = ArabicFontFamily, fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items(QuranData.surahs, key = { it.id }) { item ->
@@ -1062,7 +1072,8 @@ fun SurahReader(
                                     textAlign = TextAlign.Start,
                                     color = Color(0xFF2C1D11),
                                     fontFamily = FontFamily.Serif,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
                                 )
                             }
                             HorizontalDivider(color = Color(0x332C1D11), thickness = 0.7.dp)
@@ -1076,18 +1087,27 @@ fun SurahReader(
                         colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F))
                     ) { Text("إغلاق", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFF115E3F)) }
                 }
-            )
+                )
+            }
         }
 
         if (showJuzIndex) {
-            AlertDialog(
+            MaterialTheme(
+                colorScheme = lightColorScheme(
+                    primary = Color(0xFF115E3F),
+                    surface = Color(0xFFFAF8F5),
+                    onSurface = Color(0xFF1A1A1A),
+                    background = Color(0xFFFAF8F5)
+                )
+            ) {
+                AlertDialog(
                 onDismissRequest = { showJuzIndex = false },
                 shape = RoundedCornerShape(20.dp),
                 containerColor = Color(0xFFFAF8F5),
                 titleContentColor = Color(0xFF115E3F),
                 textContentColor = Color(0xFF2C1D11),
                 iconContentColor = Color(0xFF115E3F),
-                title = { Text("الانتقال إلى الجزء", color = Color(0xFF115E3F), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold) },
+                title = { Text("الانتقال إلى الجزء", color = Color(0xFF115E3F), fontFamily = ArabicFontFamily, fontWeight = FontWeight.Bold) },
                 text = {
                     LazyColumn(modifier = Modifier.heightIn(max = 440.dp)) {
                         items((1..30).toList()) { juz ->
@@ -1108,7 +1128,8 @@ fun SurahReader(
                                     textAlign = TextAlign.Start,
                                     color = Color(0xFF2C1D11),
                                     fontFamily = FontFamily.Serif,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
                                 )
                             }
                             HorizontalDivider(color = Color(0x332C1D11), thickness = 0.7.dp)
@@ -1122,7 +1143,8 @@ fun SurahReader(
                         colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF115E3F))
                     ) { Text("إغلاق", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, color = Color(0xFF115E3F)) }
                 }
-            )
+                )
+            }
         }
 
         if (showSearch) {
@@ -1202,7 +1224,7 @@ private fun MushafBottomControl(
                 tint = Color(0xFFD4AF37),
                 modifier = Modifier.size(21.dp)
             )
-            Text(label, color = Color(0xFFD4AF37), fontFamily = FontFamily.Serif, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(label, color = Color(0xFFD4AF37), fontFamily = ArabicFontFamily, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
         }
     }
 }
