@@ -1,11 +1,7 @@
 package com.example.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,27 +9,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalLayoutDirection
 
-data class ServicesGridItem(
+private data class MoreMenuOption(
     val key: String,
-    val titleAr: String,
-    val icon: ImageVector,
-    val tint: Color
+    val title: String,
+    val description: String,
+    val icon: ImageVector
 )
-
-private fun ServicesGridItem.localizedTitle(lang: String): String = titleAr
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,196 +31,121 @@ fun MoreScreen(
     onNavigateToFeature: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // الخدمات المعروضة هنا هي المسارات الفعلية الموجودة في التطبيق.
-    val generalServices = listOf(
-        ServicesGridItem("HOME", "الرئيسية", Icons.Filled.Home, Color.Unspecified),
-        ServicesGridItem("SETTINGS", "الإعدادات", Icons.Filled.Settings, Color.Unspecified),
-        ServicesGridItem("QIBLA", "القبلة", Icons.Filled.Explore, Color.Unspecified),
-        ServicesGridItem("HADITH", "الفوائد والحديث", Icons.Filled.Lightbulb, Color.Unspecified),
-        ServicesGridItem("CALENDAR", "التقويم", Icons.Filled.CalendarMonth, Color.Unspecified),
-        ServicesGridItem("MOSQUES", "مساجد", Icons.Filled.Place, Color.Unspecified),
-    )
+    val options = remember {
+        listOf(
+            MoreMenuOption("QURAN", "القرآن الكريم", "فتح المصحف", Icons.Filled.MenuBook),
+            MoreMenuOption("TASBIH", "السبحة الإلكترونية", "التسبيح والعدّ", Icons.Filled.AddCircle),
+            MoreMenuOption("HADITH", "كتب الأحاديث", "مطالعة الأحاديث النبوية", Icons.Filled.LibraryBooks),
+            MoreMenuOption("HISN_AL_MUSLIM", "حصن المسلم", "الأدعية والأذكار", Icons.Filled.Shield),
+            MoreMenuOption("QIBLA", "القبلة", "تحديد اتجاه القبلة", Icons.Filled.Explore),
+            MoreMenuOption("SETTINGS", "الإعدادات", "جميع إعدادات التطبيق", Icons.Filled.Settings)
+        )
+    }
+    var expanded by remember { mutableStateOf(false) }
+    var selectedOption by remember { mutableStateOf<MoreMenuOption?>(null) }
 
-    val quranDhikrServices = listOf(
-        ServicesGridItem("QURAN", "المصحف", Icons.Filled.MenuBook, Color.Unspecified),
-        ServicesGridItem("FAVORITES", "صندوق العلامات", Icons.Filled.Bookmark, Color.Unspecified),
-        ServicesGridItem("ADHKAR", "الأذكار", Icons.Filled.SelfImprovement, Color.Unspecified),
-        ServicesGridItem("NAMES", "أسماء الله الحسنى", Icons.Filled.Favorite, Color.Unspecified),
-        ServicesGridItem("HADITH", "الحديث", Icons.Filled.MenuBook, Color.Unspecified),
-        ServicesGridItem("SEERAH", "السيرة", Icons.Filled.Campaign, Color.Unspecified),
-        ServicesGridItem("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield, Color.Unspecified),
-        ServicesGridItem("SCHOLARS_LIBRARY", "مكتبة العلماء", Icons.Filled.LocalLibrary, Color.Unspecified)
-    )
-
-    val currentLanguage = "ar"
-
-    CompositionLocalProvider(
-        LocalLayoutDirection provides LayoutDirection.Rtl
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+        Text(
+            text = "المزيد",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = "اختر خدمة أو افتح إعدادات التطبيق من القائمة المنسدلة.",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth().testTag("more_dropdown")
         ) {
-        // --- IMMERSIVE SOLID DEEP BLUE HEADER ---
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF0D4F3A))
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // زر الرجوع؛ التطبيق يعمل باللغة العربية فقط.
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = selectedOption?.title ?: "اختر من القائمة",
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                leadingIcon = {
                     Icon(
-                        imageVector = Icons.Filled.ChevronLeft,
-                        contentDescription = "الرجوع",
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable { onNavigateToFeature("HOME") }
+                        imageVector = selectedOption?.icon ?: Icons.Filled.Apps,
+                        contentDescription = null,
+                        tint = Color(0xFF0D5E34)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color.White.copy(alpha = 0.12f)
-                    ) {
-                        Text(
-                            text = "العربية",
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)
-                        )
-                    }
-                }
-
-                Text(
-                    text = "أقم صلاتك",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier.menuAnchor().fillMaxWidth().testTag("more_dropdown_field"),
+                shape = RoundedCornerShape(18.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF0D5E34),
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
                 )
-            }
-        }
-
-        // --- GROUPED SERVICES CARDS SCROLLABLE LIST ---
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-                .padding(horizontal = 14.dp),
-            contentPadding = PaddingValues(top = 14.dp, bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            // Section 1: General Services Card
-            item {
-                ServicesSectionCard(
-                    title = if (currentLanguage == "ar") "خدمات التطبيق العامة" else "General Services",
-                    items = generalServices,
-                    lang = currentLanguage,
-                    onItemClick = onNavigateToFeature
-                )
-            }
-
-            // Section 2: Quran and Dhikr Card
-            item {
-                ServicesSectionCard(
-                    title = if (currentLanguage == "ar") "القرآن والأذكار" else "Quran & Adhkar",
-                    items = quranDhikrServices,
-                    lang = currentLanguage,
-                    onItemClick = onNavigateToFeature
-                )
-            }
-
-
-        }
-    }
-    }
-}
-
-@Composable
-fun ServicesSectionCard(
-    title: String,
-    items: List<ServicesGridItem>,
-    lang: String,
-    onItemClick: (String) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            horizontalAlignment = Alignment.End
-        ) {
-            // Category Title Header
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 12.dp)
             )
-
-            // Render items in a clean 3-column grid.
-            val chunked = items.chunked(3)
-            chunked.forEach { rowItems ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    for (i in 0 until 3) {
-                        val item = rowItems.getOrNull(i)
-                        if (item != null) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clickable { onItemClick(item.key) }
-                                    .testTag("more_grid_item_" + item.key),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(46.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFF0D5E34).copy(alpha = 0.08f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = item.localizedTitle(lang),
-                                        tint = Color(0xFF0D5E34),
-                                        modifier = Modifier.size(21.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(7.dp))
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(option.title, fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    text = item.localizedTitle(lang),
+                                    option.description,
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 2,
-                                    minLines = 2,
-                                    overflow = TextOverflow.Ellipsis
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = option.icon,
+                                contentDescription = null,
+                                tint = Color(0xFF0D5E34)
+                            )
+                        },
+                        onClick = {
+                            selectedOption = option
+                            expanded = false
+                            onNavigateToFeature(option.key)
+                        },
+                        modifier = Modifier.testTag("more_dropdown_item_${option.key}")
+                    )
+                }
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(18.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = null,
+                    tint = Color(0xFF0D5E34),
+                    modifier = Modifier.size(28.dp)
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("الإعدادات", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        "تجد داخلها خيارات المظهر والتنبيهات والأذان والموقع والحسابات الصوتية وإمكانية الوصول.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
