@@ -2,14 +2,22 @@ package com.example
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.Settings
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -18,117 +26,199 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Checks public GitHub Releases for a newer signed APK.
- *
- * The APK is downloaded automatically in the background. Android's official
- * package installer still requires confirmation; ordinary apps cannot silently
- * install their own updates.
+ * Checks version.json on every app launch and offers a user-confirmed APK update.
+ * Android always owns the final installation confirmation; silent self-installation
+ * is not available to ordinary applications.
  */
 class ApkUpdateChecker(private val activity: Activity) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val preferences = activity.getSharedPreferences("apk_updates", Context.MODE_PRIVATE)
+    private var receiverRegistered = false
+
+    private val downloadReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action != DownloadManager.ACTION_DOWNLOAD_COMPLETE) return
+            val completedId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L)
+            val expectedId = preferences.getLong(KEY_DOWNLOAD_ID, -2L)
+            if (completedId != expectedId) return
+
+            val manager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val query = DownloadManager.Query().setFilterById(completedId)
+            manager.query(query).use { cursor ->
+                if (!cursor.moveToFirst()) return
+                val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                if (statusIndex < 0 || cursor.getInt(statusIndex) != DownloadManager.STATUS_SUCCESSFUL) {
+                    preferences.edit().remove(KEY_DOWNLOAD_ID).apply()
+                    showToast("تعذر تنزيل التحديث. تحقق من الاتصال وحاول مجددًا.")
+                    return
+                }
+            }
+
+            val apk = File(
+                activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+                APK_FILE_NAME
+            )
+            if (apk.isFile && apk.length() > 0L) {
+                preferences.edit().putString(KEY_PENDING_APK, apk.absolutePath).remove(KEY_DOWNLOAD_ID).apply()
+                installPendingUpdateIfAllowed()
+            } else {
+                showToast("اكتمل التنزيل لكن تعذر العثور على ملف التحديث.")
+            }
+        }
+    }
+
     fun checkForUpdate() {
-        CoroutineScope(Dispatchers.IO).launch {
+        registerDownloadReceiver()
+        scope.launch {
             var connection: HttpURLConnection? = null
             try {
-                connection = (URL("https://api.github.com/repos/zaki-le-roi/Aqim-salat/releases/latest")
-                    .openConnection() as HttpURLConnection).apply {
+                connection = (URL(VERSION_JSON_URL).openConnection() as HttpURLConnection).apply {
                     connectTimeout = 10000
                     readTimeout = 10000
-                    setRequestProperty("Accept", "application/vnd.github+json")
+                    setRequestProperty("Cache-Control", "no-cache")
                     setRequestProperty("User-Agent", "Aqim-Salat-Android")
                 }
                 if (connection.responseCode !in 200..299) return@launch
                 val json = connection.inputStream.bufferedReader().use { it.readText() }
                 val release = JSONObject(json)
-                val latestTag = release.optString("tag_name").removePrefix("v")
-                if (!isNewerVersion(latestTag, BuildConfig.VERSION_NAME)) return@launch
+                val latestCode = release.optInt("versionCode", -1)
+                val latestName = release.optString("versionName").takeIf { it.isNotBlank() } ?: return@launch
+                val downloadUrl = release.optString("downloadUrl").takeIf { it.startsWith("https://") } ?: return@launch
+                val notes = release.optString("releaseNotes", "تحسينات وإصلاحات جديدة")
 
-                val assets = release.optJSONArray("assets") ?: return@launch
-                var apkUrl: String? = null
-                for (i in 0 until assets.length()) {
-                    val asset = assets.optJSONObject(i) ?: continue
-                    if (asset.optString("name") == "Aqim-Salat.apk") {
-                        apkUrl = asset.optString("browser_download_url")
-                        break
-                    }
+                if (latestCode <= BuildConfig.VERSION_CODE) return@launch
+
+                withContext(Dispatchers.Main) {
+                    if (activity.isFinishing || activity.isDestroyed) return@withContext
+                    showUpdateDialog(latestCode, latestName, notes, downloadUrl)
                 }
-                val downloadUrl = apkUrl ?: return@launch
-                downloadAndOfferInstall(downloadUrl, latestTag)
             } catch (_: Exception) {
-                // Offline, rate-limited, or no public release: keep the app working normally.
+                // Offline or invalid metadata: keep normal app use uninterrupted.
             } finally {
                 connection?.disconnect()
             }
         }
     }
 
-    private suspend fun downloadAndOfferInstall(url: String, version: String) {
+    private fun showUpdateDialog(versionCode: Int, versionName: String, notes: String, downloadUrl: String) {
+        val dialog = AlertDialog.Builder(activity)
+            .setTitle("يتوفر تحديث جديد")
+            .setMessage("أقم صلاتك $versionName\n\n$notes\n\nسيتم تنزيل التحديث ثم فتح مُثبّت Android لتأكيد التثبيت.")
+            .setNegativeButton("لاحقًا", null)
+            .setPositiveButton("تحديث الآن", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(GOLD)
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
+                dialog.dismiss()
+                startDownload(versionCode, versionName, downloadUrl)
+            }
+        }
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(GOLD)
+    }
+
+    private fun startDownload(versionCode: Int, versionName: String, downloadUrl: String) {
         try {
-            val apk = File(activity.cacheDir, "updates/Aqim-Salat-$version.apk")
-            if (!apk.isFile || apk.length() == 0L) {
-                var connection: HttpURLConnection? = null
-                try {
-                    connection = (URL(url).openConnection() as HttpURLConnection).apply {
-                        connectTimeout = 15000
-                        readTimeout = 60000
-                        instanceFollowRedirects = true
-                        setRequestProperty("User-Agent", "Aqim-Salat-Android")
-                    }
-                    if (connection.responseCode !in 200..299) return
-                    apk.parentFile?.mkdirs()
-                    val temporary = File(apk.parentFile, apk.name + ".download")
-                    connection.inputStream.use { input ->
-                        temporary.outputStream().use { output -> input.copyTo(output) }
-                    }
-                    if (temporary.length() == 0L) {
-                        temporary.delete()
-                        return
-                    }
-                    if (!temporary.renameTo(apk)) {
-                        temporary.copyTo(apk, overwrite = true)
-                        temporary.delete()
-                    }
-                } finally {
-                    connection?.disconnect()
-                }
-            }
-
-            withContext(Dispatchers.Main) {
-                if (activity.isFinishing || activity.isDestroyed) return@withContext
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                    !activity.packageManager.canRequestPackageInstalls()) {
-                    AlertDialog.Builder(activity)
-                        .setTitle("التحديث جاهز")
-                        .setMessage("تم تنزيل الإصدار $version تلقائيًا. اسمح لتطبيق أقم صلاتك بتثبيت التحديث من هذا المصدر مرة واحدة، ثم أغلق التطبيق وافتحه مجددًا لإكمال التثبيت.")
-                        .setNegativeButton("لاحقًا", null)
-                        .setPositiveButton("فتح الإعدادات") { _, _ ->
-                            val settingsIntent = Intent(
-                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                                Uri.parse("package:${activity.packageName}")
-                            )
-                            activity.startActivity(settingsIntent)
-                        }
-                        .show()
-                    return@withContext
-                }
-
-                val uri = FileProvider.getUriForFile(
-                    activity, "${activity.packageName}.fileprovider", apk
+            val manager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val request = DownloadManager.Request(Uri.parse(downloadUrl))
+                .setTitle("تحديث أقم صلاتك $versionName")
+                .setDescription("جارٍ تنزيل التحديث في الخلفية")
+                .setMimeType("application/vnd.android.package-archive")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setAllowedOverMetered(true)
+                .setAllowedOverRoaming(false)
+                .setDestinationInExternalFilesDir(
+                    activity,
+                    Environment.DIRECTORY_DOWNLOADS,
+                    APK_FILE_NAME
                 )
-                val installIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/vnd.android.package-archive")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                activity.startActivity(installIntent)
-            }
+            val id = manager.enqueue(request)
+            preferences.edit()
+                .putLong(KEY_DOWNLOAD_ID, id)
+                .putInt(KEY_TARGET_VERSION, versionCode)
+                .apply()
+            Toast.makeText(activity, "بدأ تنزيل التحديث في الخلفية", Toast.LENGTH_LONG).show()
         } catch (_: Exception) {
-            withContext(Dispatchers.Main) {
-                if (!activity.isFinishing && !activity.isDestroyed) {
-                    Toast.makeText(
-                        activity,
-                        "تعذر تنزيل التحديث تلقائيًا. تحقق من الاتصال وحاول لاحقًا.",
-                        Toast.LENGTH_LONG
-                    ).show()
+            showToast("تعذر بدء تنزيل التحديث. حاول مرة أخرى.")
+        }
+    }
+
+    /** Called on return from Android's 'install unknown apps' settings screen. */
+    fun installPendingUpdateIfAllowed() {
+        if (activity.isFinishing || activity.isDestroyed) return
+        val path = preferences.getString(KEY_PENDING_APK, null) ?: return
+        val apk = File(path)
+        if (!apk.isFile || apk.length() == 0L) {
+            preferences.edit().remove(KEY_PENDING_APK).apply()
+            return
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            !activity.packageManager.canRequestPackageInstalls()) {
+            AlertDialog.Builder(activity)
+                .setTitle("التحديث جاهز للتثبيت")
+                .setMessage("تم تنزيل التحديث. اسمح لتطبيق أقم صلاتك بالتثبيت من هذا المصدر، ثم ارجع إلى التطبيق لإكمال التثبيت.")
+                .setNegativeButton("لاحقًا", null)
+                .setPositiveButton("فتح الإعدادات") { _, _ ->
+                    activity.startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:${activity.packageName}")
+                        )
+                    )
                 }
+                .show()
+            return
+        }
+
+        try {
+            val uri = FileProvider.getUriForFile(
+                activity,
+                "${activity.packageName}.fileprovider",
+                apk
+            )
+            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            preferences.edit().remove(KEY_PENDING_APK).apply()
+            activity.startActivity(installIntent)
+        } catch (_: Exception) {
+            showToast("تعذر فتح مُثبّت التحديث.")
+        }
+    }
+
+    private fun registerDownloadReceiver() {
+        if (receiverRegistered) return
+        ContextCompat.registerReceiver(
+            activity,
+            downloadReceiver,
+            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+            ContextCompat.RECEIVER_EXPORTED
+        )
+        receiverRegistered = true
+    }
+
+    fun dispose() {
+        scope.cancel()
+        if (receiverRegistered) {
+            try {
+                activity.unregisterReceiver(downloadReceiver)
+            } catch (_: IllegalArgumentException) {
+                // Already unregistered by the Android lifecycle.
+            }
+            receiverRegistered = false
+        }
+    }
+
+    private fun showToast(message: String) {
+        activity.runOnUiThread {
+            if (!activity.isFinishing && !activity.isDestroyed) {
+                Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -142,5 +232,15 @@ class ApkUpdateChecker(private val activity: Activity) {
             if (av != bv) return av > bv
         }
         return false
+    }
+
+    private companion object {
+        const val VERSION_JSON_URL = "https://raw.githubusercontent.com/zaki-le-roi/Aqim-salat/main/version.json"
+        const val APK_FILE_NAME = "Aqim-Salat-update.apk"
+        const val KEY_DOWNLOAD_ID = "download_id"
+        const val KEY_PENDING_APK = "pending_apk"
+        const val KEY_TARGET_VERSION = "target_version"
+        const val EMERALD = 0xFF0F6B46.toInt()
+        const val GOLD = 0xFFD4AF37.toInt()
     }
 }
