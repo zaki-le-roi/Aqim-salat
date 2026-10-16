@@ -421,17 +421,6 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
-                    Text(
-                        text = if (lang == "ar") "كل الخدمات" else "All services",
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { onNavigateToFeature("MORE_MENU") }
-                            .testTag("home_all_services")
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
                 }
 
                 // Premium full-width Quran card.
