@@ -266,7 +266,7 @@ fun QuranScreen(
                             )
                         )
                         .statusBarsPadding()
-                        .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 10.dp)
+                        .padding(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 6.dp)
                 ) {
                     // Quiet decorative motif, kept behind the readable content.
                     Box(
@@ -297,8 +297,8 @@ fun QuranScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
-                                        .size(42.dp)
-                                        .clip(RoundedCornerShape(14.dp))
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(12.dp))
                                         .background(Color.White.copy(alpha = 0.10f)),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -314,7 +314,7 @@ fun QuranScreen(
                                     Text(
                                         text = "المصحف الشريف",
                                         color = Color.White,
-                                        fontSize = 19.sp,
+                                        fontSize = 17.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
@@ -332,7 +332,7 @@ fun QuranScreen(
                                 )
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 7.dp),
+                                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
@@ -342,45 +342,12 @@ fun QuranScreen(
                                         modifier = Modifier.size(15.dp)
                                     )
                                     Spacer(modifier = Modifier.width(5.dp))
-                                    Text("١١٤ سورة", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                    Text("١١٤ سورة", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(7.dp))
-                        Text(
-                            text = "وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFE3C47D)
-                        )
-                        Spacer(modifier = Modifier.height(5.dp))
-                        Text(
-                            text = "اختر سورة، واستأنف رحلتك مع كتاب الله",
-                            fontSize = 12.sp,
-                            color = Color.White.copy(alpha = 0.78f)
-                        )
-                        Spacer(modifier = Modifier.height(7.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(9.dp)
-                        ) {
-                            listOf("٣٠ جزءًا", "٦٠٤ صفحات", "قراءة دون اتصال").forEach { label ->
-                                Surface(
-                                    color = Color.White.copy(alpha = 0.075f),
-                                    shape = RoundedCornerShape(10.dp),
-                                    border = androidx.compose.foundation.BorderStroke(
-                                        1.dp, Color.White.copy(alpha = 0.08f)
-                                    )
-                                ) {
-                                    Text(
-                                        text = label,
-                                        color = Color.White.copy(alpha = 0.88f),
-                                        fontSize = 10.sp,
-                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-                        }
+
+
                     }
                 }
 
@@ -576,7 +543,7 @@ fun QuranScreen(
                         state = lazyListState,
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         contentPadding = PaddingValues(bottom = 88.dp, top = 2.dp),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         if (selectedTab == "BOOKMARKS") {
                             val quranBookmarks = bookmarks.filter { it.type == "QURAN" }
@@ -697,12 +664,12 @@ fun QuranScreen(
                                         .fillMaxWidth()
                                         .clickable { selectedSurah = surah }
                                         .testTag("surah_card_${surah.id}"),
-                                    shape = RoundedCornerShape(16.dp),
+                                    shape = RoundedCornerShape(11.dp),
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                                     border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFE2E2E2))
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
@@ -716,7 +683,7 @@ fun QuranScreen(
                                                 Text(
                                                     text = surah.name,
                                                     fontWeight = FontWeight.Bold,
-                                                    fontSize = 15.sp,
+                                                    fontSize = 14.sp,
                                                     color = MaterialTheme.colorScheme.primary
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
