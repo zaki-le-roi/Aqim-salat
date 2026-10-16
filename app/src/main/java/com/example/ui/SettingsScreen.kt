@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.sp
 fun SettingsScreen(
     viewModel: AppViewModel,
     lang: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialDialog: String? = null
 ) {
     val context = LocalContext.current
     val madhabVal by viewModel.madhab.collectAsState()
@@ -42,7 +43,7 @@ fun SettingsScreen(
     val fontScaleVal by viewModel.fontScale.collectAsState()
 
     // Dialog state controllers
-    var activeDialog by remember { mutableStateOf<String?>(null) } // "THEME", "LANG", "CALC", "AUDIO", "DOWNLOADS", "BACKUP", "PRIVACY", "ACCESSIBILITY"
+    var activeDialog by remember(initialDialog) { mutableStateOf<String?>(initialDialog) } // Dialog opened from the global app menu
 
     // Supported prayer-time and theme choices
     val themes = listOf(

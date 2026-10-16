@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -153,6 +154,7 @@ fun AqimSalahApp(
     var activeDetailScreen by remember { mutableStateOf<String?>(null) }
     var initialToolParam by remember { mutableStateOf<String?>(null) }
     var initialSurahIdParam by remember { mutableStateOf<Int?>(null) }
+    var initialSettingsDialog by remember { mutableStateOf<String?>(null) }
 
     // Dynamic routing callback across all dashboard grid cards
     val handleFeatureNavigation: (String) -> Unit = { routeKey ->
@@ -181,6 +183,17 @@ fun AqimSalahApp(
             "MORE", "MORE_MENU" -> {
                 selectedTab = "MORE"
                 activeDetailScreen = null
+            }
+            "SETTING_THEME", "SETTING_CALC", "SETTING_AUDIO", "SETTING_BACKUP", "SETTING_PRIVACY", "SETTING_ACCESSIBILITY" -> {
+                initialSettingsDialog = when (routeKey) {
+                    "SETTING_THEME" -> "THEME"
+                    "SETTING_CALC" -> "CALC"
+                    "SETTING_AUDIO" -> "AUDIO"
+                    "SETTING_BACKUP" -> "BACKUP"
+                    "SETTING_PRIVACY" -> "PRIVACY"
+                    else -> "ACCESSIBILITY"
+                }
+                activeDetailScreen = "SETTINGS"
             }
             "TOOLS_MENU", "TOOLS" -> {
                 activeDetailScreen = "TOOLS"
@@ -335,7 +348,7 @@ fun AqimSalahApp(
                             )
                         }
                     ) { p ->
-                        SettingsScreen(viewModel = viewModel, lang = lang, modifier = Modifier.padding(p))
+                        SettingsScreen(viewModel = viewModel, lang = lang, modifier = Modifier.padding(p), initialDialog = initialSettingsDialog)
                     }
                     "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "SCHOLARS_LIBRARY" -> ScholarsLibraryScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
@@ -460,10 +473,38 @@ fun AqimSalahApp(
                         Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
                         Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
                         Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
-                        Triple("QIBLA", "القبلة", Icons.Filled.Explore),
-                        Triple("SETTINGS", "الإعدادات", Icons.Filled.Settings)
+                        Triple("QIBLA", "القبلة", Icons.Filled.Explore)
                     )
                     appMenuItems.forEach { (route, title, icon) ->
+                        DropdownMenuItem(
+                            text = { Text(title, fontWeight = FontWeight.Medium) },
+                            leadingIcon = {
+                                Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34))
+                            },
+                            onClick = {
+                                appMenuExpanded = false
+                                handleFeatureNavigation(route)
+                            },
+                            modifier = Modifier.testTag("global_menu_item_$route")
+                        )
+                    }
+                    HorizontalDivider()
+                    Text(
+                        text = "تخصيص التطبيق",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp)
+                    )
+                    val settingItems = listOf(
+                        Triple("SETTING_THEME", "سمة التطبيق", Icons.Filled.Palette),
+                        Triple("SETTING_CALC", "حساب مواقيت الصلاة والمذهب", Icons.Filled.AccessTime),
+                        Triple("SETTING_AUDIO", "القارئ والصوت", Icons.Filled.VolumeUp),
+                        Triple("SETTING_BACKUP", "النسخ الاحتياطي والمزامنة", Icons.Filled.Cloud),
+                        Triple("SETTING_PRIVACY", "الخصوصية وأذونات الموقع", Icons.Filled.Security),
+                        Triple("SETTING_ACCESSIBILITY", "حجم الخط والاهتزاز", Icons.Filled.Accessibility)
+                    )
+                    settingItems.forEach { (route, title, icon) ->
                         DropdownMenuItem(
                             text = { Text(title, fontWeight = FontWeight.Medium) },
                             leadingIcon = {
