@@ -847,7 +847,7 @@ fun SurahReader(
         )
     }
     var bookmarkPage by remember { mutableIntStateOf(prefs.getInt("bookmark_page", -1)) }
-    var controlsVisible by remember { mutableStateOf(true) }
+    var controlsVisible by remember { mutableStateOf(false) }
     var showIndex by remember { mutableStateOf(false) }
     var showJuzIndex by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
@@ -946,7 +946,7 @@ fun SurahReader(
                             state = transformState,
                             canPan = { pageScale > 1f }
                         ),
-                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
                 )
             }
         }
