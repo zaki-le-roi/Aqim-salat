@@ -42,7 +42,7 @@ fun CalendarScreen(
     var gregYear by remember { mutableStateOf(todayParts.getOrNull(2) ?: "2026") }
     var convertedHijriResult by remember { mutableStateOf("") }
 
-    val currentHijri = PrayerCalculator.getHijriDate(today, lang)
+    val currentHijri = PrayerCalculator.getHijriDate(today, "ar")
     val isHijriLeapYear = ((11 * currentHijri.year + 14) % 30) < 11
     val currentHijriMonthLength = when {
         currentHijri.month == 12 && isHijriLeapYear -> 30
@@ -52,12 +52,12 @@ fun CalendarScreen(
     val daysInCurrentHijriMonth = (1..currentHijriMonthLength).toList()
 
     val islamicEvents = listOf(
-        Triple("1 Ramadan", if (lang == "ar") "بداية صيام شهر رمضان المبارك" else "1st of Ramadan - Beginning of Fasting", "01 Ramadan"),
-        Triple("Laylat al-Qadr", if (lang == "ar") "ليلة القدر المباركة (العشر الأواخر)" else "Laylat al-Qadr - Night of Decree", "27 Ramadan"),
-        Triple("Eid al-Fitr", if (lang == "ar") "عيد الفطر السعيد (١ شوال)" else "Eid al-Fitr - Feast of Fast-Breaking", "01 Shawwal"),
-        Triple("Day of Arafah", if (lang == "ar") "يوم عرفة المبارك (٩ ذو الحجة)" else "Day of Arafah - Hajj Pinnacle", "09 Dhu al-Hijjah"),
-        Triple("Eid al-Adha", if (lang == "ar") "عيد الأضحى المبارك (١٠ ذو الحجة)" else "Eid al-Adha - Feast of Sacrifice", "10 Dhu al-Hijjah"),
-        Triple("Islamic New Year", if (lang == "ar") "رأس السنة الهجرية الجديدة (١ محرم)" else "Islamic New Year - 1st Muharram", "01 Muharram")
+        Triple("بداية شهر رمضان", "بداية صيام شهر رمضان المبارك", "١ رمضان"),
+        Triple("ليلة القدر", "ليلة القدر المباركة في العشر الأواخر", "٢٧ رمضان"),
+        Triple("عيد الفطر", "عيد الفطر المبارك (١ شوال)", "١ شوال"),
+        Triple("يوم عرفة", "يوم عرفة المبارك (٩ ذو الحجة)", "٩ ذو الحجة"),
+        Triple("عيد الأضحى", "عيد الأضحى المبارك (١٠ ذو الحجة)", "١٠ ذو الحجة"),
+        Triple("رأس السنة الهجرية", "بداية العام الهجري الجديد (١ محرم)", "١ محرم")
     )
 
     fun performConversion() {
@@ -70,7 +70,7 @@ fun CalendarScreen(
         calendar.set(Calendar.MONTH, m - 1)
         calendar.set(Calendar.YEAR, y)
 
-        val hijri = PrayerCalculator.getHijriDate(calendar.time, lang)
+        val hijri = PrayerCalculator.getHijriDate(calendar.time, "ar")
         convertedHijriResult = "${hijri.day} ${hijri.monthName} ${hijri.year} هـ"
     }
 
@@ -99,7 +99,7 @@ fun CalendarScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                 }
                 Text(
-                    text = if (lang == "ar") "التقويم الهجري" else if (lang == "tr") "Hicri Takvim" else "Islamic Hijri Calendar",
+                    text = "التقويم الهجري",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -119,14 +119,14 @@ fun CalendarScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (lang == "ar") "تاريخ اليوم الهجري" else "Today's Hijri Date",
+                        text = "تاريخ اليوم الهجري",
                         fontSize = 13.sp,
                         color = Color(0xFFD4AF37),
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = hijriString,
+                        text = "${currentHijri.day} ${currentHijri.monthName} ${currentHijri.year} هـ",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -134,7 +134,7 @@ fun CalendarScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale.getDefault()).format(Date()),
+                        text = SimpleDateFormat("EEEE، dd MMMM yyyy", Locale("ar")).format(Date()),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -151,11 +151,7 @@ fun CalendarScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = if (lang == "ar") {
-                            "شهر ${currentHijri.monthName} ${currentHijri.year} هـ"
-                        } else {
-                            "${currentHijri.monthName} ${currentHijri.year} AH"
-                        },
+                        text = "شهر ${currentHijri.monthName} ${currentHijri.year} هـ",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.primary,
@@ -236,13 +232,13 @@ fun CalendarScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = if (lang == "ar") "محول التاريخ الميلادي إلى الهجري" else "Date Converter (Gregorian to Hijri)",
+                        text = "محول التاريخ الميلادي إلى الهجري",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = if (lang == "ar") "أدخل التاريخ الميلادي وسيتكفل النظام بحسابه فورياً" else "Enter Gregorian details to instantly lookup the corresponding Hijri date.",
+                        text = "أدخل التاريخ الميلادي وسيُحسب التاريخ الهجري تلقائيًا",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         modifier = Modifier.padding(vertical = 4.dp)
@@ -257,21 +253,21 @@ fun CalendarScreen(
                         TextField(
                             value = gregDay,
                             onValueChange = { gregDay = it },
-                            label = { Text(if (lang == "ar") "يوم" else "Day") },
+                            label = { Text("اليوم") },
                             modifier = Modifier.weight(1f),
                             colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.background, unfocusedContainerColor = MaterialTheme.colorScheme.background)
                         )
                         TextField(
                             value = gregMonth,
                             onValueChange = { gregMonth = it },
-                            label = { Text(if (lang == "ar") "شهر" else "Month") },
+                            label = { Text("الشهر") },
                             modifier = Modifier.weight(1f),
                             colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.background, unfocusedContainerColor = MaterialTheme.colorScheme.background)
                         )
                         TextField(
                             value = gregYear,
                             onValueChange = { gregYear = it },
-                            label = { Text(if (lang == "ar") "سنة" else "Year") },
+                            label = { Text("السنة") },
                             modifier = Modifier.weight(1.5f),
                             colors = TextFieldDefaults.colors(focusedContainerColor = MaterialTheme.colorScheme.background, unfocusedContainerColor = MaterialTheme.colorScheme.background)
                         )
@@ -309,7 +305,7 @@ fun CalendarScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = if (lang == "ar") "المناسبات الإسلامية الهامة" else "Important Islamic Occasions",
+                        text = "المناسبات الإسلامية الهامة",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.primary,
