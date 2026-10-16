@@ -307,7 +307,10 @@ fun AqimSalahApp(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(if (activeDetailScreen == null) innerPadding else PaddingValues(0.dp))
+                .padding(
+                    if (activeDetailScreen == null && !(selectedTab == "QURAN" && isQuranReaderOpen)) innerPadding
+                    else PaddingValues(0.dp)
+                )
         ) {
             ThemeBackground(wallpaper = activeWallpaper)
 
