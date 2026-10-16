@@ -886,12 +886,14 @@ fun SurahReader(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFDFBF7))
+            // Keep the page inside the phone's safe area even when controls are hidden.
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
         if (controlsVisible) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
                 .height(48.dp)
                 .background(Color(0xFF0B382C))
                 .padding(horizontal = 2.dp),
@@ -990,7 +992,6 @@ fun SurahReader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
                 .height(56.dp)
                 .background(Color(0xFF0B382C))
                 .padding(horizontal = 2.dp, vertical = 1.dp),
