@@ -103,7 +103,11 @@ fun PrayerTimesScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Color(0xFF101F2B), Color(0xFF0B3329), Color(0xFF071F1B))
+                )
+            )
             .padding(horizontal = 16.dp),
         contentPadding = PaddingValues(top = 16.dp, bottom = 120.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -126,7 +130,7 @@ fun PrayerTimesScreen(
                         text = Translations.get("prayer_times", lang),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = Color(0xFFD4AF37)
                     )
                 }
 
@@ -378,7 +382,7 @@ fun PrayerTimesScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(430.dp)
+                            .height(470.dp)
                             .clip(RoundedCornerShape(30.dp))
                             .background(
                                 Brush.verticalGradient(
@@ -465,7 +469,7 @@ fun PrayerTimesScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = Translations.get(nextName.lowercase(), lang),
-                                    fontSize = 42.sp,
+                                    fontSize = 48.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
                                     color = Color(0xFFD4AF37),
