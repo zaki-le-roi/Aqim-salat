@@ -567,7 +567,7 @@ fun HomeScreen(
                             Text(
                                 text = if (lang == "ar") "عداد رقمي ذكي" else "Smart Counter",
                                 color = Color(0xFFE6C687),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
@@ -607,7 +607,7 @@ fun HomeScreen(
                             Text(
                                 text = if (lang == "ar") "صباح ومساء ونوم" else "Morning & Evening",
                                 color = Color(0xFFE6C687),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
@@ -653,7 +653,7 @@ fun HomeScreen(
                             Text(
                                 text = if (lang == "ar") "بوصلة دقيقة" else "Accurate Compass",
                                 color = Color(0xFFE6C687),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
@@ -693,7 +693,7 @@ fun HomeScreen(
                             Text(
                                 text = if (lang == "ar") "أدعية جامعة" else "Fortress of Dua",
                                 color = Color(0xFFE6C687),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
@@ -733,7 +733,7 @@ fun HomeScreen(
                             Text(
                                 text = if (lang == "ar") "أمهات الكتب" else "Core Texts",
                                 color = Color(0xFFE6C687),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
