@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.shape.CircleShape
@@ -407,9 +409,73 @@ fun AqimSalahApp(
                     }
                     "MORE" -> MoreScreen(
                         viewModel = viewModel,
-                        lang = lang, 
+                        lang = lang,
                         onNavigateToFeature = handleFeatureNavigation
                     )
+                }
+            }
+
+            // One consistent app-wide dropdown, available outside the More screen.
+            var appMenuExpanded by remember { mutableStateOf(false) }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp, end = 14.dp)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
+                    tonalElevation = 5.dp,
+                    shadowElevation = 5.dp
+                ) {
+                    IconButton(
+                        onClick = { appMenuExpanded = true },
+                        modifier = Modifier.size(48.dp).testTag("global_app_menu_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = "القائمة الرئيسية",
+                            tint = Color(0xFF0D5E34),
+                            modifier = Modifier.size(25.dp)
+                        )
+                    }
+                }
+                DropdownMenu(
+                    expanded = appMenuExpanded,
+                    onDismissRequest = { appMenuExpanded = false },
+                    modifier = Modifier.widthIn(min = 240.dp, max = 290.dp)
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    Text(
+                        text = "القائمة الرئيسية",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp)
+                    )
+                    HorizontalDivider()
+                    val appMenuItems = listOf(
+                        Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
+                        Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
+                        Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
+                        Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
+                        Triple("QIBLA", "القبلة", Icons.Filled.Explore),
+                        Triple("SETTINGS", "الإعدادات", Icons.Filled.Settings)
+                    )
+                    appMenuItems.forEach { (route, title, icon) ->
+                        DropdownMenuItem(
+                            text = { Text(title, fontWeight = FontWeight.Medium) },
+                            leadingIcon = {
+                                Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34))
+                            },
+                            onClick = {
+                                appMenuExpanded = false
+                                handleFeatureNavigation(route)
+                            },
+                            modifier = Modifier.testTag("global_menu_item_$route")
+                        )
+                    }
                 }
             }
         }
