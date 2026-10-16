@@ -910,7 +910,7 @@ fun SurahReader(
                 .fillMaxSize()
                 .clickable { controlsVisible = !controlsVisible }
         ) { pageIndex ->
-            val pageUrl = "https://raw.githubusercontent.com/jahedev/tajweed-quran-pages/master/hafs/tajweed-${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
+            val pageUrl = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images/${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
             var pageScale by remember(pageIndex) { mutableFloatStateOf(1f) }
             var pageOffsetX by remember(pageIndex) { mutableFloatStateOf(0f) }
             var pageOffsetY by remember(pageIndex) { mutableFloatStateOf(0f) }
