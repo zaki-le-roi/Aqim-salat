@@ -916,7 +916,7 @@ fun SurahReader(
                 .padding(0.dp)
         ) { pageIndex ->
             // صفحات مصحف حفص الملون، عمودية وبلا تدوير أو عناصر تغطي الصفحة.
-            val pageUrl = "https://raw.githubusercontent.com/jahedev/tajweed-quran-pages/master/hafs/tajweed-${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
+            val pageUrl = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images/${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -927,8 +927,8 @@ fun SurahReader(
                 AsyncImage(
                     model = pageUrl,
                     contentDescription = "صفحة المصحف الشريف رقم ${pageIndex + 1}",
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
                 )
             }
         }
