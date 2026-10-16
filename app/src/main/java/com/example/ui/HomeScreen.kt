@@ -717,21 +717,6 @@ fun HomeScreen(
                     }
                 }
 
-                OutlinedButton(
-                    onClick = { onNavigateToFeature("MORE_MENU") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .testTag("home_all_services_button"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(Icons.Filled.Apps, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (lang == "ar") "استكشف كل الخدمات" else "Explore all services", fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Icon(Icons.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(16.dp))
-                }
             }
         }
 
