@@ -852,7 +852,6 @@ fun SurahReader(
         )
     }
     var bookmarkPage by remember { mutableIntStateOf(prefs.getInt("bookmark_page", -1)) }
-    var controlsVisible by remember { mutableStateOf(false) }
     var showIndex by remember { mutableStateOf(false) }
     var showJuzIndex by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
@@ -908,136 +907,31 @@ fun SurahReader(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFDFBF7))
+            .padding(0.dp)
     ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .clickable { controlsVisible = !controlsVisible }
+                .padding(0.dp)
         ) { pageIndex ->
-            // 604-page Hafs Tajweed Mushaf images (colored recitation marks).
-            val pageUrl = "https://raw.githubusercontent.com/jahedev/tajweed-quran-pages/master/hafs/tajweed-${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
-            var pageScale by remember(pageIndex) { mutableFloatStateOf(1f) }
-            var pageOffsetX by remember(pageIndex) { mutableFloatStateOf(0f) }
-            var pageOffsetY by remember(pageIndex) { mutableFloatStateOf(0f) }
-            val transformState = rememberTransformableState { zoomChange, panChange, _ ->
-                val nextScale = (pageScale * zoomChange).coerceIn(1f, 4f)
-                pageScale = nextScale
-                if (nextScale > 1f) {
-                    pageOffsetX += panChange.x
-                    pageOffsetY += panChange.y
-                } else {
-                    pageOffsetX = 0f
-                    pageOffsetY = 0f
-                }
-            }
+            // صفحات مصحف حفص الملون، عمودية وبلا تدوير أو عناصر تغطي الصفحة.
+            val pageUrl = "https://raw.githubusercontent.com/jahedev/tajweed-quran-pages/master/hafs/tajweed-\${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(0.dp)
                     .background(Color(0xFFFDFBF7)),
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
                     model = pageUrl,
-                    contentDescription = "صفحة المصحف الشريف رقم ${pageIndex + 1}",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            scaleX = pageScale
-                            scaleY = pageScale
-                            translationX = pageOffsetX
-                            translationY = pageOffsetY
-                        }
-                        .transformable(
-                            state = transformState,
-                            canPan = { pageScale > 1f }
-                        ),
-                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
+                    contentDescription = "صفحة المصحف الشريف رقم \${pageIndex + 1}",
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
                 )
             }
         }
-
-        if (controlsVisible) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth()
-                    .statusBarsPadding(),
-                color = Color(0xFF115E3F),
-                shadowElevation = 3.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                        Text(
-                            text = "سورة $pageSurahName",
-                            color = Color(0xFFD4AF37),
-                            fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "صفحة ${pagerState.currentPage + 1}",
-                            color = Color(0xFFD4AF37),
-                            fontFamily = FontFamily.Serif,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                        Text(
-                            text = "الجزء $juzNumber",
-                            color = Color(0xFFD4AF37),
-                            fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-            }
-
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
-                color = Color(0xFF115E3F),
-                shadowElevation = 5.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 3.dp, vertical = 7.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    MushafBottomControl(Icons.Filled.List, "الفهرس") { showIndex = true }
-                    MushafBottomControl(Icons.Filled.Bookmarks, "الأجزاء") { showJuzIndex = true }
-                    MushafBottomControl(Icons.Filled.BookmarkAdd, "حفظ علامة") {
-                        bookmarkPage = pagerState.currentPage + 1
-                        prefs.edit().putInt("bookmark_page", bookmarkPage).apply()
-                        Toast.makeText(context, "تم حفظ العلامة عند الصفحة $bookmarkPage", Toast.LENGTH_SHORT).show()
-                    }
-                    MushafBottomControl(Icons.Filled.Bookmark, "الانتقال للعلامة") {
-                        if (bookmarkPage in 1..604) {
-                            scope.launch { pagerState.animateScrollToPage(bookmarkPage - 1) }
-                        } else {
-                            Toast.makeText(context, "لم تحفظ علامة بعد", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    MushafBottomControl(Icons.Filled.Search, "البحث") { showSearch = true }
-                }
-            }
-        }
-
 
         if (showIndex) {
             MaterialTheme(
