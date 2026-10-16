@@ -499,7 +499,7 @@ fun QuranScreen(
                                     .background(Color(0xFF042B1D).copy(alpha = 0.06f))
                                     .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.3f), RoundedCornerShape(10.dp))
                                     .clickable {
-                                        val startSurahId = JUZ_START_SURAHS.getOrNull(index) ?: 1
+                                        val startSurahId = JUZ_STARTS.getOrNull(index)?.first ?: 1
                                         val scrollIndex = filteredSurahs.indexOfFirst { it.id == startSurahId }
                                         if (scrollIndex != -1) {
                                             coroutineScope.launch {
