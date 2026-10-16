@@ -1085,6 +1085,8 @@ fun InteractiveGoogleMap(
                     val mAddr = org.json.JSONObject.quote(if (lang == "ar") mosque.addressAr else mosque.addressEn)
                         .replace("<", "\\u003C").replace(">", "\\u003E").replace("&", "\\u0026")
                         .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+                    val markerLat = mosque.lat
+                    val markerLng = mosque.lng
                     append("""
                         var mosqueIcon = L.divIcon({
                             className: 'mosque-pin',
@@ -1101,9 +1103,6 @@ fun InteractiveGoogleMap(
                         popupAddress.style.color = '#e0e0e0';
                         popupAddress.textContent = $mAddr;
                         popupContent.appendChild(popupAddress);
-                        // Coordinates are interpolated as numeric values, never as remote text.
-                        val markerLat = mosque.lat
-                        val markerLng = mosque.lng
                         L.marker([$markerLat, $markerLng], { icon: mosqueIcon }).addTo(map)
                             .bindPopup(popupContent);
                     """)
