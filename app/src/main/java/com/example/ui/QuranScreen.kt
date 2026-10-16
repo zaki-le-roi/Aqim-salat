@@ -194,7 +194,8 @@ fun QuranScreen(
     viewModel: AppViewModel,
     lang: String,
     modifier: Modifier = Modifier,
-    initialSurahId: Int? = null
+    initialSurahId: Int? = null,
+    onReadingModeChange: (Boolean) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -208,6 +209,10 @@ fun QuranScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("ALL") } // ALL, MECCAN, MEDINAN, BOOKMARKS
     var selectedSurah by remember { mutableStateOf<QuranData.Surah?>(null) }
+
+    LaunchedEffect(selectedSurah) {
+        onReadingModeChange(selectedSurah != null)
+    }
     
     val lazyListState = rememberLazyListState()
 
