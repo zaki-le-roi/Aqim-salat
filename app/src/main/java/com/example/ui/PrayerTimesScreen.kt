@@ -72,6 +72,7 @@ fun PrayerTimesScreen(
     val nextTime by viewModel.nextPrayerTime.collectAsState()
     val countdown by viewModel.countdownText.collectAsState()
     val currentName by viewModel.currentPrayerName.collectAsState()
+    val hijriDate by viewModel.hijriDateString.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
     val locationConfigured by viewModel.locationConfigured.collectAsState()
     val isTrackingLocation by viewModel.isTrackingLocation.collectAsState()
@@ -148,36 +149,6 @@ fun PrayerTimesScreen(
             }
         }
 
-        // --- Nearby Mosques ---
-        item {
-            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(modifier = Modifier.padding(18.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = if (lang == "ar") "المساجد القريبة" else "Nearby Mosques", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Icon(Icons.Filled.Mosque, contentDescription = null, tint = Color(0xFFD4AF37))
-                    }
-                    nearestMosque?.let { mosque ->
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(text = if (lang == "ar") "أقرب مسجد: ${mosque.nameAr}" else "Nearest: ${mosque.nameEn}", fontWeight = FontWeight.Bold)
-                        Text(text = String.format(Locale.US, "%.2f كم", mosque.distanceKm), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.openMosqueNavigation(mosque) }, modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Filled.Navigation, contentDescription = null)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (lang == "ar") "الملاحة إلى أقرب مسجد" else "Navigate to nearest mosque")
-                        }
-                    }
-                    if (nearbyMosques.isEmpty()) {
-                        Text(text = if (lang == "ar") "لم يتم العثور على مساجد مسجلة حول موقعك بعد." else "No mapped mosques found around your location yet.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f), modifier = Modifier.padding(top = 10.dp))
-                    } else {
-                        nearbyMosques.take(5).forEach { mosque ->
-                            ListItem(headlineContent = { Text(if (lang == "ar") mosque.nameAr else mosque.nameEn, fontWeight = FontWeight.Medium) }, supportingContent = { Text(String.format(Locale.US, "%.2f كم", mosque.distanceKm)) }, leadingContent = { Icon(Icons.Filled.Place, contentDescription = null) }, trailingContent = { IconButton(onClick = { viewModel.openMosqueNavigation(mosque) }) { Icon(Icons.Filled.Navigation, contentDescription = if (lang == "ar") "الملاحة" else "Navigate") } })
-                            HorizontalDivider()
-                        }
-                    }
-                }
-            }
-        }
         if (showQazaTracker) {
             // --- Qaza (Missed) Prayer Tracker Ledger ---
             item {
@@ -394,106 +365,220 @@ fun PrayerTimesScreen(
                 }
             }
         } else {
-            // --- Primary Active Countdown Dial Gauge Card ---
+            // --- Luxury emerald and gold prayer hero ---
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    shape = RoundedCornerShape(30.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = if (lang == "ar") "الصلاة القادمة" else "NEXT PRAYER",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFD4AF37),
-                            letterSpacing = 1.5.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = Translations.get(nextName.lowercase(), lang) + " ($nextTime)",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        // Large Dynamic Circular Ring Gauge
-                        Box(
-                            modifier = Modifier.size(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            // Dial Canvas (using external safe color parameter)
-                            Canvas(modifier = Modifier.fillMaxSize()) {
-                                drawCircle(
-                                    color = baseOnSurfaceColor,
-                                    radius = size.width / 2f,
-                                    style = Stroke(width = 12.dp.toPx())
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(430.dp)
+                            .clip(RoundedCornerShape(30.dp))
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color(0xFF172B3A),
+                                        Color(0xFF123A36),
+                                        Color(0xFF071F1B)
+                                    )
                                 )
-                                drawArc(
+                            )
+                    ) {
+                        Canvas(modifier = Modifier.fillMaxSize()) {
+                            val w = size.width
+                            val h = size.height
+                            val sky = Color(0xFF172B3A)
+                            // Crescent and quiet stars.
+                            drawCircle(Color(0xFFFFE7A3), radius = w * 0.055f, center = androidx.compose.ui.geometry.Offset(w * 0.78f, h * 0.17f))
+                            drawCircle(sky, radius = w * 0.050f, center = androidx.compose.ui.geometry.Offset(w * 0.805f, h * 0.145f))
+                            listOf(
+                                androidx.compose.ui.geometry.Offset(w * 0.18f, h * 0.15f),
+                                androidx.compose.ui.geometry.Offset(w * 0.32f, h * 0.22f),
+                                androidx.compose.ui.geometry.Offset(w * 0.60f, h * 0.10f),
+                                androidx.compose.ui.geometry.Offset(w * 0.88f, h * 0.31f),
+                                androidx.compose.ui.geometry.Offset(w * 0.12f, h * 0.32f)
+                            ).forEach { drawCircle(Color(0xFFFFE7A3).copy(alpha = 0.75f), radius = 2.dp.toPx(), center = it) }
+                            // Mosque silhouette: minarets, domes and the central prayer hall.
+                            val silhouette = Color(0xFF041713).copy(alpha = 0.76f)
+                            drawRect(silhouette, topLeft = androidx.compose.ui.geometry.Offset(0f, h * 0.79f), size = androidx.compose.ui.geometry.Size(w, h * 0.21f))
+                            drawRect(silhouette, topLeft = androidx.compose.ui.geometry.Offset(w * 0.12f, h * 0.52f), size = androidx.compose.ui.geometry.Size(w * 0.055f, h * 0.36f))
+                            drawCircle(silhouette, radius = w * 0.028f, center = androidx.compose.ui.geometry.Offset(w * 0.147f, h * 0.51f))
+                            drawRect(silhouette, topLeft = androidx.compose.ui.geometry.Offset(w * 0.83f, h * 0.47f), size = androidx.compose.ui.geometry.Size(w * 0.055f, h * 0.41f))
+                            drawCircle(silhouette, radius = w * 0.028f, center = androidx.compose.ui.geometry.Offset(w * 0.858f, h * 0.46f))
+                            val dome = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(w * 0.20f, h * 0.78f)
+                                quadraticTo(w * 0.50f, h * 0.35f, w * 0.80f, h * 0.78f)
+                                close()
+                            }
+                            drawPath(dome, silhouette)
+                            drawRect(silhouette, topLeft = androidx.compose.ui.geometry.Offset(w * 0.20f, h * 0.77f), size = androidx.compose.ui.geometry.Size(w * 0.60f, h * 0.18f))
+                            val smallDome = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(w * 0.06f, h * 0.80f)
+                                quadraticTo(w * 0.17f, h * 0.62f, w * 0.28f, h * 0.80f)
+                                close()
+                            }
+                            drawPath(smallDome, silhouette)
+                            val rightDome = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(w * 0.72f, h * 0.80f)
+                                quadraticTo(w * 0.83f, h * 0.63f, w * 0.94f, h * 0.80f)
+                                close()
+                            }
+                            drawPath(rightDome, silhouette)
+                            // Fine gold horizon.
+                            drawLine(Color(0xFFD4AF37).copy(alpha = 0.45f), androidx.compose.ui.geometry.Offset(0f, h * 0.955f), androidx.compose.ui.geometry.Offset(w, h * 0.955f), strokeWidth = 1.dp.toPx())
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(
+                                            Color(0xFF061B19).copy(alpha = 0.18f),
+                                            Color(0xFF061B19).copy(alpha = 0.34f),
+                                            Color(0xFF061B19).copy(alpha = 0.58f)
+                                        )
+                                    )
+                                )
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp, vertical = 22.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = if (lang == "ar") "الصلاة القادمة" else "NEXT PRAYER",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFFF4E5B2),
+                                    letterSpacing = if (lang == "ar") 0.sp else 1.8.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = Translations.get(nextName.lowercase(), lang),
+                                    fontSize = 42.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
                                     color = Color(0xFFD4AF37),
-                                    startAngle = -90f,
-                                    sweepAngle = 270f,
-                                    useCenter = false,
-                                    style = Stroke(width = 12.dp.toPx())
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 52.sp
+                                )
+                                Text(
+                                    text = if (nextTime.isNotBlank()) "موعدها $nextTime" else if (lang == "ar") "جارٍ حساب وقت الصلاة" else "Calculating prayer time",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.White.copy(alpha = 0.94f),
+                                    textAlign = TextAlign.Center
                                 )
                             }
 
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .shadow(12.dp, RoundedCornerShape(24.dp))
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(Color(0xFF115E3F).copy(alpha = 0.85f))
+                                    .border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.95f), RoundedCornerShape(24.dp))
+                                    .padding(horizontal = 18.dp, vertical = 14.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = if (lang == "ar") "الوقت المتبقي" else "TIME REMAINING",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFFF4E5B2),
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     text = countdown,
                                     fontSize = 32.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = Translations.get("remaining", lang),
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    letterSpacing = 2.sp,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
                                 )
                             }
-                        }
 
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Surface(
-                                onClick = { showLocationDialog = true },
-                                shape = RoundedCornerShape(16.dp),
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                                modifier = Modifier.testTag("change_location_button")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Surface(
+                                    onClick = { showLocationDialog = true },
+                                    shape = RoundedCornerShape(50),
+                                    color = Color.White.copy(alpha = 0.10f),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD4AF37).copy(alpha = 0.65f)),
+                                    modifier = Modifier.testTag("change_location_button")
                                 ) {
-                                    Icon(Icons.Filled.LocationOn, contentDescription = if (lang == "ar") "الموقع" else "Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = if (locationConfigured) locationName else "لم يتم تحديد الموقع بعد",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Icon(Icons.Filled.Edit, contentDescription = if (lang == "ar") "تعديل الموقع" else "Edit Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(12.dp))
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Icon(Icons.Filled.LocationOn, contentDescription = if (lang == "ar") "الموقع" else "Location", tint = Color(0xFFD4AF37), modifier = Modifier.size(17.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (locationConfigured) locationName else if (lang == "ar") "حدّد موقعك" else "Set your location",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color.White,
+                                            maxLines = 1
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Icon(Icons.Filled.Edit, contentDescription = if (lang == "ar") "تعديل الموقع" else "Edit location", tint = Color(0xFFF4E5B2), modifier = Modifier.size(13.dp))
+                                    }
                                 }
+                                Text(
+                                    text = hijriDate,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                                    color = Color(0xFFF4E5B2),
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1
+                                )
                             }
                         }
                     }
                 }
             }
 
-            // Today's list
+        // --- Nearby Mosques ---
+        item {
+            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(modifier = Modifier.padding(18.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = if (lang == "ar") "المساجد القريبة" else "Nearby Mosques", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Filled.Mosque, contentDescription = null, tint = Color(0xFFD4AF37))
+                    }
+                    nearestMosque?.let { mosque ->
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(text = if (lang == "ar") "أقرب مسجد: ${mosque.nameAr}" else "Nearest: ${mosque.nameEn}", fontWeight = FontWeight.Bold)
+                        Text(text = String.format(Locale.US, "%.2f كم", mosque.distanceKm), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { viewModel.openMosqueNavigation(mosque) }, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Filled.Navigation, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (lang == "ar") "الملاحة إلى أقرب مسجد" else "Navigate to nearest mosque")
+                        }
+                    }
+                    if (nearbyMosques.isEmpty()) {
+                        Text(text = if (lang == "ar") "لم يتم العثور على مساجد مسجلة حول موقعك بعد." else "No mapped mosques found around your location yet.", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f), modifier = Modifier.padding(top = 10.dp))
+                    } else {
+                        nearbyMosques.take(5).forEach { mosque ->
+                            ListItem(headlineContent = { Text(if (lang == "ar") mosque.nameAr else mosque.nameEn, fontWeight = FontWeight.Medium) }, supportingContent = { Text(String.format(Locale.US, "%.2f كم", mosque.distanceKm)) }, leadingContent = { Icon(Icons.Filled.Place, contentDescription = null) }, trailingContent = { IconButton(onClick = { viewModel.openMosqueNavigation(mosque) }) { Icon(Icons.Filled.Navigation, contentDescription = if (lang == "ar") "الملاحة" else "Navigate") } })
+                            HorizontalDivider()
+                        }
+                    }
+                }
+            }
+        }
+             // Today's list
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
