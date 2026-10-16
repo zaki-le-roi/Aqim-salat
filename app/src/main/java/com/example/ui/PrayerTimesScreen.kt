@@ -646,72 +646,91 @@ fun PrayerTimesScreen(
         var citySearchFilter by remember { mutableStateOf("") }
         val locationScope = rememberCoroutineScope()
 
+        var geocodedCityResults by remember { mutableStateOf<List<Triple<String, Double, Double>>>(emptyList()) }
         val presetCities = remember {
-            listOf(
-                Triple("مكة المكرمة", 21.4225, 39.8262),
-                Triple("المدينة المنورة", 24.4672, 39.6111),
-                Triple("القدس الشريف", 31.7683, 35.2137),
-                Triple("الرياض", 24.7136, 46.6753),
-                Triple("جدة", 21.5433, 39.1728),
-                Triple("القاهرة", 30.0444, 31.2357),
-                Triple("الإسكندرية", 31.2001, 29.9187),
-                Triple("الجزائر العاصمة", 36.7538, 3.0588),
-                Triple("وهران", 35.6987, -0.6349),
-                Triple("قسنطينة", 36.3650, 6.6147),
-                Triple("سطيف", 36.1911, 5.4137),
-                Triple("عنابة", 36.9000, 7.7667),
-                Triple("باتنة", 35.5559, 6.1741),
-                Triple("تلمسان", 34.8783, -1.3150),
-                Triple("تونس", 36.8065, 10.1815),
-                Triple("صفاقس", 34.7406, 10.7603),
-                Triple("سوسة", 35.8256, 10.6084),
-                Triple("الرباط", 34.0209, -6.8416),
-                Triple("الدار البيضاء", 33.5731, -7.5898),
-                Triple("فاس", 34.0181, -5.0078),
-                Triple("مراكش", 31.6295, -7.9811),
-                Triple("طنجة", 35.7595, -5.8340),
-                Triple("طرابلس", 32.8872, 13.1913),
-                Triple("بنغازي", 32.1167, 20.0667),
-                Triple("مصراتة", 32.3754, 15.0925),
-                Triple("الخرطوم", 15.5007, 32.5599),
-                Triple("أم درمان", 15.6445, 32.4777),
-                Triple("دمشق", 33.5138, 36.2765),
-                Triple("حلب", 36.2021, 37.1343),
-                Triple("حمص", 34.7324, 36.7137),
-                Triple("بغداد", 33.3152, 44.3661),
-                Triple("البصرة", 30.5085, 47.7804),
-                Triple("الموصل", 36.3400, 43.1300),
-                Triple("أربيل", 36.1911, 44.0091),
-                Triple("عمّان", 31.9454, 35.9284),
-                Triple("الزرقاء", 32.0728, 36.0880),
-                Triple("إربد", 32.5568, 35.8469),
-                Triple("بيروت", 33.8938, 35.5018),
-                Triple("طرابلس الشام", 34.4367, 35.8497),
-                Triple("الكويت", 29.3759, 47.9774),
-                Triple("الدوحة", 25.2854, 51.5310),
-                Triple("أبوظبي", 24.4539, 54.3773),
-                Triple("دبي", 25.2048, 55.2708),
-                Triple("الشارقة", 25.3573, 55.4033),
-                Triple("مسقط", 23.5880, 58.3829),
-                Triple("صلالة", 17.0151, 54.0924),
-                Triple("المنامة", 26.2285, 50.5860),
-                Triple("صنعاء", 15.3694, 44.1910),
-                Triple("عدن", 12.7797, 45.0367),
-                Triple("تعز", 13.5795, 44.0209),
-                Triple("إسطنبول", 41.0082, 28.9784),
-                Triple("أنقرة", 39.9334, 32.8597),
-                Triple("جاكرتا", -6.2088, 106.8456),
-                Triple("كوالالمبور", 3.1390, 101.6869)
+            val algerianWilayas = listOf(
+                Triple("أدرار",27.8743,-0.2939), Triple("الشلف",36.1653,1.3345), Triple("الأغواط",33.8000,2.8651),
+                Triple("أم البواقي",35.8754,7.1135), Triple("باتنة",35.5559,6.1741), Triple("بجاية",36.7509,5.0567),
+                Triple("بسكرة",34.8504,5.7281), Triple("بشار",31.6167,-2.2167), Triple("البليدة",36.4700,2.8277),
+                Triple("البويرة",36.3749,3.9020), Triple("تمنراست",22.7850,5.5228), Triple("تبسة",35.4042,8.1242),
+                Triple("تلمسان",34.8783,-1.3150), Triple("تيارت",35.3710,1.3170), Triple("تيزي وزو",36.7118,4.0459),
+                Triple("الجزائر العاصمة",36.7538,3.0588), Triple("الجلفة",34.6704,3.2504), Triple("جيجل",36.8206,5.7667),
+                Triple("سطيف",36.1911,5.4137), Triple("سعيدة",34.8303,0.1517), Triple("سكيكدة",36.8667,6.9000),
+                Triple("سيدي بلعباس",35.1899,-0.6309), Triple("عنابة",36.9000,7.7667), Triple("قالمة",36.4621,7.4261),
+                Triple("قسنطينة",36.3650,6.6147), Triple("المدية",36.2674,2.7500), Triple("مستغانم",35.9311,0.0892),
+                Triple("المسيلة",35.7058,4.5419), Triple("معسكر",35.3966,0.1403), Triple("ورقلة",31.9520,5.3330),
+                Triple("وهران",35.6987,-0.6349), Triple("البيض",33.6832,1.0193), Triple("إليزي",26.4833,8.4667),
+                Triple("برج بوعريريج",36.0732,4.7611), Triple("بومرداس",36.7564,3.4772), Triple("الطارف",36.7672,8.3138),
+                Triple("تندوف",27.6711,-8.1474), Triple("تيسمسيلت",35.6072,1.8108), Triple("الوادي",33.3561,6.8632),
+                Triple("خنشلة",35.4358,7.1433), Triple("سوق أهراس",36.2864,7.9511), Triple("تيبازة",36.5897,2.4475),
+                Triple("ميلة",36.4503,6.2644), Triple("عين الدفلى",36.2641,1.9679), Triple("النعامة",33.2667,-0.3167),
+                Triple("عين تموشنت",35.2975,-1.1404), Triple("غرداية",32.4909,3.6735), Triple("غليزان",35.7373,0.5559),
+                Triple("تيميمون",29.2639,0.2306), Triple("برج باجي مختار",21.3270,0.9517), Triple("أولاد جلال",34.4333,5.0667),
+                Triple("بني عباس",30.1333,-2.1667), Triple("عين صالح",27.1975,2.4800), Triple("عين قزام",19.5667,5.7667),
+                Triple("تقرت",33.1000,6.0667), Triple("جانت",24.5541,9.4840), Triple("المغير",33.9500,5.9167),
+                Triple("المنيعة",30.5833,2.8833)
             )
+            val worldCities = listOf(
+                Triple("مكة المكرمة",21.4225,39.8262), Triple("المدينة المنورة",24.4672,39.6111),
+                Triple("القدس الشريف",31.7683,35.2137), Triple("الرياض",24.7136,46.6753), Triple("جدة",21.5433,39.1728),
+                Triple("القاهرة",30.0444,31.2357), Triple("الإسكندرية",31.2001,29.9187), Triple("تونس",36.8065,10.1815),
+                Triple("صفاقس",34.7406,10.7603), Triple("سوسة",35.8256,10.6084), Triple("الرباط",34.0209,-6.8416),
+                Triple("الدار البيضاء",33.5731,-7.5898), Triple("فاس",34.0181,-5.0078), Triple("مراكش",31.6295,-7.9811),
+                Triple("طنجة",35.7595,-5.8340), Triple("طرابلس",32.8872,13.1913), Triple("بنغازي",32.1167,20.0667),
+                Triple("الخرطوم",15.5007,32.5599), Triple("دمشق",33.5138,36.2765), Triple("حلب",36.2021,37.1343),
+                Triple("بغداد",33.3152,44.3661), Triple("البصرة",30.5085,47.7804), Triple("عمّان",31.9454,35.9284),
+                Triple("بيروت",33.8938,35.5018), Triple("الكويت",29.3759,47.9774), Triple("الدوحة",25.2854,51.5310),
+                Triple("أبوظبي",24.4539,54.3773), Triple("دبي",25.2048,55.2708), Triple("مسقط",23.5880,58.3829),
+                Triple("المنامة",26.2285,50.5860), Triple("إسطنبول",41.0082,28.9784), Triple("أنقرة",39.9334,32.8597),
+                Triple("جاكرتا",-6.2088,106.8456), Triple("كوالالمبور",3.1390,101.6869), Triple("باريس",48.8566,2.3522),
+                Triple("لندن",51.5074,-0.1278), Triple("مدريد",40.4168,-3.7038), Triple("روما",41.9028,12.4964),
+                Triple("برلين",52.5200,13.4050), Triple("نيويورك",40.7128,-74.0060), Triple("تورونتو",43.6532,-79.3832),
+                Triple("لوس أنجلوس",34.0522,-118.2437), Triple("طوكيو",35.6762,139.6503), Triple("سيول",37.5665,126.9780),
+                Triple("دلهي",28.6139,77.2090), Triple("إسلام آباد",33.6844,73.0479), Triple("كراتشي",24.8607,67.0011),
+                Triple("داكار",14.7167,-17.4677), Triple("نيروبي",-1.2921,36.8219), Triple("كيب تاون",-33.9249,18.4241)
+            )
+            val collator = java.text.Collator.getInstance(Locale("ar"))
+            (algerianWilayas + worldCities).distinctBy { it.first }
+                .sortedWith(Comparator { a, b -> collator.compare(a.first, b.first) })
         }
-
-        val filteredPresetCities = remember(citySearchFilter) {
-            if (citySearchFilter.isBlank()) presetCities
-            else presetCities.filter { it.first.contains(citySearchFilter.trim()) }
+        val filteredPresetCities = remember(citySearchFilter, geocodedCityResults, presetCities) {
+            val query = citySearchFilter.trim()
+            val matchingPresets = if (query.isBlank()) presetCities else presetCities.filter {
+                it.first.contains(query, ignoreCase = true)
+            }
+            val collator = java.text.Collator.getInstance(Locale("ar"))
+            (matchingPresets + geocodedCityResults).distinctBy { it.first.lowercase(Locale.ROOT) }
+                .sortedWith(Comparator { a, b -> collator.compare(a.first, b.first) })
+        }
+        LaunchedEffect(citySearchFilter) {
+            val query = citySearchFilter.trim()
+            if (query.isBlank()) {
+                geocodedCityResults = emptyList()
+            } else {
+                kotlinx.coroutines.delay(350)
+                geocodedCityResults = withContext(Dispatchers.IO) {
+                    runCatching {
+                        if (!Geocoder.isPresent()) emptyList()
+                        else {
+                            @Suppress("DEPRECATION")
+                            Geocoder(context, Locale("ar")).getFromLocationName(query, 15).orEmpty().mapNotNull { address ->
+                                if (!address.hasLatitude() || !address.hasLongitude()) null
+                                else {
+                                    val place = address.locality ?: address.subAdminArea ?: address.adminArea ?: query
+                                    val country = address.countryName.orEmpty()
+                                    val name = listOf(place, country).filter { it.isNotBlank() }.distinct().joinToString("، ")
+                                    Triple(name.ifBlank { query }, address.latitude, address.longitude)
+                                }
+                            }
+                        }
+                    }.getOrDefault(emptyList())
+                }
+            }
         }
 
         AlertDialog(
             onDismissRequest = { showLocationDialog = false },
+            containerColor = Color(0xFFFAF8F5),
             title = {
                 Text(
                     text = if (lang == "ar") "تحديد المدينة أو الموقع" else "Select City or Location",
@@ -722,7 +741,7 @@ fun PrayerTimesScreen(
             text = {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(14.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 540.dp)
                 ) {
                     // Quick City Selection section
                     item {
@@ -750,56 +769,52 @@ fun PrayerTimesScreen(
                         )
                     }
 
-                    // Horizontal / flowing quick chips of preset cities
+                    // Scrollable manual list; worldwide Geocoder matches are added while typing.
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 140.dp)
+                        Text(
+                            text = if (lang == "ar") "ولايات الجزائر ومدن العالم" else "Algerian wilayas and cities worldwide",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F4C3A),
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 90.dp, max = 230.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
-                                verticalArrangement = Arrangement.spacedBy(6.dp),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                items(filteredPresetCities.take(20)) { city ->
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = if (locationName == city.first) Color(0xFF0F4C3A) else MaterialTheme.colorScheme.surfaceVariant,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                viewModel.setManualCity(city.first, city.second, city.third)
-                                                showLocationDialog = false
-                                            }
-                                            .testTag("city_chip_${city.first}")
+                            items(filteredPresetCities.take(100), key = { it.first }) { city ->
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = if (locationName == city.first) Color(0xFF0F4C3A) else Color.White,
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8DDC8)),
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        viewModel.setManualCity(city.first, city.second, city.third)
+                                        showLocationDialog = false
+                                    }.testTag("city_chip_${city.first}")
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                Icons.Filled.LocationCity,
-                                                contentDescription = null,
-                                                tint = if (locationName == city.first) Color.White else MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(
-                                                text = city.first,
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                color = if (locationName == city.first) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                maxLines = 1
-                                            )
-                                        }
+                                        Icon(
+                                            Icons.Filled.LocationCity,
+                                            contentDescription = null,
+                                            tint = if (locationName == city.first) Color.White else Color(0xFF0F4C3A),
+                                            modifier = Modifier.size(17.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(9.dp))
+                                        Text(
+                                            text = city.first,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = if (locationName == city.first) Color.White else Color(0xFF25251F),
+                                            maxLines = 1
+                                        )
                                     }
                                 }
                             }
                         }
                     }
-
                     // Divider
                     item {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))

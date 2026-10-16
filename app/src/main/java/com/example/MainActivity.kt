@@ -226,6 +226,7 @@ fun AqimSalahApp(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                         .testTag("floating_navigation_container")
                 ) {

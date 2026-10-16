@@ -266,7 +266,7 @@ fun QuranScreen(
                             )
                         )
                         .statusBarsPadding()
-                        .padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 22.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 10.dp)
                 ) {
                     // Quiet decorative motif, kept behind the readable content.
                     Box(
@@ -346,10 +346,10 @@ fun QuranScreen(
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(23.dp))
+                        Spacer(modifier = Modifier.height(7.dp))
                         Text(
                             text = "وَلَقَدْ يَسَّرْنَا الْقُرْآنَ لِلذِّكْرِ",
-                            fontSize = 22.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFE3C47D)
                         )
@@ -359,7 +359,7 @@ fun QuranScreen(
                             fontSize = 12.sp,
                             color = Color.White.copy(alpha = 0.78f)
                         )
-                        Spacer(modifier = Modifier.height(17.dp))
+                        Spacer(modifier = Modifier.height(7.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(9.dp)
@@ -376,7 +376,7 @@ fun QuranScreen(
                                         text = label,
                                         color = Color.White.copy(alpha = 0.88f),
                                         fontSize = 10.sp,
-                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 7.dp)
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp)
                                     )
                                 }
                             }
@@ -386,8 +386,9 @@ fun QuranScreen(
 
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
                 ) {
                     Spacer(modifier = Modifier.height(14.dp))
 
@@ -573,9 +574,9 @@ fun QuranScreen(
                     // --- Surah Scrollable List ---
                     LazyColumn(
                         state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 100.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentPadding = PaddingValues(bottom = 88.dp, top = 2.dp),
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         if (selectedTab == "BOOKMARKS") {
                             val quranBookmarks = bookmarks.filter { it.type == "QURAN" }
@@ -701,7 +702,7 @@ fun QuranScreen(
                                     border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFE2E2E2))
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(16.dp),
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
@@ -709,13 +710,13 @@ fun QuranScreen(
                                             // Star Number Badge
                                             IslamicStarBadge(number = surah.id)
 
-                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Spacer(modifier = Modifier.width(10.dp))
 
                                             Column {
                                                 Text(
                                                     text = surah.name,
                                                     fontWeight = FontWeight.Bold,
-                                                    fontSize = 17.sp,
+                                                    fontSize = 15.sp,
                                                     color = MaterialTheme.colorScheme.primary
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))

@@ -566,8 +566,9 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "عداد رقمي ذكي" else "Smart Counter",
-                                color = Color.White.copy(alpha = 0.78f),
-                                fontSize = 10.sp,
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp
+                                fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -605,8 +606,9 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "صباح ومساء ونوم" else "Morning & Evening",
-                                color = Color.White.copy(alpha = 0.78f),
-                                fontSize = 10.sp,
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp
+                                fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -650,8 +652,9 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "بوصلة دقيقة" else "Accurate Compass",
-                                color = Color.White.copy(alpha = 0.78f),
-                                fontSize = 10.sp,
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp
+                                fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -689,8 +692,9 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "أدعية جامعة" else "Fortress of Dua",
-                                color = Color.White.copy(alpha = 0.78f),
-                                fontSize = 10.sp,
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp
+                                fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -728,8 +732,9 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "أمهات الكتب" else "Core Texts",
-                                color = Color.White.copy(alpha = 0.78f),
-                                fontSize = 10.sp,
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp
+                                fontWeight = FontWeight.Medium,
                                 textAlign = TextAlign.Center
                             )
                         }
