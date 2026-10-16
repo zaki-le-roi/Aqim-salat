@@ -946,7 +946,7 @@ fun SurahReader(
                             state = transformState,
                             canPan = { pageScale > 1f }
                         ),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
                 )
             }
         }
@@ -1032,41 +1032,6 @@ fun SurahReader(
             }
         }
 
-        // Persistent Mushaf identity badge: remains visible even when reader controls are hidden.
-        Surface(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(
-                    end = 10.dp,
-                    bottom = if (controlsVisible) 76.dp else 12.dp
-                ),
-            shape = RoundedCornerShape(50),
-            color = Color(0xE6115E3F),
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp, Color(0xFFD4AF37).copy(alpha = 0.75f)
-            ),
-            shadowElevation = 3.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MenuBook,
-                    contentDescription = "المصحف الشريف",
-                    tint = Color(0xFFE3C47D),
-                    modifier = Modifier.size(15.dp)
-                )
-                Text(
-                    text = "مصحف المدينة النبوية",
-                    color = Color.White,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1
-                )
-            }
-        }
 
         if (showIndex) {
             MaterialTheme(
