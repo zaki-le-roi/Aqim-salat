@@ -782,7 +782,7 @@ fun PrayerTimesScreen(
                             modifier = Modifier.fillMaxWidth().heightIn(min = 90.dp, max = 230.dp),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            items(filteredPresetCities.take(100), key = { it.first }) { city ->
+                            items(filteredPresetCities, key = { it.first }) { city ->
                                 Surface(
                                     shape = RoundedCornerShape(12.dp),
                                     color = if (locationName == city.first) Color(0xFF0F4C3A) else Color.White,
