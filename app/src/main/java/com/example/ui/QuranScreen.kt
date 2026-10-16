@@ -907,7 +907,7 @@ fun SurahReader(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(Color(0xFFFDFBF7))
     ) {
         HorizontalPager(
             state = pagerState,
@@ -916,7 +916,7 @@ fun SurahReader(
                 .clickable { controlsVisible = !controlsVisible }
         ) { pageIndex ->
             // 604-page Hafs Tajweed Mushaf images (colored recitation marks).
-            val pageUrl = "https://raw.githubusercontent.com/QuranHub/quran-pages-images/main/easyquran.com/hafs-tajweed/${pageIndex + 1}.jpg"
+            val pageUrl = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images/${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
             var pageScale by remember(pageIndex) { mutableFloatStateOf(1f) }
             var pageOffsetX by remember(pageIndex) { mutableFloatStateOf(0f) }
             var pageOffsetY by remember(pageIndex) { mutableFloatStateOf(0f) }
@@ -952,7 +952,7 @@ fun SurahReader(
                             state = transformState,
                             canPan = { pageScale > 1f }
                         ),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
                 )
             }
         }
