@@ -2,6 +2,7 @@ package com.example.ui
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.background
@@ -27,6 +28,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -69,6 +72,9 @@ fun HomeScreen(
 
 
 
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = FontFamily.Serif)
+    ) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -79,8 +85,6 @@ fun HomeScreen(
         // --- 1. DYNAMIC SKY HEADER WITH NEXT PRAYER COUNTDOWN ---
         item {
             val hour = liveClockTime.take(2).toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
-            // ألوان ثابتة متناسقة مع الهوية العاجية والخضراء والذهبية.
-            val skyColors = listOf(Color(0xFFF8F2E7), Color(0xFFECE0C8), Color(0xFFF8F6F0))
             val nextPrayerArabic = when (nextName.lowercase()) {
                 "fajr" -> "الفجر"
                 "dhuhr" -> "الظهر"
@@ -92,16 +96,45 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(370.dp)
-                    .background(Brush.verticalGradient(listOf(Color(0xFFF8F2E7), Color(0xFFECE0C8), Color(0xFFF8F6F0))))
+                    .height(390.dp)
+                    .background(Brush.verticalGradient(listOf(Color(0xFF172B3A), Color(0xFF16483D), Color(0xFF071F1B))))
             ) {
-                // Subtle atmospheric glow; the background palette follows the local time.
+                // Drawn night sky, crescent and mosque silhouette; existing icons remain unchanged.
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val sky = Color(0xFF172B3A)
+                    drawCircle(Color(0xFFFFE7A3), radius = w * 0.065f, center = androidx.compose.ui.geometry.Offset(w * 0.80f, h * 0.18f))
+                    drawCircle(sky, radius = w * 0.058f, center = androidx.compose.ui.geometry.Offset(w * 0.825f, h * 0.15f))
+                    listOf(
+                        androidx.compose.ui.geometry.Offset(w * 0.16f, h * 0.13f),
+                        androidx.compose.ui.geometry.Offset(w * 0.30f, h * 0.22f),
+                        androidx.compose.ui.geometry.Offset(w * 0.57f, h * 0.11f),
+                        androidx.compose.ui.geometry.Offset(w * 0.91f, h * 0.30f),
+                        androidx.compose.ui.geometry.Offset(w * 0.10f, h * 0.34f)
+                    ).forEach { drawCircle(Color(0xFFFFE7A3).copy(alpha = 0.8f), radius = 1.8.dp.toPx(), center = it) }
+                    val mosque = Color(0xFF041713).copy(alpha = 0.86f)
+                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(0f, h * 0.82f), size = androidx.compose.ui.geometry.Size(w, h * 0.18f))
+                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(w * 0.13f, h * 0.52f), size = androidx.compose.ui.geometry.Size(w * 0.045f, h * 0.39f))
+                    drawCircle(mosque, radius = w * 0.024f, center = androidx.compose.ui.geometry.Offset(w * 0.153f, h * 0.51f))
+                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(w * 0.82f, h * 0.47f), size = androidx.compose.ui.geometry.Size(w * 0.05f, h * 0.44f))
+                    drawCircle(mosque, radius = w * 0.026f, center = androidx.compose.ui.geometry.Offset(w * 0.845f, h * 0.46f))
+                    val dome = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(w * 0.20f, h * 0.81f)
+                        quadraticTo(w * 0.50f, h * 0.40f, w * 0.80f, h * 0.81f)
+                        close()
+                    }
+                    drawPath(dome, mosque)
+                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(w * 0.20f, h * 0.80f), size = androidx.compose.ui.geometry.Size(w * 0.60f, h * 0.20f))
+                    drawLine(Color(0xFFD4AF37).copy(alpha = 0.55f), androidx.compose.ui.geometry.Offset(0f, h * 0.96f), androidx.compose.ui.geometry.Offset(w, h * 0.96f), strokeWidth = 1.dp.toPx())
+                }
+                // Dark overlay preserves text contrast.
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(Color.White.copy(alpha = 0.28f), Color.Transparent, Color(0xFFB89A52).copy(alpha = 0.06f))
+                                colors = listOf(Color(0xFF061B19).copy(alpha = 0.14f), Color(0xFF061B19).copy(alpha = 0.12f), Color(0xFF061B19).copy(alpha = 0.38f))
                             )
                         )
                 )
@@ -122,12 +155,12 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFF0D4F3A).copy(alpha = 0.08f))
+                                    .background(Color.White.copy(alpha = 0.12f))
                                     .clickable { appMenuExpanded = true }
                                     .testTag("home_app_menu_button"),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.GridView, contentDescription = "القائمة الرئيسية", tint = Color(0xFF0D4F3A))
+                                Icon(Icons.Filled.GridView, contentDescription = "القائمة الرئيسية", tint = Color(0xFFFFE7A3))
                             }
                             DropdownMenu(
                                 expanded = appMenuExpanded,
@@ -196,8 +229,8 @@ fun HomeScreen(
                             }
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("أقم صلاتك", color = Color(0xFF0D4F3A), fontSize = 19.sp, fontWeight = FontWeight.Bold)
-                            Text(locationName, color = Color(0xFF20352B).copy(alpha = 0.78f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("أقم صلاتك", color = Color(0xFFFFE7A3), fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                            Text(locationName, color = Color.White.copy(alpha = 0.86f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         Box(
                             modifier = Modifier
@@ -207,24 +240,26 @@ fun HomeScreen(
                                 .clickable { onNavigateToFeature("SETTINGS") },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Filled.Settings, contentDescription = "الإعدادات", tint = Color(0xFF0D4F3A))
+                            Icon(Icons.Filled.Settings, contentDescription = "الإعدادات", tint = Color(0xFFFFE7A3))
                         }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Text("الصلاة القادمة", color = Color(0xFF8C7139), fontSize = 15.sp, fontWeight = FontWeight.Medium)
+                    Text("الصلاة القادمة", color = Color(0xFFFFE7A3), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         nextPrayerArabic,
-                        color = Color(0xFF0D4F3A),
-                        fontSize = 38.sp,
+                        color = Color(0xFFFFD76A),
+                        fontSize = 46.sp,
                         fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Serif,
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = if (nextTime.isNotBlank()) "موعدها $nextTime" else "جارٍ حساب وقت الصلاة",
-                        color = Color(0xFF20352B).copy(alpha = 0.86f),
-                        fontSize = 14.sp
+                        color = Color.White.copy(alpha = 0.96f),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     Column(
@@ -708,6 +743,7 @@ fun HomeScreen(
 
 
 
+    }
     }
 }
 
