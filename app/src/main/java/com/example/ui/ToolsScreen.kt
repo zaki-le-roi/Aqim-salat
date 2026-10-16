@@ -200,6 +200,7 @@ fun ToolsScreen(
 @Composable
 fun TasbihTool(viewModel: AppViewModel, lang: String) {
     val counters by viewModel.tasbihCounters.collectAsState()
+    val hapticsEnabled by viewModel.hapticsEnabled.collectAsState()
     var selectedCounter by remember { mutableStateOf<TasbihCounter?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
     var isBacklightOn by remember { mutableStateOf(false) }
@@ -282,7 +283,39 @@ fun TasbihTool(viewModel: AppViewModel, lang: String) {
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 1.dp
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "الاهتزاز عند الضغط",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = if (hapticsEnabled) "مفعّل" else "متوقف",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = hapticsEnabled,
+                    onCheckedChange = { viewModel.setHapticsEnabled(it) },
+                    modifier = Modifier.testTag("tasbih_haptics_switch")
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
 
         if (selectedCounter != null) {
             val counter = selectedCounter!!

@@ -119,7 +119,7 @@ fun HadithScreen(
 
     if (selectedBook != null) {
         // --- Dedicated Book Screen ---
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             if (isLoadingFullBook) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
@@ -188,6 +188,7 @@ fun HadithScreen(
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
+                .statusBarsPadding()
         ) {
             // Header Top Bar
             Surface(
@@ -751,43 +752,7 @@ fun HadithBookDetailScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // --- 3. SOURCE & SCOPE CLARIFICATION BANNER ---
-                        // "إذا لم يتوفر المحتوى الكامل لكتاب معين، فاذكر ذلك بوضوح ولا تدّعِ اكتماله"
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (book.isFullyBundled) Color(0xFFE8F5E9) else Color(0xFFFFF8E1),
-                            border = androidx.compose.foundation.BorderStroke(
-                                0.8.dp,
-                                if (book.isFullyBundled) Color(0xFF4CAF50) else Color(0xFFFFB300)
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = if (book.isFullyBundled) Icons.Filled.CheckCircle else Icons.Filled.Info,
-                                    contentDescription = null,
-                                    tint = if (book.isFullyBundled) Color(0xFF2E7D32) else Color(0xFFF57F17),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        text = "المصدر المعتمد: " + book.verifiedSource,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (book.isFullyBundled) Color(0xFF1B5E20) else Color(0xFFE65100)
-                                    )
-                                    Text(
-                                        text = "نطاق المحتوى: " + book.availableContentDesc,
-                                        fontSize = 10.sp,
-                                        color = Color.DarkGray
-                                    )
-                                }
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
                 }
             }

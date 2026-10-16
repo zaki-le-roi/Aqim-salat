@@ -126,10 +126,13 @@ fun CalendarScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "${currentHijri.day} ${currentHijri.monthName} ${currentHijri.year} هـ",
-                        fontSize = 26.sp,
+                        modifier = Modifier.fillMaxWidth(),
+                        fontSize = 22.sp,
+                        lineHeight = 30.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        maxLines = 2
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -281,9 +284,12 @@ fun CalendarScreen(
                             Text(
                                 text = convertedHijriResult,
                                 fontWeight = FontWeight.Bold,
+                                modifier = Modifier.fillMaxWidth(),
                                 fontSize = 18.sp,
-                                color = Color(0xFFC59B27),
-                                textAlign = TextAlign.Center
+                                lineHeight = 26.sp,
+                                color = Color(0xFF8B6B15),
+                                textAlign = TextAlign.Center,
+                                maxLines = 2
                             )
                         }
                     }
@@ -326,14 +332,14 @@ fun CalendarScreen(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFFD4AF37).copy(alpha = 0.15f))
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    .background(Color(0xFFD4AF37).copy(alpha = 0.22f))
+                                    .padding(horizontal = 10.dp, vertical = 7.dp)
                             ) {
                                 Text(
                                     text = dateStr,
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFC59B27)
+                                    color = Color(0xFF76570C)
                                 )
                             }
                         }
