@@ -11,6 +11,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -907,17 +909,41 @@ fun SurahReader(
                 .clickable { controlsVisible = !controlsVisible }
         ) { pageIndex ->
             val pageUrl = "https://android.quran.com/data/width_1260/page${(pageIndex + 1).toString().padStart(3, '0')}.png"
+            var pageScale by remember(pageIndex) { mutableFloatStateOf(1f) }
+            var pageOffsetX by remember(pageIndex) { mutableFloatStateOf(0f) }
+            var pageOffsetY by remember(pageIndex) { mutableFloatStateOf(0f) }
+            val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+                val nextScale = (pageScale * zoomChange).coerceIn(1f, 4f)
+                pageScale = nextScale
+                if (nextScale > 1f) {
+                    pageOffsetX += panChange.x
+                    pageOffsetY += panChange.y
+                } else {
+                    pageOffsetX = 0f
+                    pageOffsetY = 0f
+                }
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFFDFBF7))
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                    .background(Color(0xFFFDFBF7)),
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
                     model = pageUrl,
                     contentDescription = "صفحة المصحف الشريف رقم ${pageIndex + 1}",
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = pageScale
+                            scaleY = pageScale
+                            translationX = pageOffsetX
+                            translationY = pageOffsetY
+                        }
+                        .transformable(
+                            state = transformState,
+                            canPan = { pageScale > 1f }
+                        ),
                     contentScale = androidx.compose.ui.layout.ContentScale.Fit
                 )
             }
