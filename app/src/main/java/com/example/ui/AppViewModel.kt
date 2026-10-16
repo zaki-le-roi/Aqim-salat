@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Build
 import android.os.Vibrator
 import android.os.VibrationEffect
@@ -44,17 +43,6 @@ data class WeeklyPrayerSummary(
 ) {
     val completedCount: Int get() = onTimeCount + lateCount
 }
-
-data class LocalMosque(
-    val id: Long,
-    val nameAr: String,
-    val nameEn: String,
-    val lat: Double,
-    val lng: Double,
-    val addressAr: String,
-    val addressEn: String,
-    val distanceKm: Double = 0.0
-)
 
 private data class PrayerCalculationSettings(
     val latitude: Double,
@@ -108,18 +96,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val autoSilentEnabled: StateFlow<Boolean> = repo.autoSilentEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val themeMode: StateFlow<String> = repo.appThemeMode.stateIn(viewModelScope, SharingStarted.Eagerly, "AUTO")
     val wallpaper: StateFlow<String> = repo.appWallpaper.stateIn(viewModelScope, SharingStarted.Eagerly, "DEFAULT")
-    val prefMosqueId: StateFlow<String> = repo.prefMosqueId.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val prefMosqueName: StateFlow<String> = repo.prefMosqueName.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val prefMosqueLat: StateFlow<Double> = repo.prefMosqueLat.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
-    val prefMosqueLng: StateFlow<Double> = repo.prefMosqueLng.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
-    val prefMosqueAddr: StateFlow<String> = repo.prefMosqueAddr.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val prefMosqueRemind: StateFlow<Boolean> = repo.prefMosqueRemind.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     // --- Database Observables ---
     val tasbihCounters: StateFlow<List<TasbihCounter>> = repo.allTasbihCounters.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val bookmarks: StateFlow<List<Bookmark>> = repo.allBookmarks.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val quranHistory: StateFlow<List<QuranHistory>> = repo.quranHistory.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val favoriteMosques: StateFlow<List<FavoriteMosque>> = repo.favoriteMosques.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val allKhatmahs: StateFlow<List<Khatmah>> = repo.allKhatmahs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val allQuranNotes: StateFlow<List<QuranNote>> = repo.allQuranNotes.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -183,12 +164,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _isFastingToday = MutableStateFlow(false)
     val isFastingToday: StateFlow<Boolean> = _isFastingToday.asStateFlow()
 
-    // --- Real-time Location Tracking & Nearby Mosques ---
+    // --- Location Tracking ---
     private var locationCallback: LocationCallback? = null
-    
-    private val _nearbyRealMosques = MutableStateFlow<List<LocalMosque>>(emptyList())
-    val nearbyRealMosques: StateFlow<List<LocalMosque>> = _nearbyRealMosques.asStateFlow()
-    val nearestRealMosque: StateFlow<LocalMosque?> = nearbyRealMosques.map { it.firstOrNull() }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     
     private val _isTrackingLocation = MutableStateFlow(false)
     val isTrackingLocation: StateFlow<Boolean> = _isTrackingLocation.asStateFlow()
@@ -362,7 +339,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repo.setLocation("My Location", lat, lng)
             try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
             try { PrayerTimesWidgetProvider.requestUpdate(context) } catch (_: Exception) { }
-            fetchRealNearbyMosques(lat, lng)
 
             val geocoder = runCatching {
                 Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
@@ -398,101 +374,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (_: Exception) {
                 // Coordinates are already persisted; address resolution is optional.
-            }
-        }
-    }
-
-    fun openMosqueNavigation(mosque: LocalMosque) {
-        val uri = Uri.parse("geo:${mosque.lat},${mosque.lng}?q=${Uri.encode(mosque.nameAr)}")
-        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri).apply {
-            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        runCatching { context.startActivity(intent) }
-    }
-
-    fun fetchRealNearbyMosques(lat: Double, lng: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val queryStr = """
-                    [out:json][timeout:20];
-                    (
-                      nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,$lat,$lng);
-                      nwr["building"="mosque"](around:10000,$lat,$lng);
-                    );
-                    out center tags;
-                """.trimIndent()
-                val encodedQuery = java.net.URLEncoder.encode(queryStr, "UTF-8")
-                val endpoints = listOf(
-                    "https://overpass-api.de/api/interpreter?data=",
-                    "https://overpass.kumi.systems/api/interpreter?data="
-                )
-                var response: String? = null
-                for (endpoint in endpoints) {
-                    try {
-                        val conn = (java.net.URL(endpoint + encodedQuery).openConnection() as java.net.HttpURLConnection).apply {
-                            connectTimeout = 8000
-                            readTimeout = 20000
-                            requestMethod = "GET"
-                            setRequestProperty("User-Agent", "Aqim-Salat/1.2 Android")
-                        }
-                        if (conn.responseCode == 200) {
-                            response = conn.inputStream.bufferedReader().use { it.readText() }
-                            conn.disconnect()
-                            if (!response.isNullOrBlank()) break
-                        } else {
-                            conn.disconnect()
-                        }
-                    } catch (_: Exception) {
-                        // Try the next public Overpass instance.
-                    }
-                }
-
-                if (!response.isNullOrBlank()) {
-                    val elements = org.json.JSONObject(response).optJSONArray("elements") ?: org.json.JSONArray()
-                    val unique = LinkedHashMap<String, LocalMosque>()
-
-                    for (i in 0 until elements.length()) {
-                        val el = elements.getJSONObject(i)
-                        val id = el.optLong("id", 0L)
-                        if (id == 0L) continue
-
-                        val center = el.optJSONObject("center")
-                        val mLat = if (el.has("lat")) el.getDouble("lat") else center?.optDouble("lat", Double.NaN) ?: Double.NaN
-                        val mLng = if (el.has("lon")) el.getDouble("lon") else center?.optDouble("lon", Double.NaN) ?: Double.NaN
-                        if (mLat.isNaN() || mLng.isNaN()) continue
-
-                        val tags = el.optJSONObject("tags")
-                        val name = tags?.optString("name", "")?.trim().orEmpty()
-                        val nameAr = tags?.optString("name:ar", "")?.trim().orEmpty().ifBlank {
-                            if (name.isNotBlank()) name else "مسجد"
-                        }
-                        val nameEn = tags?.optString("name:en", "")?.trim().orEmpty().ifBlank {
-                            if (name.isNotBlank()) name else "Mosque"
-                        }
-
-                        val street = tags?.optString("addr:street", "")?.trim().orEmpty()
-                        val city = tags?.optString("addr:city", "")?.trim().orEmpty()
-                        val suburb = tags?.optString("addr:suburb", "")?.trim().orEmpty()
-                        val district = listOf(suburb, city).filter { it.isNotBlank() }.joinToString("، ")
-                        val addressAr = listOf(street, district).filter { it.isNotBlank() }.joinToString("، ")
-                            .ifBlank { "مسجد قريب من موقعك" }
-                        val addressEn = listOf(street, district).filter { it.isNotBlank() }.joinToString(", ")
-                            .ifBlank { "Mosque near your location" }
-
-                        val key = "$mLat,$mLng"
-                        unique[key] = LocalMosque(id, nameAr, nameEn, mLat, mLng, addressAr, addressEn)
-                    }
-
-                    _nearbyRealMosques.value = unique.values
-                        .map { mosque -> mosque.copy(distanceKm = calculateDist(lat, lng, mosque.lat, mosque.lng)) }
-                        .sortedBy { it.distanceKm }
-                        .take(100)
-                } else {
-                    _nearbyRealMosques.value = emptyList()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _nearbyRealMosques.value = emptyList()
             }
         }
     }
@@ -994,36 +875,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repo.setWallpaper(wp)
         }
-    }
-
-    // --- Preferred Mosque Writers ---
-    fun setPreferredMosque(id: String, name: String, lat: Double, lng: Double, addr: String) {
-        viewModelScope.launch {
-            repo.setPreferredMosque(id, name, lat, lng, addr)
-        }
-    }
-
-    fun setPreferredMosqueRemind(enabled: Boolean) {
-        viewModelScope.launch {
-            repo.setPreferredMosqueRemind(enabled)
-        }
-    }
-
-    // --- Favorite Mosques Writers ---
-    fun insertFavoriteMosque(mosque: FavoriteMosque) {
-        viewModelScope.launch {
-            repo.insertFavoriteMosque(mosque)
-        }
-    }
-
-    fun deleteFavoriteMosque(id: Long) {
-        viewModelScope.launch {
-            repo.deleteFavoriteMosque(id)
-        }
-    }
-
-    fun isFavoriteMosque(id: Long): Flow<Boolean> {
-        return repo.isFavoriteMosque(id)
     }
 
     // --- Khatmahs Writers ---
