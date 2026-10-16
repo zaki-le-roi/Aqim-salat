@@ -946,7 +946,7 @@ fun SurahReader(
                             state = transformState,
                             canPan = { pageScale > 1f }
                         ),
-                    contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
+                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
                 )
             }
         }
