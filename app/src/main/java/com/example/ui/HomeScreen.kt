@@ -452,12 +452,7 @@ fun HomeScreen(
                                 .background(Color.White.copy(alpha = 0.07f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.MenuBook,
-                                contentDescription = null,
-                                tint = Color(0xFFE7D6A4),
-                                modifier = Modifier.size(58.dp)
-                            )
+                            IslamicServiceIcon(type = "QURAN", modifier = Modifier.size(86.dp))
                         }
                         Column(
                             modifier = Modifier
@@ -467,7 +462,7 @@ fun HomeScreen(
                         ) {
                             Text(
                                 text = if (lang == "ar") "القرآن الكريم" else "The Holy Quran",
-                                color = Color.White,
+                                color = Color(0xFFD4AF37),
                                 fontSize = 21.sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
@@ -511,7 +506,7 @@ fun HomeScreen(
                             .clickable { onNavigateToFeature("TASBIH") }
                             .testTag("home_service_tasbih"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E7)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -520,14 +515,14 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFFFE8B2)),
+                                modifier = Modifier.size(46.dp).clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.FormatListNumbered, contentDescription = null, tint = Color(0xFFB45309), modifier = Modifier.size(22.dp))
+                                IslamicServiceIcon(type = "TASBIH", modifier = Modifier.size(38.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "السبحة الإلكترونية" else "Digital Tasbih",
-                                color = Color(0xFF92400E),
+                                color = Color(0xFFD4AF37),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -536,7 +531,7 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "عداد رقمي ذكي" else "Smart Counter",
-                                color = Color(0xFFB45309).copy(alpha = 0.8f),
+                                color = Color.White.copy(alpha = 0.78f),
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -550,7 +545,7 @@ fun HomeScreen(
                             .clickable { onNavigateToFeature("ADHKAR") }
                             .testTag("home_service_adhkar"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F2E9)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -559,14 +554,14 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFD2E6D5)),
+                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.Spa, contentDescription = null, tint = Color(0xFF356B48), modifier = Modifier.size(22.dp))
+                                Icon(Icons.Filled.Spa, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(22.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "الأذكار اليومية" else "Daily Adhkar",
-                                color = Color(0xFF244C35),
+                                color = Color(0xFFD4AF37),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -575,7 +570,7 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "صباح ومساء ونوم" else "Morning & Evening",
-                                color = Color(0xFF356B48).copy(alpha = 0.8f),
+                                color = Color.White.copy(alpha = 0.78f),
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -595,7 +590,7 @@ fun HomeScreen(
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F0FA)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -604,14 +599,14 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFD5E4F6)),
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.Explore, contentDescription = null, tint = Color(0xFF355F91), modifier = Modifier.size(22.dp))
+                                IslamicServiceIcon(type = "QIBLA", modifier = Modifier.size(36.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "القبلة" else "Qibla",
-                                color = Color(0xFF29496F),
+                                color = Color(0xFFD4AF37),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -620,7 +615,7 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "بوصلة دقيقة" else "Accurate Compass",
-                                color = Color(0xFF355F91).copy(alpha = 0.8f),
+                                color = Color.White.copy(alpha = 0.78f),
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -634,7 +629,7 @@ fun HomeScreen(
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5ECDF)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -643,14 +638,14 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFEBDDCA)),
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.Shield, contentDescription = null, tint = Color(0xFF86663D), modifier = Modifier.size(22.dp))
+                                IslamicServiceIcon(type = "HISN", modifier = Modifier.size(36.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "حصن المسلم" else "Hisn Muslim",
-                                color = Color(0xFF6B512F),
+                                color = Color(0xFFD4AF37),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -659,7 +654,7 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "أدعية جامعة" else "Fortress of Dua",
-                                color = Color(0xFF86663D).copy(alpha = 0.8f),
+                                color = Color.White.copy(alpha = 0.78f),
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -673,7 +668,7 @@ fun HomeScreen(
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3E8FF)),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -682,14 +677,14 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFE9D5FF)),
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFF6B21A8), modifier = Modifier.size(22.dp))
+                                IslamicServiceIcon(type = "HADITH", modifier = Modifier.size(36.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "كتب الحديث" else "Hadith Books",
-                                color = Color(0xFF581C87),
+                                color = Color(0xFFD4AF37),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
@@ -698,7 +693,7 @@ fun HomeScreen(
                             )
                             Text(
                                 text = if (lang == "ar") "أمهات الكتب" else "Core Texts",
-                                color = Color(0xFF6B21A8).copy(alpha = 0.8f),
+                                color = Color.White.copy(alpha = 0.78f),
                                 fontSize = 10.sp,
                                 textAlign = TextAlign.Center
                             )
