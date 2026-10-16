@@ -910,7 +910,7 @@ fun SurahReader(
                 .fillMaxSize()
                 .clickable { controlsVisible = !controlsVisible }
         ) { pageIndex ->
-            val pageUrl = "https://android.quran.com/data/width_1260/page${(pageIndex + 1).toString().padStart(3, '0')}.png"
+            val pageUrl = "https://android.quran.com/data/width_1920/page${(pageIndex + 1).toString().padStart(3, '0')}.png"
             var pageScale by remember(pageIndex) { mutableFloatStateOf(1f) }
             var pageOffsetX by remember(pageIndex) { mutableFloatStateOf(0f) }
             var pageOffsetY by remember(pageIndex) { mutableFloatStateOf(0f) }
@@ -946,7 +946,7 @@ fun SurahReader(
                             state = transformState,
                             canPan = { pageScale > 1f }
                         ),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                    contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
                 )
             }
         }
