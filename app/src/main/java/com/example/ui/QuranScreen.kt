@@ -96,38 +96,14 @@ val SURAH_START_PAGES = intArrayOf(
     600, 600, 601, 601, 601, 602, 602, 602, 603, 603, 603, 604, 604, 604
 )
 
-// Mapping each Juz (1..30) to the starting Surah ID
-val JUZ_START_SURAHS = intArrayOf(
-    1,   // Juz 1 -> Al-Fatihah
-    2,   // Juz 2 -> Al-Baqarah
-    2,   // Juz 3 -> Al-Baqarah
-    3,   // Juz 4 -> Ali 'Imran
-    4,   // Juz 5 -> An-Nisa
-    4,   // Juz 6 -> An-Nisa
-    5,   // Juz 7 -> Al-Ma'idah
-    6,   // Juz 8 -> Al-An'am
-    7,   // Juz 9 -> Al-A'raf
-    8,   // Juz 10 -> Al-Anfal
-    9,   // Juz 11 -> At-Tawbah
-    11,  // Juz 12 -> Hud
-    12,  // Juz 13 -> Yusuf
-    15,  // Juz 14 -> Al-Hijr
-    17,  // Juz 15 -> Al-Isra
-    18,  // Juz 16 -> Al-Kahf
-    21,  // Juz 17 -> Al-Anbiya
-    23,  // Juz 18 -> Al-Mu'minun
-    25,  // Juz 19 -> Al-Furqan
-    27,  // Juz 20 -> An-Naml
-    29,  // Juz 21 -> Al-'Ankabut
-    33,  // Juz 22 -> Al-Ahzab
-    36,  // Juz 23 -> Ya-Sin
-    39,  // Juz 24 -> Az-Zumar
-    41,  // Juz 25 -> Fussilat
-    46,  // Juz 26 -> Al-Ahqaf
-    51,  // Juz 27 -> Adh-Dhariyat
-    58,  // Juz 28 -> Al-Mujadilah
-    67,  // Juz 29 -> Al-Mulk
-    78   // Juz 30 -> An-Naba
+// بداية كل جزء (السورة، رقم الآية) وفق تقسيم المصحف ذي 604 صفحات.
+private val JUZ_STARTS = arrayOf(
+    1 to 1, 2 to 142, 2 to 253, 3 to 93, 4 to 24,
+    4 to 148, 5 to 82, 6 to 111, 7 to 88, 8 to 41,
+    9 to 93, 11 to 6, 12 to 53, 15 to 1, 17 to 1,
+    18 to 75, 21 to 1, 23 to 1, 25 to 21, 27 to 56,
+    29 to 46, 33 to 31, 36 to 28, 39 to 32, 41 to 47,
+    46 to 1, 51 to 31, 58 to 1, 67 to 1, 78 to 1
 )
 
 // Helper to calculate Juz number based on standard distributions
@@ -855,6 +831,8 @@ fun SurahReader(
     var showIndex by remember { mutableStateOf(false) }
     var showJuzIndex by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
+    var showPageJump by remember { mutableStateOf(false) }
+    var pageInput by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<Triple<Int, Int, String>>>(emptyList()) }
     var offlineSurahs by remember { mutableStateOf<Map<Int, List<QuranApiClient.ApiAyah>>>(emptyMap()) }
@@ -903,17 +881,89 @@ fun SurahReader(
     } ?: surah.name
     val juzNumber = firstRef?.let { getJuzNumber(it.surah, it.ayah) } ?: 1
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFDFBF7))
-            .padding(0.dp)
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(Color(0xFF0B382C))
+                .padding(horizontal = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "العودة إلى السور",
+                    tint = Color(0xFFD4AF37)
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        pageInput = currentPage.toString()
+                        showPageJump = true
+                    },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "سورة $pageSurahName",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "الصفحة $currentPage / 604  •  الجزء $juzNumber",
+                    color = Color(0xFFE3C47D),
+                    fontSize = 10.sp,
+                    maxLines = 1
+                )
+            }
+            IconButton(
+                enabled = pagerState.currentPage > 0,
+                onClick = {
+                    if (pagerState.currentPage > 0) {
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "الصفحة السابقة",
+                    tint = if (pagerState.currentPage > 0) Color(0xFFD4AF37) else Color.Gray
+                )
+            }
+            IconButton(
+                enabled = pagerState.currentPage < 603,
+                onClick = {
+                    if (pagerState.currentPage < 603) {
+                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "الصفحة التالية",
+                    tint = if (pagerState.currentPage < 603) Color(0xFFD4AF37) else Color.Gray
+                )
+            }
+        }
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(0.dp)
+                .weight(1f)
+                .fillMaxWidth()
         ) { pageIndex ->
             // صفحات مصحف حفص الملون، عمودية وبلا تدوير أو عناصر تغطي الصفحة.
             val pageUrl = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images/${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
@@ -931,6 +981,75 @@ fun SurahReader(
                     contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
                 )
             }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(Color(0xFF0B382C))
+                .padding(horizontal = 2.dp, vertical = 1.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MushafBottomControl(Icons.Filled.MenuBook, "السور") {
+                showIndex = true
+            }
+            MushafBottomControl(Icons.Filled.List, "الأجزاء") {
+                showJuzIndex = true
+            }
+            MushafBottomControl(
+                if (bookmarkPage == currentPage) Icons.Filled.Bookmark else Icons.Filled.BookmarkBorder,
+                if (bookmarkPage == currentPage) "محفوظ" else "حفظ"
+            ) {
+                bookmarkPage = currentPage
+                prefs.edit().putInt("bookmark_page", currentPage).apply()
+                Toast.makeText(context, "تم حفظ الصفحة $currentPage", Toast.LENGTH_SHORT).show()
+            }
+            MushafBottomControl(Icons.Filled.Bookmark, "المحفوظة") {
+                if (bookmarkPage in 1..604) {
+                    scope.launch { pagerState.animateScrollToPage(bookmarkPage - 1) }
+                } else {
+                    Toast.makeText(context, "لم تحفظ صفحة بعد", Toast.LENGTH_SHORT).show()
+                }
+            }
+            MushafBottomControl(Icons.Filled.Search, "بحث") {
+                showSearch = true
+            }
+        }
+
+        if (showPageJump) {
+            AlertDialog(
+                onDismissRequest = { showPageJump = false },
+                shape = RoundedCornerShape(20.dp),
+                containerColor = Color(0xFFFAF8F5),
+                title = { Text("الانتقال إلى صفحة", color = Color(0xFF115E3F), fontWeight = FontWeight.Bold) },
+                text = {
+                    OutlinedTextField(
+                        value = pageInput,
+                        onValueChange = { pageInput = it.filter { ch -> ch.isDigit() }.take(3) },
+                        label = { Text("رقم الصفحة من 1 إلى 604") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val target = pageInput.toIntOrNull()
+                        if (target != null && target in 1..604) {
+                            showPageJump = false
+                            scope.launch { pagerState.animateScrollToPage(target - 1) }
+                        } else {
+                            Toast.makeText(context, "أدخل رقم صفحة بين 1 و604", Toast.LENGTH_SHORT).show()
+                        }
+                    }) { Text("انتقال", color = Color(0xFF115E3F), fontWeight = FontWeight.Bold) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPageJump = false }) {
+                        Text("إلغاء", color = Color(0xFF115E3F))
+                    }
+                }
+            )
         }
 
         if (showIndex) {
@@ -1043,8 +1162,8 @@ fun SurahReader(
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp)
                                     .clickable {
-                                        val startSurah = JUZ_START_SURAHS[juz - 1]
-                                        val target = QuranPageMap.pageFor(context, startSurah, 1).coerceIn(1, 604)
+                                        val (startSurah, startAyah) = JUZ_STARTS[juz - 1]
+                                        val target = QuranPageMap.pageFor(context, startSurah, startAyah).coerceIn(1, 604)
                                         showJuzIndex = false
                                         scope.launch { pagerState.animateScrollToPage(target - 1) }
                                     },
