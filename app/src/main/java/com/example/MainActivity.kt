@@ -65,12 +65,13 @@ class MainActivity : ComponentActivity() {
         }
 
     private var locationViewModel: AppViewModel? = null
+    private var apkUpdateChecker: ApkUpdateChecker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         locationViewModel = ViewModelProvider(this)[AppViewModel::class.java]
-        ApkUpdateChecker(this).checkForUpdate()
+        apkUpdateChecker = ApkUpdateChecker(this).also { it.checkForUpdate() }
         requestNotificationAndAlarmAccess()
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -138,7 +139,14 @@ class MainActivity : ComponentActivity() {
         // when Android has not granted exact-alarm access, so the app does not trap users in Settings.
     }
 
+    override fun onResume() {
+        super.onResume()
+        apkUpdateChecker?.installPendingUpdateIfAllowed()
+    }
+
     override fun onDestroy() {
+        apkUpdateChecker?.dispose()
+        apkUpdateChecker = null
         super.onDestroy()
     }
 }
