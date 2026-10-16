@@ -7,10 +7,13 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -117,6 +120,9 @@ class ApkUpdateChecker(private val activity: Activity) {
             }
         }
         dialog.show()
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.rgb(250, 248, 245)))
+        dialog.findViewById<TextView>(android.R.id.alertTitle)?.setTextColor(EMERALD)
+        dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(0xFF30352F.toInt())
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(GOLD)
     }
@@ -139,7 +145,6 @@ class ApkUpdateChecker(private val activity: Activity) {
             val id = manager.enqueue(request)
             preferences.edit()
                 .putLong(KEY_DOWNLOAD_ID, id)
-                .putInt(KEY_TARGET_VERSION, versionCode)
                 .apply()
             Toast.makeText(activity, "بدأ تنزيل التحديث في الخلفية", Toast.LENGTH_LONG).show()
         } catch (_: Exception) {
@@ -181,7 +186,7 @@ class ApkUpdateChecker(private val activity: Activity) {
                 "${activity.packageName}.fileprovider",
                 apk
             )
-            val installIntent = Intent(Intent.ACTION_VIEW).apply {
+            val installIntent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
@@ -223,23 +228,11 @@ class ApkUpdateChecker(private val activity: Activity) {
         }
     }
 
-    private fun isNewerVersion(latest: String, current: String): Boolean {
-        val a = latest.split(".").map { it.toIntOrNull() ?: 0 }
-        val b = current.split(".").map { it.toIntOrNull() ?: 0 }
-        for (i in 0 until maxOf(a.size, b.size)) {
-            val av = a.getOrElse(i) { 0 }
-            val bv = b.getOrElse(i) { 0 }
-            if (av != bv) return av > bv
-        }
-        return false
-    }
-
     private companion object {
         const val VERSION_JSON_URL = "https://raw.githubusercontent.com/zaki-le-roi/Aqim-salat/main/version.json"
         const val APK_FILE_NAME = "Aqim-Salat-update.apk"
         const val KEY_DOWNLOAD_ID = "download_id"
         const val KEY_PENDING_APK = "pending_apk"
-        const val KEY_TARGET_VERSION = "target_version"
         const val EMERALD = 0xFF0F6B46.toInt()
         const val GOLD = 0xFFD4AF37.toInt()
     }
