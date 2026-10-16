@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -824,6 +825,7 @@ private fun normalizeQuranSearch(text: String): String =
         .replace(Regex("\\s+"), " ")
         .trim()
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SurahReader(
     viewModel: AppViewModel,
