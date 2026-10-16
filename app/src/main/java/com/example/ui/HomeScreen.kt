@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.unit.sp
 import com.example.R
 import java.text.SimpleDateFormat
@@ -53,6 +54,8 @@ fun HomeScreen(
     val locationName by viewModel.locationName.collectAsState()
     val locationConfigured by viewModel.locationConfigured.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    var appMenuExpanded by remember { mutableStateOf(false) }
+    var appMenuSection by remember { mutableStateOf("SERVICES") }
 
     // Clock state
     var liveClockTime by remember { mutableStateOf("") }
@@ -114,15 +117,83 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF0D4F3A).copy(alpha = 0.08f))
-                                .clickable { onNavigateToFeature("MORE_MENU") },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Filled.GridView, contentDescription = "القائمة", tint = Color(0xFF0D4F3A))
+                        Box {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF0D4F3A).copy(alpha = 0.08f))
+                                    .clickable { appMenuExpanded = true }
+                                    .testTag("home_app_menu_button"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.GridView, contentDescription = "القائمة الرئيسية", tint = Color(0xFF0D4F3A))
+                            }
+                            DropdownMenu(
+                                expanded = appMenuExpanded,
+                                onDismissRequest = { appMenuExpanded = false },
+                                modifier = Modifier
+                                    .widthIn(min = 248.dp, max = 292.dp)
+                                    .heightIn(max = 520.dp)
+                                    .background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                Text(
+                                    text = "القائمة الرئيسية",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    FilterChip(
+                                        selected = appMenuSection == "SERVICES",
+                                        onClick = { appMenuSection = "SERVICES" },
+                                        label = { Text("الخدمات", maxLines = 1) },
+                                        leadingIcon = { Icon(Icons.Filled.Apps, contentDescription = null) }
+                                    )
+                                    FilterChip(
+                                        selected = appMenuSection == "SETTINGS",
+                                        onClick = { appMenuSection = "SETTINGS" },
+                                        label = { Text("خصائص التطبيق", maxLines = 1) },
+                                        leadingIcon = { Icon(Icons.Filled.Tune, contentDescription = null) }
+                                    )
+                                }
+                                HorizontalDivider()
+                                val menuItems = if (appMenuSection == "SERVICES") {
+                                    listOf(
+                                        Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
+                                        Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
+                                        Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
+                                        Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
+                                        Triple("QIBLA", "القبلة", Icons.Filled.Explore)
+                                    )
+                                } else {
+                                    listOf(
+                                        Triple("SETTING_THEME", "سمة التطبيق", Icons.Filled.Palette),
+                                        Triple("SETTING_CALC", "حساب مواقيت الصلاة والمذهب", Icons.Filled.AccessTime),
+                                        Triple("SETTING_AUDIO", "القارئ والصوت", Icons.Filled.VolumeUp),
+                                        Triple("SETTING_BACKUP", "النسخ الاحتياطي والمزامنة", Icons.Filled.Cloud),
+                                        Triple("SETTING_PRIVACY", "الخصوصية وأذونات الموقع", Icons.Filled.Security),
+                                        Triple("SETTING_ACCESSIBILITY", "حجم الخط والاهتزاز", Icons.Filled.Accessibility)
+                                    )
+                                }
+                                menuItems.forEach { (route, title, icon) ->
+                                    DropdownMenuItem(
+                                        text = { Text(title, fontWeight = FontWeight.Medium, maxLines = 2) },
+                                        leadingIcon = {
+                                            Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34))
+                                        },
+                                        onClick = {
+                                            appMenuExpanded = false
+                                            onNavigateToFeature(route)
+                                        },
+                                        modifier = Modifier.testTag("home_menu_item_$route")
+                                    )
+                                }
+                            }
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("أقم صلاتك", color = Color(0xFF0D4F3A), fontSize = 19.sp, fontWeight = FontWeight.Bold)

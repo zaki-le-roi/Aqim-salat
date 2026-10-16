@@ -180,10 +180,6 @@ fun AqimSalahApp(
                 selectedTab = "QIBLA"
                 activeDetailScreen = null
             }
-            "MORE", "MORE_MENU" -> {
-                selectedTab = "MORE"
-                activeDetailScreen = null
-            }
             "SETTING_THEME", "SETTING_CALC", "SETTING_AUDIO", "SETTING_BACKUP", "SETTING_PRIVACY", "SETTING_ACCESSIBILITY" -> {
                 initialSettingsDialog = when (routeKey) {
                     "SETTING_THEME" -> "THEME"
@@ -251,7 +247,6 @@ fun AqimSalahApp(
                             Triple("QURAN", if (lang == "ar") "القرآن" else "Quran", Icons.Filled.MenuBook),
                             Triple("PRAYER_TIMES", if (lang == "ar") "المواقيت والقبلة" else "Prayer & Qibla", Icons.Filled.Explore),
                             Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Icons.Filled.Spa),
-                            Triple("MORE", if (lang == "ar") "المزيد" else "Services", Icons.Filled.Apps)
                         )
 
                         tabs.forEach { (route, label, icon) ->
@@ -420,105 +415,10 @@ fun AqimSalahApp(
                             QiblaTool(viewModel, lang)
                         }
                     }
-                    "MORE" -> MoreScreen(
-                        viewModel = viewModel,
-                        lang = lang,
-                        onNavigateToFeature = handleFeatureNavigation
-                    )
                 }
             }
 
-            // One consistent app-wide dropdown, available outside the More screen.
-            var appMenuExpanded by remember { mutableStateOf(false) }
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .statusBarsPadding()
-                    .padding(top = 8.dp, end = 14.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f),
-                    tonalElevation = 5.dp,
-                    shadowElevation = 5.dp
-                ) {
-                    IconButton(
-                        onClick = { appMenuExpanded = true },
-                        modifier = Modifier.size(48.dp).testTag("global_app_menu_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Menu,
-                            contentDescription = "القائمة الرئيسية",
-                            tint = Color(0xFF0D5E34),
-                            modifier = Modifier.size(25.dp)
-                        )
-                    }
-                }
-                DropdownMenu(
-                    expanded = appMenuExpanded,
-                    onDismissRequest = { appMenuExpanded = false },
-                    modifier = Modifier.widthIn(min = 240.dp, max = 290.dp)
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
-                    Text(
-                        text = "القائمة الرئيسية",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp)
-                    )
-                    HorizontalDivider()
-                    val appMenuItems = listOf(
-                        Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
-                        Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
-                        Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
-                        Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
-                        Triple("QIBLA", "القبلة", Icons.Filled.Explore)
-                    )
-                    appMenuItems.forEach { (route, title, icon) ->
-                        DropdownMenuItem(
-                            text = { Text(title, fontWeight = FontWeight.Medium) },
-                            leadingIcon = {
-                                Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34))
-                            },
-                            onClick = {
-                                appMenuExpanded = false
-                                handleFeatureNavigation(route)
-                            },
-                            modifier = Modifier.testTag("global_menu_item_$route")
-                        )
-                    }
-                    HorizontalDivider()
-                    Text(
-                        text = "تخصيص التطبيق",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp)
-                    )
-                    val settingItems = listOf(
-                        Triple("SETTING_THEME", "سمة التطبيق", Icons.Filled.Palette),
-                        Triple("SETTING_CALC", "حساب مواقيت الصلاة والمذهب", Icons.Filled.AccessTime),
-                        Triple("SETTING_AUDIO", "القارئ والصوت", Icons.Filled.VolumeUp),
-                        Triple("SETTING_BACKUP", "النسخ الاحتياطي والمزامنة", Icons.Filled.Cloud),
-                        Triple("SETTING_PRIVACY", "الخصوصية وأذونات الموقع", Icons.Filled.Security),
-                        Triple("SETTING_ACCESSIBILITY", "حجم الخط والاهتزاز", Icons.Filled.Accessibility)
-                    )
-                    settingItems.forEach { (route, title, icon) ->
-                        DropdownMenuItem(
-                            text = { Text(title, fontWeight = FontWeight.Medium) },
-                            leadingIcon = {
-                                Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34))
-                            },
-                            onClick = {
-                                appMenuExpanded = false
-                                handleFeatureNavigation(route)
-                            },
-                            modifier = Modifier.testTag("global_menu_item_$route")
-                        )
-                    }
-                }
-            }
+
         }
     }
 }
