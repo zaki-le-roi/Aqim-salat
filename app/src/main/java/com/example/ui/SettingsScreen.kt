@@ -39,6 +39,7 @@ fun SettingsScreen(
     val autoSilentEnabled by viewModel.autoSilentEnabled.collectAsState()
     val activeThemeVal by viewModel.themeMode.collectAsState()
     val defaultReciterVal by viewModel.defaultReciter.collectAsState()
+    val defaultMuadhinVal by viewModel.defaultMuadhin.collectAsState()
     val hapticsVal by viewModel.hapticsEnabled.collectAsState()
     val fontScaleVal by viewModel.fontScale.collectAsState()
 
@@ -57,6 +58,13 @@ fun SettingsScreen(
     val methods = listOf("ALGERIA", "UMM_AL_QURA", "EGYPT", "MWL", "KARACHI", "ISNA", "TURKEY", "AWQAF")
     val madhabs = listOf("STANDARD", "HANAFI")
     val recitersList = listOf("مشاري العفاسي", "عبد الباسط عبد الصمد", "سعد الغامدي")
+    val muadhinOptions = listOf(
+        "MAKKAH" to "أذان مكة المكرمة",
+        "MADINAH" to "أذان المدينة المنورة",
+        "ALAFASY" to "أذان مشاري العفاسي",
+        "FAJR_SPECIAL" to "أذان الفجر مع الدعاء"
+    )
+    val selectedMuadhinLabel = muadhinOptions.firstOrNull { it.first == defaultMuadhinVal }?.second ?: muadhinOptions.first().second
 
     // Accessibility state
     var fontSizeZoom by remember(fontScaleVal) { mutableFloatStateOf(fontScaleVal) }
@@ -232,6 +240,17 @@ fun SettingsScreen(
             )
         }
 
+        // Muadhin selector, separate from Quran recitation.
+        item {
+            SettingsItemCard(
+                icon = Icons.Filled.RecordVoiceOver,
+                title = if (lang == "ar") "اختيار المؤذن" else "Choose Muadhin",
+                subtitle = if (lang == "ar") "الصوت الحالي: $selectedMuadhinLabel" else "Current voice: $selectedMuadhinLabel",
+                tag = "setting_muadhin",
+                onClick = { activeDialog = "MUADHIN" }
+            )
+        }
+
         // 5. Audio Playback (Default Reciter stream)
         item {
             SettingsItemCard(
@@ -387,7 +406,47 @@ fun SettingsScreen(
         )
     }
 
-    // D. Audio Reciter Settings Dialog
+    // D. Muadhin selector controls the actual adhan playback.
+    if (activeDialog == "MUADHIN") {
+        var selectedMuadhin by remember(defaultMuadhinVal) { mutableStateOf(defaultMuadhinVal) }
+        AlertDialog(
+            onDismissRequest = { activeDialog = null },
+            title = { Text(if (lang == "ar") "اختر صوت المؤذن" else "Choose Adhan Voice", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    muadhinOptions.forEach { (code, label) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable { selectedMuadhin = code }.padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = code == selectedMuadhin, onClick = { selectedMuadhin = code })
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(label, fontSize = 15.sp)
+                        }
+                    }
+                    Text(
+                        text = if (lang == "ar") "يُحفظ اختيارك على الهاتف ويُستخدم عند تشغيل الأذان. يتطلب تشغيل التسجيل اتصالًا بالإنترنت." else "Your choice is saved on this phone and used for adhan playback. Streaming requires internet.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.setDefaultMuadhin(selectedMuadhin)
+                        activeDialog = null
+                        val label = muadhinOptions.firstOrNull { it.first == selectedMuadhin }?.second ?: selectedMuadhin
+                        Toast.makeText(context, if (lang == "ar") "تم حفظ صوت المؤذن: $label" else "Adhan voice saved: $label", Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) { Text(if (lang == "ar") "حفظ" else "Save") }
+            }
+        )
+    }
+
+    // E. Audio Reciter Settings Dialog
     if (activeDialog == "AUDIO") {
         var selectedReciter by remember(defaultReciterVal) { mutableStateOf(defaultReciterVal) }
 

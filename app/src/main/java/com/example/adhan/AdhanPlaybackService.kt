@@ -76,7 +76,15 @@ class AdhanPlaybackService : Service() {
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .build()
             )
-            setDataSource(if (prayerKey == "Fajr") FAJR_ATHAN_URL else ATHAN_URL)
+            val selectedMuadhin = getSharedPreferences("audio_preferences", android.content.Context.MODE_PRIVATE)
+                .getString("default_muadhin", "MAKKAH") ?: "MAKKAH"
+            val adhanUrl = when (selectedMuadhin) {
+                "MADINAH" -> MADINAH_ATHAN_URL
+                "ALAFASY" -> ALAFASY_ATHAN_URL
+                "FAJR_SPECIAL" -> if (prayerKey == "Fajr") FAJR_ATHAN_URL else MAKKAH_ATHAN_URL
+                else -> MAKKAH_ATHAN_URL
+            }
+            setDataSource(adhanUrl)
             setOnPreparedListener { it.start() }
             setOnCompletionListener { stopSelf() }
             setOnErrorListener { _, _, _ ->
@@ -105,9 +113,11 @@ class AdhanPlaybackService : Service() {
 
     companion object {
         private const val NOTIFICATION_ID = 9401
-        // Verified tvQuran Adhan selection: Mishary Alafasi / Adhan and Takbir.
-        private const val ATHAN_URL = "https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__04.athan.mp3"
-        // Verified dedicated Fajr Adhan with Dua.
+        // Public MP3 streams for the selectable adhan voices.
+        private const val MAKKAH_ATHAN_URL = "https://www.islamcan.com/audio/adhan/azan1.mp3"
+        private const val MADINAH_ATHAN_URL = "https://www.islamcan.com/audio/adhan/azan2.mp3"
+        private const val ALAFASY_ATHAN_URL = "https://www.islamcan.com/audio/adhan/azan8.mp3"
+        // Dedicated Fajr adhan with the additional supplication.
         private const val FAJR_ATHAN_URL = "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
         const val EXTRA_PRAYER_NAME = "prayer_name"
         const val EXTRA_PRAYER_KEY = "prayer_key"

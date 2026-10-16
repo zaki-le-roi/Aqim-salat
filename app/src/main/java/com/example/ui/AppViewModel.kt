@@ -90,6 +90,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         audioPrefs.getString("default_reciter", "Mishary Al-Afasy") ?: "Mishary Al-Afasy"
     )
     val defaultReciter: StateFlow<String> = _defaultReciter.asStateFlow()
+    private val _defaultMuadhin = MutableStateFlow(
+        audioPrefs.getString("default_muadhin", "MAKKAH") ?: "MAKKAH"
+    )
+    val defaultMuadhin: StateFlow<String> = _defaultMuadhin.asStateFlow()
 
     // --- State Observables ---
     val language: StateFlow<String> = repo.appLanguage.stateIn(viewModelScope, SharingStarted.Eagerly, "ar")
@@ -929,8 +933,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                             .setUsage(AudioAttributes.USAGE_ALARM)
                             .build()
                     )
-                    // URL streaming Athan (Makkah recitation)
-                    setDataSource("https://download.tvquran.com/download/TvQuran.com__Athan/TvQuran.com__04.athan.mp3")
+                    // Use the same locally saved Muadhin selection as scheduled prayer alarms.
+                    val selectedMuadhin = _defaultMuadhin.value
+                    val previewUrl = when (selectedMuadhin) {
+                        "MADINAH" -> "https://www.islamcan.com/audio/adhan/azan2.mp3"
+                        "ALAFASY" -> "https://www.islamcan.com/audio/adhan/azan8.mp3"
+                        "FAJR_SPECIAL" -> "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
+                        else -> "https://www.islamcan.com/audio/adhan/azan1.mp3"
+                    }
+                    setDataSource(previewUrl)
                     prepare()
                     start()
                 }
@@ -960,6 +971,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setDefaultReciter(reciter: String) {
         _defaultReciter.value = reciter
         audioPrefs.edit().putString("default_reciter", reciter).apply()
+    }
+
+    fun setDefaultMuadhin(muadhin: String) {
+        val supported = setOf("MAKKAH", "MADINAH", "ALAFASY", "FAJR_SPECIAL")
+        val normalized = muadhin.takeIf { it in supported } ?: "MAKKAH"
+        _defaultMuadhin.value = normalized
+        audioPrefs.edit().putString("default_muadhin", normalized).apply()
     }
 
     // --- Haptic Feedback Utility ---

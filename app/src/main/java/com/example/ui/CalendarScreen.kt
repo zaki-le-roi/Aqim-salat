@@ -33,6 +33,9 @@ fun CalendarScreen(
 ) {
 
     val today = remember { Date() }
+    val initialCalendar = remember { Calendar.getInstance().apply { time = today } }
+    var displayedMonth by remember { mutableIntStateOf(initialCalendar.get(Calendar.MONTH)) }
+    var displayedYear by remember { mutableIntStateOf(initialCalendar.get(Calendar.YEAR)) }
     val dateInputFormat = remember { SimpleDateFormat("dd-MM-yyyy", Locale.US) }
     val todayParts = remember { dateInputFormat.format(today).split("-") }
 
@@ -144,79 +147,122 @@ fun CalendarScreen(
             }
         }
 
-        // Current Hijri month grid — derived from the live Hijri date, not hard-coded sample data.
+        // Month grid showing Gregorian and Hijri dates together.
         item {
+            val monthCalendar = remember(displayedMonth, displayedYear) {
+                Calendar.getInstance().apply {
+                    set(Calendar.YEAR, displayedYear)
+                    set(Calendar.MONTH, displayedMonth)
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    set(Calendar.HOUR_OF_DAY, 12)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+            }
+            val daysInMonth = monthCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+            val leadingEmptyCells = monthCalendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY
+            val monthDates = remember(displayedMonth, displayedYear, daysInMonth, leadingEmptyCells) {
+                val first = Calendar.getInstance().apply {
+                    set(Calendar.YEAR, displayedYear)
+                    set(Calendar.MONTH, displayedMonth)
+                    set(Calendar.DAY_OF_MONTH, 1)
+                    set(Calendar.HOUR_OF_DAY, 12)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                buildList<Date?> {
+                    repeat(leadingEmptyCells) { add(null) }
+                    repeat(daysInMonth) {
+                        add(first.time)
+                        first.add(Calendar.DAY_OF_MONTH, 1)
+                    }
+                }
+            }
+            val monthLabel = SimpleDateFormat("MMMM yyyy", Locale("ar")).format(monthCalendar.time)
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().testTag("calendar_dual_date_grid"),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "شهر ${currentHijri.monthName} ${currentHijri.year} هـ",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    // Weekdays headers
+                Column(modifier = Modifier.padding(14.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        val days = listOf("الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت")
-                        days.forEach { d ->
-                            Text(
-                                text = d,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f),
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                        IconButton(onClick = {
+                            if (displayedMonth == Calendar.JANUARY) {
+                                displayedMonth = Calendar.DECEMBER
+                                displayedYear -= 1
+                            } else displayedMonth -= 1
+                        }, modifier = Modifier.testTag("calendar_previous_month")) {
+                            Icon(Icons.Filled.ChevronLeft, contentDescription = "الشهر السابق")
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
+                            Text(monthLabel, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                            Text(if (lang == "ar") "الميلادي والهجري" else "Gregorian & Hijri", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                        }
+                        IconButton(onClick = {
+                            if (displayedMonth == Calendar.DECEMBER) {
+                                displayedMonth = Calendar.JANUARY
+                                displayedYear += 1
+                            } else displayedMonth += 1
+                        }, modifier = Modifier.testTag("calendar_next_month")) {
+                            Icon(Icons.Filled.ChevronRight, contentDescription = "الشهر التالي")
                         }
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    // Render the current Hijri month as a real 30-day calendar.
-                    daysInCurrentHijriMonth.chunked(7).forEach { week ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            week.forEach { cellNum ->
-                                val isToday = cellNum == currentHijri.day
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .aspectRatio(1f)
-                                        .padding(2.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (isToday) Color(0xFFD4AF37)
-                                            else Color.Transparent
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = cellNum.toString(),
-                                        fontSize = 13.sp,
-                                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
-                                        color = if (isToday) Color.Black else MaterialTheme.colorScheme.onSurface
-                                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        listOf("أحد", "إثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت").forEach { weekday ->
+                            Text(weekday, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    monthDates.chunked(7).forEach { week ->
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            week.forEach { cellDate ->
+                                if (cellDate == null) {
+                                    Spacer(modifier = Modifier.weight(1f).height(66.dp).padding(2.dp))
+                                } else {
+                                    val cellCalendar = Calendar.getInstance().apply { time = cellDate }
+                                    val hijri = PrayerCalculator.getHijriDate(cellDate, "ar")
+                                    val isToday = SimpleDateFormat("yyyyMMdd", Locale.US).format(cellDate) == SimpleDateFormat("yyyyMMdd", Locale.US).format(today)
+                                    val eventLabel = when {
+                                        hijri.month == 9 && hijri.day == 1 -> "رمضان"
+                                        hijri.month == 10 && hijri.day == 1 -> "عيد الفطر"
+                                        hijri.month == 12 && hijri.day == 9 -> "عرفة"
+                                        hijri.month == 12 && hijri.day == 10 -> "الأضحى"
+                                        hijri.month == 1 && hijri.day == 1 -> "رأس السنة"
+                                        hijri.month == 1 && hijri.day == 10 -> "عاشوراء"
+                                        hijri.day in 13..15 -> "الأيام البيض"
+                                        else -> null
+                                    }
+                                    Column(
+                                        modifier = Modifier.weight(1f).heightIn(min = 66.dp).padding(2.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(if (isToday) Color(0xFFD4AF37).copy(alpha = 0.22f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f))
+                                            .padding(vertical = 5.dp, horizontal = 1.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(cellCalendar.get(Calendar.DAY_OF_MONTH).toString(), fontSize = 14.sp, fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.SemiBold, color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                                        Text("${hijri.day}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f))
+                                        if (eventLabel != null) Text(eventLabel, fontSize = 8.sp, lineHeight = 10.sp, textAlign = TextAlign.Center, color = Color(0xFF9A6B08), fontWeight = FontWeight.Bold, maxLines = 2)
+                                    }
                                 }
                             }
-                            repeat(7 - week.size) {
-                                Spacer(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .aspectRatio(1f)
-                                )
-                            }
+                            repeat(7 - week.size) { Spacer(modifier = Modifier.weight(1f).height(66.dp)) }
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = if (lang == "ar") "الرقم الكبير: ميلادي • الرقم الصغير: هجري" else "Large number: Gregorian • small number: Hijri",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

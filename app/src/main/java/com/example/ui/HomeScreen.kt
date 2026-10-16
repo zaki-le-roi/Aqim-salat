@@ -537,7 +537,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .height(118.dp)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
                             .testTag("home_service_tasbih"),
                         shape = RoundedCornerShape(16.dp),
@@ -545,7 +545,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 10.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -577,7 +577,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .height(118.dp)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
                             .testTag("home_service_adhkar"),
                         shape = RoundedCornerShape(16.dp),
@@ -585,7 +585,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 10.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -623,7 +623,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .height(118.dp)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
@@ -631,7 +631,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 6.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -663,7 +663,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .height(118.dp)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
@@ -671,7 +671,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 6.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -703,7 +703,7 @@ fun HomeScreen(
                     Card(
                         modifier = Modifier
                             .weight(1f)
-                            .height(118.dp)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
@@ -711,7 +711,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 6.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
