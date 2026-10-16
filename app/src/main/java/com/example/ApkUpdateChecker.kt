@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -121,8 +120,6 @@ class ApkUpdateChecker(private val activity: Activity) {
         }
         dialog.show()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.rgb(250, 248, 245)))
-        dialog.findViewById<TextView>(android.R.id.alertTitle)?.setTextColor(EMERALD)
-        dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(0xFF30352F.toInt())
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(GOLD)
     }
