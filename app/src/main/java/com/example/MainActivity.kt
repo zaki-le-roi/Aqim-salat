@@ -158,6 +158,7 @@ fun AqimSalahApp(
     lang: String
 ) {
     var selectedTab by remember { mutableStateOf("HOME") }
+    var isQuranReaderOpen by remember { mutableStateOf(false) }
     
     // Dynamic detail screens controllers
     var activeDetailScreen by remember { mutableStateOf<String?>(null) }
@@ -231,7 +232,7 @@ fun AqimSalahApp(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             // Floating, softly translucent pill navigation with five primary destinations.
-            if (activeDetailScreen == null) {
+            if (activeDetailScreen == null && !(selectedTab == "QURAN" && isQuranReaderOpen)) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -408,7 +409,8 @@ fun AqimSalahApp(
                     "QURAN" -> QuranScreen(
                         viewModel = viewModel, 
                         lang = lang, 
-                        initialSurahId = initialSurahIdParam
+                        initialSurahId = initialSurahIdParam,
+                        onReadingModeChange = { isQuranReaderOpen = it }
                     )
                     "ADHKAR" -> AdhkarTool(viewModel, lang)
                     "PRAYER_TIMES" -> PrayerTimesScreen(
