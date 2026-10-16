@@ -1101,7 +1101,10 @@ fun InteractiveGoogleMap(
                         popupAddress.style.color = '#e0e0e0';
                         popupAddress.textContent = $mAddr;
                         popupContent.appendChild(popupAddress);
-                        L.marker([\${mosque.lat}, \${mosque.lng}], { icon: mosqueIcon }).addTo(map)
+                        // Coordinates are interpolated as numeric values, never as remote text.
+                        val markerLat = mosque.lat
+                        val markerLng = mosque.lng
+                        L.marker([$markerLat, $markerLng], { icon: mosqueIcon }).addTo(map)
                             .bindPopup(popupContent);
                     """)
                 }
