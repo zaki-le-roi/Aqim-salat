@@ -832,6 +832,7 @@ fun SurahReader(
     var showJuzIndex by remember { mutableStateOf(false) }
     var showSearch by remember { mutableStateOf(false) }
     var showPageJump by remember { mutableStateOf(false) }
+    var controlsVisible by remember { mutableStateOf(false) }
     var pageInput by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<Triple<Int, Int, String>>>(emptyList()) }
@@ -885,12 +886,12 @@ fun SurahReader(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFDFBF7))
-            .statusBarsPadding()
-            .navigationBarsPadding()
     ) {
+        if (controlsVisible) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .height(48.dp)
                 .background(Color(0xFF0B382C))
                 .padding(horizontal = 2.dp),
@@ -958,6 +959,7 @@ fun SurahReader(
                 )
             }
         }
+        }
 
         HorizontalPager(
             state = pagerState,
@@ -971,7 +973,8 @@ fun SurahReader(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(0.dp)
-                    .background(Color(0xFFFDFBF7)),
+                    .background(Color(0xFFFDFBF7))
+                    .clickable { controlsVisible = !controlsVisible },
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
@@ -983,9 +986,11 @@ fun SurahReader(
             }
         }
 
+        if (controlsVisible) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .height(56.dp)
                 .background(Color(0xFF0B382C))
                 .padding(horizontal = 2.dp, vertical = 1.dp),
@@ -1018,6 +1023,8 @@ fun SurahReader(
             }
         }
 
+        }
+        
         if (showPageJump) {
             AlertDialog(
                 onDismissRequest = { showPageJump = false },
