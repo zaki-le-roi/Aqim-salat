@@ -198,193 +198,6 @@ interface QuranNoteDao {
     suspend fun deleteNoteById(id: Int)
 }
 
-// Admin and Donation Entities
-@androidx.room.Entity(tableName = "admin_hadiths")
-data class AdminHadith(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val collection: String,
-    val number: String,
-    val arabic: String,
-    val english: String,
-    val reference: String,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "admin_adhkars")
-data class AdminAdhkar(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val category: String,
-    val title: String,
-    val arabic: String,
-    val english: String,
-    val countGoal: Int = 33,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "admin_duas")
-data class AdminDua(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val category: String,
-    val arabic: String,
-    val translation: String,
-    val transliteration: String,
-    val source: String,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "admin_articles")
-data class AdminArticle(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val title: String,
-    val content: String,
-    val author: String = "Super Admin",
-    val date: String = "",
-    val category: String = "Islamic Knowledge",
-    val imageUri: String = "",
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "admin_banners_reminders")
-data class AdminBannerReminder(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val type: String, // BANNER, REMINDER, ANNOUNCEMENT, HADITH_DAY, DUA_DAY, RAMADAN_MSG, EID_MSG, EVENT
-    val title: String = "",
-    val content: String = "",
-    val imageUrl: String = "",
-    val actionUrl: String = "",
-    val scheduledTime: String = "",
-    val isActive: Boolean = true,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "donation_campaigns")
-data class DonationCampaign(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val title: String,
-    val description: String,
-    val imageUrl: String = "",
-    val targetAmount: Double = 10000.0,
-    val currentProgress: Double = 0.0,
-    val startDate: String = "",
-    val endDate: String = "",
-    val isActive: Boolean = true,
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "notification_logs")
-data class NotificationLog(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val title: String,
-    val body: String,
-    val audience: String = "All Users",
-    val sentTime: String = "",
-    val timestamp: Long = System.currentTimeMillis()
-)
-
-@androidx.room.Entity(tableName = "app_members")
-data class AppMember(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val email: String,
-    val country: String = "Saudi Arabia",
-    val city: String = "Makkah",
-    val points: Int = 100,
-    val registrationDate: Long = System.currentTimeMillis(),
-    val streakDays: Int = 0,
-    val isActive: Boolean = true
-)
-
-@androidx.room.Entity(tableName = "admin_accounts")
-data class AdminAccount(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val email: String,
-    val role: String = "Super Admin",
-    val permissions: String = "ALL",
-    val isActive: Boolean = true
-)
-
-@Dao
-interface AdminDao {
-    @Query("SELECT * FROM admin_hadiths ORDER BY timestamp DESC")
-    fun getAllHadiths(): Flow<List<AdminHadith>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHadith(hadith: AdminHadith)
-
-    @Query("DELETE FROM admin_hadiths WHERE id = :id")
-    suspend fun deleteHadith(id: Int)
-
-    @Query("SELECT * FROM admin_adhkars ORDER BY timestamp DESC")
-    fun getAllAdhkars(): Flow<List<AdminAdhkar>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAdhkar(adhkar: AdminAdhkar)
-
-    @Query("DELETE FROM admin_adhkars WHERE id = :id")
-    suspend fun deleteAdhkar(id: Int)
-
-    @Query("SELECT * FROM admin_duas ORDER BY timestamp DESC")
-    fun getAllDuas(): Flow<List<AdminDua>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDua(dua: AdminDua)
-
-    @Query("DELETE FROM admin_duas WHERE id = :id")
-    suspend fun deleteDua(id: Int)
-
-    @Query("SELECT * FROM admin_articles ORDER BY timestamp DESC")
-    fun getAllArticles(): Flow<List<AdminArticle>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertArticle(article: AdminArticle)
-
-    @Query("DELETE FROM admin_articles WHERE id = :id")
-    suspend fun deleteArticle(id: Int)
-
-    @Query("SELECT * FROM admin_banners_reminders ORDER BY timestamp DESC")
-    fun getAllBannersReminders(): Flow<List<AdminBannerReminder>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBannerReminder(br: AdminBannerReminder)
-
-    @Query("DELETE FROM admin_banners_reminders WHERE id = :id")
-    suspend fun deleteBannerReminder(id: Int)
-
-    @Query("SELECT * FROM donation_campaigns ORDER BY timestamp DESC")
-    fun getAllDonationCampaigns(): Flow<List<DonationCampaign>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertDonationCampaign(campaign: DonationCampaign)
-
-    @Query("DELETE FROM donation_campaigns WHERE id = :id")
-    suspend fun deleteDonationCampaign(id: Int)
-
-    @Query("SELECT * FROM notification_logs ORDER BY timestamp DESC")
-    fun getAllNotificationLogs(): Flow<List<NotificationLog>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNotificationLog(log: NotificationLog)
-
-    @Query("SELECT * FROM admin_accounts ORDER BY id DESC")
-    fun getAllAdminAccounts(): Flow<List<AdminAccount>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAdminAccount(account: AdminAccount)
-
-    @Query("DELETE FROM admin_accounts WHERE id = :id")
-    suspend fun deleteAdminAccount(id: Int)
-
-    // Member DAO methods
-    @Query("SELECT * FROM app_members ORDER BY points DESC")
-    fun getAllMembers(): Flow<List<AppMember>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMember(member: AppMember)
-
-    @Query("DELETE FROM app_members WHERE id = :id")
-    suspend fun deleteMember(id: Int)
-}
-
 // Database Room Class
 @Database(
     entities = [
@@ -395,17 +208,8 @@ interface AdminDao {
         FavoriteMosque::class,
         Khatmah::class,
         QuranNote::class,
-        AdminHadith::class,
-        AdminAdhkar::class,
-        AdminDua::class,
-        AdminArticle::class,
-        AdminBannerReminder::class,
-        DonationCampaign::class,
-        NotificationLog::class,
-        AdminAccount::class,
-        AppMember::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -416,19 +220,33 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mosqueDao(): MosqueDao
     abstract fun khatmahDao(): KhatmahDao
     abstract fun quranNoteDao(): QuranNoteDao
-    abstract fun adminDao(): AdminDao
 
     companion object {
         private val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM prayer_logs WHERE id NOT IN (SELECT MAX(id) FROM prayer_logs GROUP BY date, prayerName)")
                 db.execSQL("DELETE FROM bookmarks WHERE id NOT IN (SELECT MAX(id) FROM bookmarks GROUP BY type, referenceId)")
-                db.execSQL("DELETE FROM admin_accounts WHERE id NOT IN (SELECT MAX(id) FROM admin_accounts GROUP BY lower(trim(email)))")
-                db.execSQL("DELETE FROM app_members WHERE id NOT IN (SELECT MAX(id) FROM app_members GROUP BY lower(trim(email)))")
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_prayer_logs_date_prayerName ON prayer_logs(date, prayerName)")
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_bookmarks_type_referenceId ON bookmarks(type, referenceId)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_admin_accounts_email ON admin_accounts(email)")
-                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_app_members_email ON app_members(email)")
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Remove tables that belonged exclusively to the deleted admin console.
+                listOf(
+                    "admin_hadiths",
+                    "admin_adhkars",
+                    "admin_duas",
+                    "admin_articles",
+                    "admin_banners_reminders",
+                    "donation_campaigns",
+                    "notification_logs",
+                    "admin_accounts",
+                    "app_members"
+                ).forEach { tableName ->
+                    db.execSQL("DROP TABLE IF EXISTS $tableName")
+                }
             }
         }
 
@@ -441,7 +259,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "aqim_salah_db"
-                ).addMigrations(MIGRATION_4_5).build()
+                ).addMigrations(MIGRATION_4_5, MIGRATION_5_6).build()
                 INSTANCE = instance
                 instance
             }

@@ -257,42 +257,4 @@ class AppRepository(
         context.dataStore.edit { pref -> pref[KEY_NOTIFICATIONS_ENABLED] = enabled }
     }
 
-    // --- Admin and Donation Operations ---
-    private val adminDao = db.adminDao()
-
-    val allAdminHadiths: Flow<List<AdminHadith>> = adminDao.getAllHadiths()
-    suspend fun insertAdminHadith(hadith: AdminHadith) = adminDao.insertHadith(hadith)
-    suspend fun deleteAdminHadith(id: Int) = adminDao.deleteHadith(id)
-
-    val allAdminAdhkars: Flow<List<AdminAdhkar>> = adminDao.getAllAdhkars()
-    suspend fun insertAdminAdhkar(adhkar: AdminAdhkar) = adminDao.insertAdhkar(adhkar)
-    suspend fun deleteAdminAdhkar(id: Int) = adminDao.deleteAdhkar(id)
-
-    val allAdminDuas: Flow<List<AdminDua>> = adminDao.getAllDuas()
-    suspend fun insertAdminDua(dua: AdminDua) = adminDao.insertDua(dua)
-    suspend fun deleteAdminDua(id: Int) = adminDao.deleteDua(id)
-
-    val allAdminArticles: Flow<List<AdminArticle>> = adminDao.getAllArticles()
-    suspend fun insertAdminArticle(article: AdminArticle) = adminDao.insertArticle(article)
-    suspend fun deleteAdminArticle(id: Int) = adminDao.deleteArticle(id)
-
-    val allAdminBannersReminders: Flow<List<AdminBannerReminder>> = adminDao.getAllBannersReminders()
-    suspend fun insertAdminBannerReminder(br: AdminBannerReminder) = adminDao.insertBannerReminder(br)
-    suspend fun deleteAdminBannerReminder(id: Int) = adminDao.deleteBannerReminder(id)
-
-    val allDonationCampaigns: Flow<List<DonationCampaign>> = adminDao.getAllDonationCampaigns()
-    suspend fun insertDonationCampaign(campaign: DonationCampaign) = adminDao.insertDonationCampaign(campaign)
-    suspend fun deleteDonationCampaign(id: Int) = adminDao.deleteDonationCampaign(id)
-
-    val allNotificationLogs: Flow<List<NotificationLog>> = adminDao.getAllNotificationLogs()
-    suspend fun insertNotificationLog(log: NotificationLog) = adminDao.insertNotificationLog(log)
-
-    val allAdminAccounts: Flow<List<AdminAccount>> = adminDao.getAllAdminAccounts()
-    suspend fun insertAdminAccount(account: AdminAccount) = adminDao.insertAdminAccount(account)
-    suspend fun deleteAdminAccount(id: Int) = adminDao.deleteAdminAccount(id)
-
-    // Member Operations
-    val allMembers: Flow<List<AppMember>> = adminDao.getAllMembers()
-    suspend fun insertMember(member: AppMember) = adminDao.insertMember(member)
-    suspend fun deleteMember(id: Int) = adminDao.deleteMember(id)
 }

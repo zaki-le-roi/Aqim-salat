@@ -98,8 +98,6 @@ dependencies {
   implementation(libs.converter.moshi)
   implementation(libs.firebase.ai)
   implementation(libs.firebase.appcheck.recaptcha)
-  implementation(libs.firebase.auth)
-  implementation(libs.firebase.firestore)
   implementation("com.google.android.play:app-update:2.1.0")
   implementation("com.google.android.play:app-update-ktx:2.1.0")
   implementation(libs.kotlinx.coroutines.android)

@@ -1029,7 +1029,12 @@ fun InteractiveGoogleMap(
             WebView(ctx).apply {
                 webViewClient = WebViewClient()
                 settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
+                settings.domStorageEnabled = false
+                settings.allowFileAccess = false
+                settings.allowContentAccess = false
+                settings.javaScriptCanOpenWindowsAutomatically = false
+                settings.setSupportMultipleWindows(false)
+                settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 settings.useWideViewPort = true
                 settings.loadWithOverviewMode = true
             }
@@ -1073,8 +1078,13 @@ fun InteractiveGoogleMap(
                 """)
                 
                 nearbyMosques.forEach { mosque ->
-                    val mName = if (lang == "ar") mosque.nameAr.replace("'", "\\'") else mosque.nameEn.replace("'", "\\'")
-                    val mAddr = if (lang == "ar") mosque.addressAr.replace("'", "\\'") else mosque.addressEn.replace("'", "\\'")
+                    // Quote untrusted values as JavaScript literals and neutralize HTML script terminators.
+                    val mName = org.json.JSONObject.quote(if (lang == "ar") mosque.nameAr else mosque.nameEn)
+                        .replace("<", "\\u003C").replace(">", "\\u003E").replace("&", "\\u0026")
+                        .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+                    val mAddr = org.json.JSONObject.quote(if (lang == "ar") mosque.addressAr else mosque.addressEn)
+                        .replace("<", "\\u003C").replace(">", "\\u003E").replace("&", "\\u0026")
+                        .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
                     append("""
                         var mosqueIcon = L.divIcon({
                             className: 'mosque-pin',
@@ -1082,8 +1092,17 @@ fun InteractiveGoogleMap(
                             iconSize: [20, 20],
                             iconAnchor: [10, 10]
                         });
-                        L.marker([${mosque.lat}, ${mosque.lng}], { icon: mosqueIcon }).addTo(map)
-                            .bindPopup("<b>$mName</b><br/><span style='color:#e0e0e0;'>$mAddr</span>");
+                        var popupContent = document.createElement('div');
+                        var popupTitle = document.createElement('b');
+                        popupTitle.textContent = $mName;
+                        popupContent.appendChild(popupTitle);
+                        popupContent.appendChild(document.createElement('br'));
+                        var popupAddress = document.createElement('span');
+                        popupAddress.style.color = '#e0e0e0';
+                        popupAddress.textContent = $mAddr;
+                        popupContent.appendChild(popupAddress);
+                        L.marker([\${mosque.lat}, \${mosque.lng}], { icon: mosqueIcon }).addTo(map)
+                            .bindPopup(popupContent);
                     """)
                 }
                 

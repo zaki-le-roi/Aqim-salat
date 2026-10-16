@@ -203,7 +203,7 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = "MOSQUES"
             }
-            "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "ADMIN", "SEERAH",
+            "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "SEERAH",
             "SCHOLARS_LIBRARY" -> {
                 activeDetailScreen = routeKey
             }
@@ -304,7 +304,6 @@ fun AqimSalahApp(
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
-                    "ADMIN" -> AdminScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "FAVORITES" -> FavoritesScreen(
                         viewModel = viewModel, 
                         lang = lang, 
