@@ -31,7 +31,6 @@ fun CalendarScreen(
     lang: String,
     onBack: (() -> Unit)? = null
 ) {
-    val hijriString by viewModel.hijriDateString.collectAsState()
 
     val today = remember { Date() }
     val dateInputFormat = remember { SimpleDateFormat("dd-MM-yyyy", Locale.US) }
@@ -163,11 +162,7 @@ fun CalendarScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        val days = if (lang == "ar") {
-                            listOf("أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت")
-                        } else {
-                            listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-                        }
+                        val days = listOf("الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت")
                         days.forEach { d ->
                             Text(
                                 text = d,
