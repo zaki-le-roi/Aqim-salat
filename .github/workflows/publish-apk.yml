@@ -58,7 +58,9 @@ jobs:
           if [ "$REF_TYPE" = "tag" ]; then
             VERSION="${REF_NAME#v}"
           elif [ "$REF_TYPE" = "branch" ]; then
-            VERSION="1.5.$RUN_NUMBER"
+            LAST_PATCH="$(gh release list --limit 100 --json tagName --jq '[.[] | .tagName | select(test("^v1\\.4\\.[0-9]+$")) | ltrimstr("v") | split(".")[2] | tonumber] | max // 7')"
+            NEXT_PATCH=$((LAST_PATCH + 1))
+            VERSION="1.4.$NEXT_PATCH"
           else
             echo "Unsupported ref type: $REF_TYPE"
             exit 1
