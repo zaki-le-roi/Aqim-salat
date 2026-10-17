@@ -8,11 +8,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import android.view.Gravity
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -117,26 +122,68 @@ class ApkUpdateChecker(private val activity: Activity) {
     }
 
     private fun showUpdateDialog(versionCode: Int, versionName: String, notes: String, downloadUrl: String) {
+        // Explicit opaque text colors prevent theme-dependent transparent message text.
+        val content = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(24), dp(22), dp(24), dp(8))
+            background = GradientDrawable().apply {
+                setColor(Color.rgb(250, 248, 245))
+                cornerRadius = dp(24).toFloat()
+                setStroke(dp(1), GOLD)
+            }
+        }
+
+        val title = TextView(activity).apply {
+            text = "يتوفر تحديث جديد"
+            setTextColor(Color.rgb(15, 76, 58))
+            textSize = 20f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            includeFontPadding = true
+        }
+        val message = TextView(activity).apply {
+            text = "أقم صلاتك $versionName\n\n$notes\n\nسيتم تنزيل التحديث ثم فتح مُثبّت Android لتأكيد التثبيت."
+            setTextColor(Color.rgb(38, 43, 40))
+            textSize = 16f
+            gravity = Gravity.START
+            includeFontPadding = true
+            setLineSpacing(dp(4).toFloat(), 1.0f)
+        }
+        content.addView(title, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = dp(16) })
+        content.addView(message, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+
         val dialog = AlertDialog.Builder(activity)
-            .setTitle("يتوفر تحديث جديد")
-            .setMessage("أقم صلاتك $versionName\n\n$notes\n\nسيتم تنزيل التحديث ثم فتح مُثبّت Android لتأكيد التثبيت.")
+            .setView(content)
             .setNegativeButton("لاحقًا", null)
             .setPositiveButton("تحديث الآن", null)
             .create()
 
         dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(GOLD)
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.rgb(120, 88, 20))
             dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
                 dialog.dismiss()
                 startDownload(versionCode, versionName, downloadUrl)
             }
         }
         dialog.show()
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.rgb(250, 248, 245)))
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setLayout(
+            (activity.resources.displayMetrics.widthPixels * 0.90f).toInt(),
+            android.view.WindowManager.LayoutParams.WRAP_CONTENT
+        )
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(GOLD)
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.rgb(120, 88, 20))
     }
+
+    private fun dp(value: Int): Int =
+        (value * activity.resources.displayMetrics.density + 0.5f).toInt()
 
     private fun startDownload(versionCode: Int, versionName: String, downloadUrl: String) {
         try {
