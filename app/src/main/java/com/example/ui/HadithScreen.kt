@@ -192,8 +192,9 @@ fun HadithScreen(
         ) {
             // Refined library header — visual-only change; book data and navigation remain unchanged.
             Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 3.dp
+                modifier = Modifier.fillMaxWidth(),
+                color = Color(0xFFF8FAF8),
+                shadowElevation = 4.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -219,12 +220,12 @@ fun HadithScreen(
                                 text = "مكتبة الحديث الشريف",
                                 fontSize = 21.sp,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = Color(0xFF0F4C3A)
                             )
                             Text(
                                 text = "أمهات مصادر السنة النبوية",
                                 fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = Color(0xFF4B5B53)
                             )
                         }
                         Box(
@@ -247,11 +248,16 @@ fun HadithScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(RoundedCornerShape(24.dp))
                             .background(
                                 Brush.linearGradient(
-                                    colors = listOf(Color(0xFF0F4C3A), Color(0xFF176B52))
+                                    colors = listOf(Color(0xFF0B3D30), Color(0xFF176B52))
                                 )
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFD4AF37).copy(alpha = 0.85f),
+                                shape = RoundedCornerShape(24.dp)
                             )
                     ) {
                         Row(
@@ -289,7 +295,7 @@ fun HadithScreen(
                                 )
                                 Text(
                                     text = "ابحث بين الكتب والأبواب ونصوص الأحاديث",
-                                    color = Color.White.copy(alpha = 0.82f),
+                                    color = Color(0xFFFFFFFF),
                                     fontSize = 11.sp,
                                     lineHeight = 16.sp
                                 )
@@ -303,7 +309,7 @@ fun HadithScreen(
                                 )
                                 Text(
                                     text = "كتب",
-                                    color = Color.White.copy(alpha = 0.9f),
+                                    color = Color(0xFFFFFFFF),
                                     fontSize = 11.sp
                                 )
                             }
@@ -313,7 +319,10 @@ fun HadithScreen(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        modifier = Modifier.fillMaxWidth().testTag("hadith_library_search"),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(2.dp, RoundedCornerShape(18.dp))
+                            .testTag("hadith_library_search"),
                         placeholder = {
                             Text("ابحث عن كتاب أو باب أو حديث...", fontSize = 12.sp)
                         },
@@ -327,13 +336,13 @@ fun HadithScreen(
                                 }
                             }
                         },
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(18.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD4AF37),
                             unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
                         )
                     )
 
@@ -355,7 +364,7 @@ fun HadithScreen(
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedContainerColor = Color(0xFF0F4C3A),
                                     selectedLabelColor = Color.White
                                 ),
                                 border = FilterChipDefaults.filterChipBorder(
@@ -497,10 +506,10 @@ fun BookCardItem(
             .fillMaxWidth()
             .clickable { onClick() }
             .testTag("book_card_${book.id}"),
-        shape = RoundedCornerShape(19.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp, pressedElevation = 1.dp),
-        border = androidx.compose.foundation.BorderStroke(0.8.dp, Color(book.primaryColorHex).copy(alpha = 0.28f))
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp, pressedElevation = 2.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(book.primaryColorHex).copy(alpha = 0.55f))
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Existing individual cover artwork and book metadata are preserved.
@@ -508,16 +517,17 @@ fun BookCardItem(
                 book = book,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(158.dp)
+                    .height(166.dp)
+                    .clip(RoundedCornerShape(topStart = 21.dp, topEnd = 21.dp))
             )
 
-            // Clear, compact book information footer.
+            // High-contrast information footer; preserve original book details.
             Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
                 Text(
                     text = book.title,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = Color(0xFF0F4C3A),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -525,7 +535,7 @@ fun BookCardItem(
                 Text(
                     text = book.author,
                     fontSize = 11.sp,
-                    color = Color.DarkGray,
+                    color = Color(0xFF343A36),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -655,9 +665,9 @@ fun BookCoverCanvas(
             // Center: Golden Oval Badge with Book Title
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.Black.copy(alpha = 0.3f))
-                    .border(1.dp, goldColor.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0xE6001712))
+                    .border(1.dp, goldColor.copy(alpha = 0.95f), RoundedCornerShape(14.dp))
                     .padding(horizontal = if (isLarge) 16.dp else 10.dp, vertical = if (isLarge) 12.dp else 8.dp),
                 contentAlignment = Alignment.Center
             ) {
