@@ -109,7 +109,8 @@ class ApkUpdateChecker(private val activity: Activity) {
 
                 // Compare with the installed app version as well as its numeric code.
                 // Older builds may have a stale versionCode but the same visible version name.
-                if (latestCode <= BuildConfig.VERSION_CODE) return@launch
+                // Compare both version fields: some previously installed builds had a stale code.
+                if (latestCode <= BuildConfig.VERSION_CODE || compareVersions(latestName, BuildConfig.VERSION_NAME) <= 0) return@launch
                 if (preferences.getString(KEY_DISMISSED_VERSION, null) == latestName) return@launch
 
                 withContext(Dispatchers.Main) {
@@ -187,6 +188,16 @@ class ApkUpdateChecker(private val activity: Activity) {
         )
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
         dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.rgb(120, 88, 20))
+    }
+
+    private fun compareVersions(first: String, second: String): Int {
+        val a = first.split(".").map { it.toIntOrNull() ?: 0 }
+        val b = second.split(".").map { it.toIntOrNull() ?: 0 }
+        for (i in 0 until maxOf(a.size, b.size)) {
+            val comparison = (a.getOrElse(i) { 0 }).compareTo(b.getOrElse(i) { 0 })
+            if (comparison != 0) return comparison
+        }
+        return 0
     }
 
     private fun dp(value: Int): Int =
