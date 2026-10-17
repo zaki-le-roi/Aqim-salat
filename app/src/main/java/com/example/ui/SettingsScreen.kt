@@ -1,6 +1,10 @@
 package com.example.ui
 
 import android.widget.Toast
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings as AndroidSettings
+import androidx.core.content.ContextCompat
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import androidx.compose.foundation.background
@@ -44,6 +48,8 @@ fun SettingsScreen(
     val defaultMuadhinVal by viewModel.defaultMuadhin.collectAsState()
     val hapticsVal by viewModel.hapticsEnabled.collectAsState()
     val fontScaleVal by viewModel.fontScale.collectAsState()
+
+    var floatingAdhkarEnabled by remember { mutableStateOf(context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE).getBoolean("enabled", false)) }
 
     // Dialog state controllers
     var activeDialog by remember(initialDialog) { mutableStateOf<String?>(initialDialog) } // Dialog opened from the global app menu
@@ -102,6 +108,55 @@ fun SettingsScreen(
         }
 
 
+
+        // Floating adhkar overlay (shown over other apps only after explicit permission).
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth().testTag("setting_floating_adhkar"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                        Icon(Icons.Filled.AutoAwesome, contentDescription = "الأذكار العائمة", tint = Color(0xFFD4AF37), modifier = Modifier.size(28.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text("الأذكار العائمة", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(
+                                if (floatingAdhkarEnabled) "تظهر فوق التطبيقات الأخرى" else "ذكر ظاهر على شاشة الهاتف مع إمكانية تغييره",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = floatingAdhkarEnabled,
+                        onCheckedChange = { enabled ->
+                            val prefs = context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE)
+                            if (enabled && !AndroidSettings.canDrawOverlays(context)) {
+                                Toast.makeText(context, "اسمح بالظهور فوق التطبيقات الأخرى، ثم ارجع وفعّل الأذكار العائمة.", Toast.LENGTH_LONG).show()
+                                context.startActivity(
+                                    Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.packageName))
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            } else {
+                                floatingAdhkarEnabled = enabled
+                                prefs.edit().putBoolean("enabled", enabled).apply()
+                                val serviceIntent = Intent(context, com.example.AdhkarOverlayService::class.java).apply {
+                                    action = if (enabled) com.example.AdhkarOverlayService.ACTION_SHOW else com.example.AdhkarOverlayService.ACTION_STOP
+                                }
+                                if (enabled) ContextCompat.startForegroundService(context, serviceIntent)
+                                else context.startService(serviceIntent)
+                            }
+                        }
+                    )
+                }
+            }
+        }
 
         // 3. Notifications Manager
         item {
