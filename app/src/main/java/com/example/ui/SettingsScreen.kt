@@ -22,6 +22,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,6 +39,7 @@ fun SettingsScreen(
     initialDialog: String? = null
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val madhabVal by viewModel.madhab.collectAsState()
     val methodVal by viewModel.calcMethod.collectAsState()
     val locationVal by viewModel.locationName.collectAsState()
@@ -50,6 +54,24 @@ fun SettingsScreen(
     val fontScaleVal by viewModel.fontScale.collectAsState()
 
     var floatingAdhkarEnabled by remember { mutableStateOf(context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE).getBoolean("enabled", false)) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val prefs = context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE)
+                val enabled = prefs.getBoolean("enabled", false)
+                floatingAdhkarEnabled = enabled
+                if (enabled && AndroidSettings.canDrawOverlays(context)) {
+                    ContextCompat.startForegroundService(
+                        context,
+                        Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_SHOW)
+                    )
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // Dialog state controllers
     var activeDialog by remember(initialDialog) { mutableStateOf<String?>(initialDialog) } // Dialog opened from the global app menu
@@ -164,7 +186,7 @@ fun SettingsScreen(
             var overlayOpacity by remember { mutableFloatStateOf(prefs.getFloat("opacity", 0.94f)) }
             var overlayScale by remember { mutableFloatStateOf(prefs.getFloat("scale", 1.0f)) }
             var autoRotateAdhkar by remember { mutableStateOf(prefs.getBoolean("auto_rotate", true)) }
-            var adhkarInterval by remember { mutableIntStateOf(prefs.getInt("interval_minutes", 10)) }
+            var adhkarInterval by remember { mutableIntStateOf(prefs.getInt("interval_minutes", 5)) }
 
             Card(
                 modifier = Modifier.fillMaxWidth().testTag("setting_floating_adhkar_controls"),
@@ -173,7 +195,7 @@ fun SettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("تخصيص الأذكار العائمة", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
-                    Text("اسحب عنوان البطاقة لنقلها، واضبط حجمها وشفافيتها من هنا.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                    Text("بطاقة محادثة رفيعة 💬؛ اضغط عليها لإظهار الذكر ومصدره. اسحبها من أعلاها لنقلها.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                         Text("شفافية البطاقة", fontSize = 14.sp)
                         Text((overlayOpacity * 100).toInt().toString() + "%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
@@ -204,7 +226,7 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text("تغيير الذكر تلقائيًا", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                            Text("تتغير الأذكار حسب الفترة: الصباح والمساء وبقية اليوم.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                            Text("أذكار الصباح والمساء والنوم والتسبيح بحسب الوقت.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
                         }
                         Switch(
                             checked = autoRotateAdhkar,

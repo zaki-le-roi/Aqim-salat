@@ -27,6 +27,9 @@ class AdhkarOverlayService : Service() {
     private var overlay: LinearLayout? = null
     private var adhkarText: TextView? = null
     private var sourceText: TextView? = null
+    private var details: LinearLayout? = null
+    private var windowParams: WindowManager.LayoutParams? = null
+    private var expanded = false
     private var currentIndex = 0
     private var currentItems: List<Adhkar> = emptyList()
     private val handler = Handler(Looper.getMainLooper())
@@ -38,10 +41,14 @@ class AdhkarOverlayService : Service() {
     private data class Adhkar(val text: String, val source: String)
 
     private val generalAdhkar = listOf(
-        Adhkar("سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ", "صحيح البخاري 6406، وصحيح مسلم 2694"),
+        Adhkar("سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ", "صحيح البخاري 6406، صحيح مسلم 2694"),
         Adhkar("أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ", "صحيح البخاري 6307"),
-        Adhkar("لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", "صحيح البخاري 3293، وصحيح مسلم 2691"),
-        Adhkar("لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", "صحيح البخاري 6384، وصحيح مسلم 2704")
+        Adhkar("لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", "صحيح البخاري 3293، صحيح مسلم 2691"),
+        Adhkar("لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", "صحيح البخاري 6384، صحيح مسلم 2704"),
+        Adhkar("سُبْحَانَ اللَّهِ", "صحيح مسلم 2137: أحب الكلام إلى الله"),
+        Adhkar("الْحَمْدُ لِلَّهِ", "صحيح مسلم 223: تملأ الميزان"),
+        Adhkar("اللَّهُ أَكْبَرُ", "ذكر مشروع ثابت في الأحاديث الصحيحة"),
+        Adhkar("اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى مُحَمَّدٍ", "أصل الصلاة على النبي ثابت في صحيح البخاري 3370")
     )
 
     private val morningAdhkar = listOf(
@@ -52,6 +59,11 @@ class AdhkarOverlayService : Service() {
     private val eveningAdhkar = listOf(
         Adhkar("أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا", "صحيح مسلم 2723"),
         Adhkar("اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ", "سنن أبي داود 5068، وجامع الترمذي 3391")
+    )
+
+    private val sleepAdhkar = listOf(
+        Adhkar("بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا", "صحيح البخاري 6324"),
+        Adhkar("اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ", "سنن أبي داود 5045، وجامع الترمذي 3398")
     )
 
     private val rotationRunnable = object : Runnable {
@@ -66,8 +78,11 @@ class AdhkarOverlayService : Service() {
                 currentIndex = (currentIndex + 1) % currentItems.size
             }
             renderCurrentAdhkar()
-            val minutes = prefs.getInt("interval_minutes", 10).coerceIn(5, 60)
-            handler.postDelayed(this, minutes * 60_000L)
+            // Align changes to clock boundaries: e.g. 10:00, 10:05, 10:10.
+            val now = System.currentTimeMillis()
+            val interval = prefs.getInt("interval_minutes", 5).coerceIn(5, 60) * 60_000L
+            val delay = interval - (now % interval)
+            handler.postDelayed(this, delay.coerceAtLeast(1_000L))
         }
     }
 
@@ -91,8 +106,16 @@ class AdhkarOverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
         if (intent?.action == ACTION_STOP) {
-            getSharedPreferences("floating_adhkar", MODE_PRIVATE).edit().putBoolean("enabled", false).apply()
+            prefs.edit().putBoolean("enabled", false).apply()
+            handler.removeCallbacks(rotationRunnable)
+            removeOverlay()
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+        if (!prefs.getBoolean("enabled", false)) {
             handler.removeCallbacks(rotationRunnable)
             removeOverlay()
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -100,14 +123,16 @@ class AdhkarOverlayService : Service() {
             return START_NOT_STICKY
         }
         if (!Settings.canDrawOverlays(this)) {
-            getSharedPreferences("floating_adhkar", MODE_PRIVATE).edit().putBoolean("enabled", false).apply()
             handler.removeCallbacks(rotationRunnable)
             removeOverlay()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
         }
-        if (intent?.action == ACTION_REFRESH) removeOverlay()
+        if (intent?.action == ACTION_REFRESH) {
+            removeOverlay()
+            expanded = false
+        }
         showOverlay()
         scheduleRotation()
         return START_STICKY
@@ -118,6 +143,7 @@ class AdhkarOverlayService : Service() {
         return when (hour) {
             in 4..10 -> morningAdhkar + generalAdhkar
             in 16..19 -> eveningAdhkar + generalAdhkar
+            in 20..23, in 0..3 -> sleepAdhkar + generalAdhkar
             else -> generalAdhkar
         }
     }
@@ -126,7 +152,9 @@ class AdhkarOverlayService : Service() {
         handler.removeCallbacks(rotationRunnable)
         val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
         if (prefs.getBoolean("auto_rotate", true)) {
-            handler.postDelayed(rotationRunnable, prefs.getInt("interval_minutes", 10).coerceIn(5, 60) * 60_000L)
+            val interval = prefs.getInt("interval_minutes", 5).coerceIn(5, 60) * 60_000L
+            val delay = interval - (System.currentTimeMillis() % interval)
+            handler.postDelayed(rotationRunnable, delay.coerceAtLeast(1_000L))
         }
     }
 
@@ -134,7 +162,16 @@ class AdhkarOverlayService : Service() {
         if (currentItems.isEmpty()) currentItems = getAdhkarForCurrentTime()
         val item = currentItems[currentIndex.coerceIn(0, currentItems.lastIndex)]
         adhkarText?.text = item.text
-        sourceText?.text = "المصدر: ${item.source}"
+        sourceText?.text = "المصدر: " + item.source
+        sourceText?.visibility = if (expanded) View.VISIBLE else View.GONE
+        details?.visibility = if (expanded) View.VISIBLE else View.GONE
+        overlay?.let { root ->
+            val density = resources.displayMetrics.density
+            val width = (if (expanded) 292 else 270) * density
+            windowParams?.width = width.toInt()
+            windowParams?.height = WindowManager.LayoutParams.WRAP_CONTENT
+            try { windowManager?.updateViewLayout(root, windowParams) } catch (_: Exception) { }
+        }
     }
 
     private fun showOverlay() {
@@ -148,33 +185,52 @@ class AdhkarOverlayService : Service() {
 
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(10), dp(14), dp(10))
+            setPadding(dp(10), dp(4), dp(10), dp(4))
             alpha = prefs.getFloat("opacity", 0.94f).coerceIn(0.55f, 1f)
             val scale = prefs.getFloat("scale", 1f).coerceIn(0.8f, 1.25f)
             scaleX = scale
             scaleY = scale
             background = GradientDrawable().apply {
                 setColor(Color.rgb(250, 248, 241))
-                cornerRadius = dp(18).toFloat()
+                cornerRadius = dp(28).toFloat()
                 setStroke(dp(1), Color.rgb(212, 175, 55))
             }
-            elevation = dp(8).toFloat()
+            elevation = dp(7).toFloat()
         }
+
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        val title = TextView(this).apply {
-            text = "ذِكْرٌ • اسحب لنقل البطاقة"
-            textSize = 12f
-            setTextColor(Color.rgb(15, 76, 58))
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER_VERTICAL
+        val bubble = TextView(this).apply {
+            text = "💬"
+            textSize = 18f
+            gravity = Gravity.CENTER
+            setPadding(dp(4), 0, dp(4), 0)
+            setOnClickListener {
+                expanded = !expanded
+                renderCurrentAdhkar()
+            }
         }
-        header.addView(title, LinearLayout.LayoutParams(0, dp(28), 1f))
-        header.addView(TextView(this).apply {
+        header.addView(bubble, LinearLayout.LayoutParams(dp(30), dp(34)))
+        adhkarText = TextView(this).apply {
+            textSize = 13f
+            maxLines = if (expanded) 4 else 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            gravity = Gravity.CENTER_VERTICAL
+            setTextColor(Color.rgb(30, 48, 40))
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(dp(5), dp(2), dp(5), dp(2))
+            setOnClickListener {
+                expanded = !expanded
+                maxLines = if (expanded) 6 else 1
+                renderCurrentAdhkar()
+            }
+        }
+        header.addView(adhkarText, LinearLayout.LayoutParams(0, dp(34), 1f))
+        val close = TextView(this).apply {
             text = "×"
-            textSize = 23f
+            textSize = 20f
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(100, 100, 100))
             setOnClickListener {
@@ -184,45 +240,23 @@ class AdhkarOverlayService : Service() {
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
-        }, LinearLayout.LayoutParams(dp(32), dp(32)))
+        }
+        header.addView(close, LinearLayout.LayoutParams(dp(28), dp(34)))
         root.addView(header)
 
-        adhkarText = TextView(this).apply {
-            textSize = 15f
-            gravity = Gravity.CENTER
-            setTextColor(Color.rgb(30, 48, 40))
-            typeface = Typeface.create("sans-serif", Typeface.NORMAL)
-            setLineSpacing(dp(3).toFloat(), 1.0f)
-            setPadding(dp(2), dp(5), dp(2), dp(6))
+        details = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = View.GONE
         }
-        root.addView(adhkarText, LinearLayout.LayoutParams(dp(270), LinearLayout.LayoutParams.WRAP_CONTENT))
         sourceText = TextView(this).apply {
             textSize = 10f
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(88, 100, 91))
-            setPadding(dp(2), dp(0), dp(2), dp(8))
+            setPadding(dp(4), dp(4), dp(4), dp(3))
         }
-        root.addView(sourceText, LinearLayout.LayoutParams(dp(270), LinearLayout.LayoutParams.WRAP_CONTENT))
+        details?.addView(sourceText, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+        root.addView(details)
         renderCurrentAdhkar()
-
-        val next = TextView(this).apply {
-            text = "الذكر التالي  ←"
-            textSize = 12f
-            gravity = Gravity.CENTER
-            typeface = Typeface.DEFAULT_BOLD
-            setTextColor(Color.WHITE)
-            background = GradientDrawable().apply {
-                setColor(Color.rgb(15, 76, 58))
-                cornerRadius = dp(12).toFloat()
-            }
-            setPadding(dp(12), dp(8), dp(12), dp(8))
-            setOnClickListener {
-                currentItems = getAdhkarForCurrentTime()
-                currentIndex = (currentIndex + 1) % currentItems.size
-                renderCurrentAdhkar()
-            }
-        }
-        root.addView(next, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(38)))
 
         val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -232,18 +266,19 @@ class AdhkarOverlayService : Service() {
         val screenWidth = resources.displayMetrics.widthPixels
         val screenHeight = resources.displayMetrics.heightPixels
         val params = WindowManager.LayoutParams(
-            dp(300),
+            dp(280),
             WindowManager.LayoutParams.WRAP_CONTENT,
             overlayType,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = ((screenWidth - dp(300)) / 2).coerceAtLeast(0)
+            x = ((screenWidth - dp(280)) / 2).coerceAtLeast(0)
             y = dp(90)
         }
+        windowParams = params
 
-        title.setOnTouchListener { view: View, event: MotionEvent ->
+        header.setOnTouchListener { view: View, event: MotionEvent ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     touchStartX = event.rawX
@@ -253,8 +288,8 @@ class AdhkarOverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    params.x = (initialWindowX + (event.rawX - touchStartX).toInt()).coerceIn(0, (screenWidth - dp(100)).coerceAtLeast(0))
-                    params.y = (initialWindowY + (event.rawY - touchStartY).toInt()).coerceIn(0, (screenHeight - dp(80)).coerceAtLeast(0))
+                    params.x = (initialWindowX + (event.rawX - touchStartX).toInt()).coerceIn(0, (screenWidth - dp(80)).coerceAtLeast(0))
+                    params.y = (initialWindowY + (event.rawY - touchStartY).toInt()).coerceIn(0, (screenHeight - dp(70)).coerceAtLeast(0))
                     try { windowManager?.updateViewLayout(root, params) } catch (_: Exception) { }
                     true
                 }
@@ -285,6 +320,8 @@ class AdhkarOverlayService : Service() {
         overlay = null
         adhkarText = null
         sourceText = null
+        details = null
+        windowParams = null
     }
 
     private fun createNotificationChannel() {
