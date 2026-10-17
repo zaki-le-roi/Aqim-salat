@@ -107,7 +107,10 @@ class ApkUpdateChecker(private val activity: Activity) {
                 val safeDownloadUrl = downloadUrl?.takeIf { it.startsWith("https://") } ?: return@launch
                 val notes = release.optString("body").takeIf { it.isNotBlank() } ?: "تحسينات وإصلاحات جديدة"
 
+                // Compare with the installed app version as well as its numeric code.
+                // Older builds may have a stale versionCode but the same visible version name.
                 if (latestCode <= BuildConfig.VERSION_CODE) return@launch
+                if (preferences.getString(KEY_DISMISSED_VERSION, null) == latestName) return@launch
 
                 withContext(Dispatchers.Main) {
                     if (activity.isFinishing || activity.isDestroyed) return@withContext
@@ -164,6 +167,10 @@ class ApkUpdateChecker(private val activity: Activity) {
             .create()
 
         dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setOnClickListener {
+                preferences.edit().putString(KEY_DISMISSED_VERSION, versionName).apply()
+                dialog.dismiss()
+            }
             dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.rgb(120, 88, 20))
@@ -292,6 +299,7 @@ class ApkUpdateChecker(private val activity: Activity) {
         const val APK_FILE_NAME = "Aqim-Salat-update.apk"
         const val KEY_DOWNLOAD_ID = "download_id"
         const val KEY_PENDING_APK = "pending_apk"
+        const val KEY_DISMISSED_VERSION = "dismissed_version"
         const val EMERALD = 0xFF0F6B46.toInt()
         const val GOLD = 0xFFD4AF37.toInt()
     }
