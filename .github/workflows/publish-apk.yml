@@ -90,7 +90,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build signed release APK
-        run: ./gradlew --no-daemon assembleRelease
+        run: gradle --no-daemon assembleRelease
 
       - name: Validate APK before publishing
         shell: bash
