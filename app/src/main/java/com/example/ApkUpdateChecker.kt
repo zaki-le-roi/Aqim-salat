@@ -74,25 +74,39 @@ class ApkUpdateChecker(private val activity: Activity) {
         scope.launch {
             var connection: HttpURLConnection? = null
             try {
-                connection = (URL(VERSION_JSON_URL).openConnection() as HttpURLConnection).apply {
-                    connectTimeout = 10000
-                    readTimeout = 10000
-                    setRequestProperty("Cache-Control", "no-cache")
+                connection = (URL(LATEST_RELEASE_API_URL).openConnection() as HttpURLConnection).apply {
+                    connectTimeout = 15000
+                    readTimeout = 15000
+                    setRequestProperty("Cache-Control", "no-cache, no-store")
+                    setRequestProperty("Pragma", "no-cache")
+                    setRequestProperty("Accept", "application/vnd.github+json")
                     setRequestProperty("User-Agent", "Aqim-Salat-Android")
                 }
                 if (connection.responseCode !in 200..299) return@launch
                 val json = connection.inputStream.bufferedReader().use { it.readText() }
                 val release = JSONObject(json)
-                val latestCode = release.optInt("versionCode", -1)
-                val latestName = release.optString("versionName").takeIf { it.isNotBlank() } ?: return@launch
-                val downloadUrl = release.optString("downloadUrl").takeIf { it.startsWith("https://") } ?: return@launch
-                val notes = release.optString("releaseNotes", "تحسينات وإصلاحات جديدة")
+                val tag = release.optString("tag_name").removePrefix("v")
+                val versionParts = tag.split(".").mapNotNull { it.toIntOrNull() }
+                if (versionParts.size < 3) return@launch
+                val latestCode = versionParts[0] * 1_000_000 + versionParts[1] * 1_000 + versionParts[2]
+                val latestName = tag
+                val assets = release.optJSONArray("assets") ?: return@launch
+                var downloadUrl: String? = null
+                for (i in 0 until assets.length()) {
+                    val asset = assets.optJSONObject(i) ?: continue
+                    if (asset.optString("name") == APK_ASSET_NAME) {
+                        downloadUrl = asset.optString("browser_download_url")
+                        break
+                    }
+                }
+                val safeDownloadUrl = downloadUrl?.takeIf { it.startsWith("https://") } ?: return@launch
+                val notes = release.optString("body").takeIf { it.isNotBlank() } ?: "تحسينات وإصلاحات جديدة"
 
                 if (latestCode <= BuildConfig.VERSION_CODE) return@launch
 
                 withContext(Dispatchers.Main) {
                     if (activity.isFinishing || activity.isDestroyed) return@withContext
-                    showUpdateDialog(latestCode, latestName, notes, downloadUrl)
+                    showUpdateDialog(latestCode, latestName, notes, safeDownloadUrl)
                 }
             } catch (_: Exception) {
                 // Offline or invalid metadata: keep normal app use uninterrupted.
@@ -226,7 +240,8 @@ class ApkUpdateChecker(private val activity: Activity) {
     }
 
     private companion object {
-        const val VERSION_JSON_URL = "https://raw.githubusercontent.com/zaki-le-roi/Aqim-salat/main/version.json"
+        const val LATEST_RELEASE_API_URL = "https://api.github.com/repos/zaki-le-roi/Aqim-salat/releases/latest"
+        const val APK_ASSET_NAME = "Aqim-Salat.apk"
         const val APK_FILE_NAME = "Aqim-Salat-update.apk"
         const val KEY_DOWNLOAD_ID = "download_id"
         const val KEY_PENDING_APK = "pending_apk"
