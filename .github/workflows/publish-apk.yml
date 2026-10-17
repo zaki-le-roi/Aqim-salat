@@ -93,7 +93,7 @@ jobs:
 
       - name: Publish latest signed APK
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" Aqim-Salat.apk --clobber
