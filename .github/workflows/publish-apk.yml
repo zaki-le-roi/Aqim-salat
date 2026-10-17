@@ -1,9 +1,8 @@
 name: Publish signed APK update
 
 on:
-  # Publish a signed update automatically for every change merged/pushed to main.
+  # Publish signed APK updates only for explicit version tags, not every code commit.
   push:
-    branches: ["main"]
     tags: ["v*"]
 
 permissions:
