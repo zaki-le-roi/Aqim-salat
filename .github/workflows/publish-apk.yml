@@ -86,6 +86,9 @@ jobs:
           path.write_text(content)
           PY
 
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
       - name: Build signed release APK
         run: ./gradlew --no-daemon assembleRelease
 
