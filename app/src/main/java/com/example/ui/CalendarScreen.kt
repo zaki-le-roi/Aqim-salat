@@ -53,13 +53,18 @@ fun CalendarScreen(
     }
     val daysInCurrentHijriMonth = (1..currentHijriMonthLength).toList()
 
+    // Events are keyed by Hijri month/day and resolved to the next Gregorian date.
     val islamicEvents = listOf(
-        Triple("بداية شهر رمضان", "بداية صيام شهر رمضان المبارك", "١ رمضان"),
-        Triple("ليلة القدر", "ليلة القدر المباركة في العشر الأواخر", "٢٧ رمضان"),
-        Triple("عيد الفطر", "عيد الفطر المبارك (١ شوال)", "١ شوال"),
-        Triple("يوم عرفة", "يوم عرفة المبارك (٩ ذو الحجة)", "٩ ذو الحجة"),
-        Triple("عيد الأضحى", "عيد الأضحى المبارك (١٠ ذو الحجة)", "١٠ ذو الحجة"),
-        Triple("رأس السنة الهجرية", "بداية العام الهجري الجديد (١ محرم)", "١ محرم")
+        Triple("بداية شهر رمضان", "بداية صيام شهر رمضان المبارك", 9 to 1),
+        Triple("ليلة القدر", "ليلة القدر في العشر الأواخر (تاريخها المتوقع ٢٧ رمضان)", 9 to 27),
+        Triple("عيد الفطر", "أول شوال؛ يتأكد الموعد رسميًا برؤية الهلال", 10 to 1),
+        Triple("يوم عرفة", "٩ ذو الحجة", 12 to 9),
+        Triple("عيد الأضحى", "١٠ ذو الحجة؛ يتأكد الموعد رسميًا برؤية الهلال", 12 to 10),
+        Triple("رأس السنة الهجرية", "١ محرم", 1 to 1),
+        Triple("عاشوراء", "١٠ محرم", 1 to 10),
+        Triple("المولد النبوي الشريف", "١٢ ربيع الأول", 3 to 12),
+        Triple("الإسراء والمعراج", "٢٧ رجب (التاريخ المتداول)", 7 to 27),
+        Triple("منتصف شعبان", "١٥ شعبان", 8 to 15)
     )
 
     fun performConversion() {
@@ -359,7 +364,25 @@ fun CalendarScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    islamicEvents.forEach { (title, description, dateStr) ->
+                    islamicEvents.forEach { (title, description, hijriDate) ->
+                        val nextEvent = remember(today, hijriDate) {
+                            val startOfToday = Calendar.getInstance().apply {
+                                time = today
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+                            (0..400).firstNotNullOfOrNull { offset ->
+                                val candidate = (startOfToday.clone() as Calendar).apply {
+                                    add(Calendar.DAY_OF_MONTH, offset)
+                                }
+                                val hijri = PrayerCalculator.getHijriDate(candidate.time, "ar")
+                                if (hijri.month == hijriDate.first && hijri.day == hijriDate.second) {
+                                    candidate.time to offset
+                                } else null
+                            }
+                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -381,12 +404,29 @@ fun CalendarScreen(
                                     .background(Color(0xFFD4AF37).copy(alpha = 0.22f))
                                     .padding(horizontal = 10.dp, vertical = 7.dp)
                             ) {
-                                Text(
-                                    text = dateStr,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF76570C)
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "${hijriDate.second} ${when (hijriDate.first) {
+                                            1 -> "محرم"; 2 -> "صفر"; 3 -> "ربيع الأول"; 4 -> "ربيع الآخر"
+                                            5 -> "جمادى الأولى"; 6 -> "جمادى الآخرة"; 7 -> "رجب"; 8 -> "شعبان"
+                                            9 -> "رمضان"; 10 -> "شوال"; 11 -> "ذو القعدة"; else -> "ذو الحجة"
+                                        }}",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF76570C)
+                                    )
+                                    Text(
+                                        text = nextEvent?.first?.let { SimpleDateFormat("d MMM yyyy", Locale("ar")).format(it) } ?: "—",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF76570C)
+                                    )
+                                    Text(
+                                        text = nextEvent?.second?.let { if (it == 0) "اليوم" else "باقي $it يومًا" } ?: "—",
+                                        fontSize = 10.sp,
+                                        color = Color(0xFF76570C)
+                                    )
+                                }
                             }
                         }
                     }
