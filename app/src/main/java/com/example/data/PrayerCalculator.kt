@@ -242,7 +242,12 @@ object PrayerCalculator {
     data class HijriDate(val year: Int, val month: Int, val day: Int, val monthName: String)
 
     fun getHijriDate(date: Date, lang: String): HijriDate {
-        val cal = Calendar.getInstance().apply { time = date }
+        // Algeria's locally observed calendar can be one day ahead of the tabular calculation.
+        // Apply the one-day Algeria correction consistently to the displayed date and events.
+        val cal = Calendar.getInstance().apply {
+            time = date
+            add(Calendar.DAY_OF_MONTH, 1)
+        }
         val year = cal.get(Calendar.YEAR)
         val month = cal.get(Calendar.MONTH) + 1
         val day = cal.get(Calendar.DAY_OF_MONTH)
