@@ -58,7 +58,7 @@ jobs:
           if [ "$REF_TYPE" = "tag" ]; then
             VERSION="${REF_NAME#v}"
           elif [ "$REF_TYPE" = "branch" ]; then
-            VERSION="1.4.5"
+            VERSION="1.4.6"
           else
             VERSION="1.4.$RUN_NUMBER"
           fi
