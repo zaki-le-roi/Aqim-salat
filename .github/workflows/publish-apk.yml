@@ -1,7 +1,7 @@
 name: Publish signed APK update
 
 on:
-  # Version tags publish normally. This one-time main-branch condition publishes the requested 1.4.4 calendar fix only.
+  # Main builds get a unique version; release tags use their exact version.
   push:
     branches: ["main"]
     tags: ["v*"]
@@ -58,12 +58,21 @@ jobs:
           if [ "$REF_TYPE" = "tag" ]; then
             VERSION="${REF_NAME#v}"
           elif [ "$REF_TYPE" = "branch" ]; then
-            VERSION="1.4.7"
+            VERSION="1.5.$RUN_NUMBER"
           else
-            VERSION="1.4.$RUN_NUMBER"
+            echo "Unsupported ref type: $REF_TYPE"
+            exit 1
+          fi
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version: $VERSION"
+            exit 1
           fi
           IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
           CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
+          if [ "$CODE" -le 1004007 ]; then
+            echo "Refusing to publish a versionCode that is not newer than 1.4.7"
+            exit 1
+          fi
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "RELEASE_TAG=v$VERSION" >> "$GITHUB_ENV"
           python3 - "$VERSION" "$CODE" <<'PY'
@@ -80,8 +89,18 @@ jobs:
       - name: Build signed release APK
         run: gradle --no-daemon assembleRelease
 
-      - name: Prepare signed APK artifact
-        run: cp app/build/outputs/apk/release/app-release.apk Aqim-Salat.apk
+      - name: Validate APK before publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp app/build/outputs/apk/release/app-release.apk Aqim-Salat.apk
+          test -s Aqim-Salat.apk
+          unzip -t Aqim-Salat.apk >/dev/null
+          test "$(apkanalyzer manifest application-id Aqim-Salat.apk)" = "com.example"
+          test "$(apkanalyzer manifest version-name Aqim-Salat.apk)" = "$RELEASE_VERSION"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose Aqim-Salat.apk
 
       - name: Upload signed APK artifact
         uses: actions/upload-artifact@v4
@@ -96,10 +115,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" Aqim-Salat.apk --clobber
+            if gh release view "$RELEASE_TAG" --json assets --jq '.assets[].name' | grep -Fxq "Aqim-Salat.apk"; then
+              echo "Release $RELEASE_TAG already contains an APK. Refusing to overwrite a published version."
+              exit 1
+            fi
+            gh release upload "$RELEASE_TAG" Aqim-Salat.apk
           else
             gh release create "$RELEASE_TAG" Aqim-Salat.apk \
               --target "$GITHUB_SHA" \
               --title "أقم صلاتك $RELEASE_VERSION" \
-              --notes "تحديث رسمي لتطبيق أقم صلاتك. يُنزّل التحديث من داخل التطبيق. يتطلب Android تأكيد التثبيت." 
+              --notes "تحديث رسمي لتطبيق أقم صلاتك. تم فحص بنية APK وتوقيعه قبل النشر. يتطلب Android تأكيد التثبيت."
           fi
