@@ -61,15 +61,21 @@ class ApkUpdateChecker(private val activity: Activity) {
                 }
             }
 
-            val apk = File(
-                activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
-                APK_FILE_NAME
-            )
-            if (apk.isFile && apk.length() > 0L) {
+            val apk = updateApkFile()
+            val expectedName = preferences.getString(KEY_EXPECTED_VERSION_NAME, null)
+            val expectedCode = preferences.getInt(KEY_EXPECTED_VERSION_CODE, -1)
+            if (expectedName != null && isValidUpdateApk(apk, expectedName, expectedCode)) {
                 preferences.edit().putString(KEY_PENDING_APK, apk.absolutePath).remove(KEY_DOWNLOAD_ID).apply()
                 installPendingUpdateIfAllowed()
             } else {
-                showToast("اكتمل التنزيل لكن تعذر العثور على ملف التحديث.")
+                apk.delete()
+                preferences.edit()
+                    .remove(KEY_DOWNLOAD_ID)
+                    .remove(KEY_PENDING_APK)
+                    .remove(KEY_EXPECTED_VERSION_NAME)
+                    .remove(KEY_EXPECTED_VERSION_CODE)
+                    .apply()
+                showToast("ملف التحديث غير صالح أو لا يطابق توقيع التطبيق. لم يتم تثبيته؛ حاول لاحقًا.")
             }
         }
     }
@@ -205,6 +211,15 @@ class ApkUpdateChecker(private val activity: Activity) {
 
     private fun startDownload(versionCode: Int, versionName: String, downloadUrl: String) {
         try {
+            // Never let DownloadManager reuse a leftover APK from an earlier attempt.
+            val destination = updateApkFile()
+            destination.delete()
+            preferences.edit()
+                .remove(KEY_PENDING_APK)
+                .putString(KEY_EXPECTED_VERSION_NAME, versionName)
+                .putInt(KEY_EXPECTED_VERSION_CODE, versionCode)
+                .apply()
+
             val manager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             val request = DownloadManager.Request(Uri.parse(downloadUrl))
                 .setTitle("تحديث أقم صلاتك $versionName")
@@ -228,13 +243,51 @@ class ApkUpdateChecker(private val activity: Activity) {
         }
     }
 
+    private fun updateApkFile(): File = File(
+        activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
+        APK_FILE_NAME
+    )
+
+    /**
+     * Reject incomplete files, unrelated packages, wrong release versions and APKs
+     * signed with a different certificate before Android's installer is opened.
+     */
+    @Suppress("DEPRECATION")
+    private fun isValidUpdateApk(apk: File, expectedName: String, expectedCode: Int): Boolean {
+        if (!apk.isFile || apk.length() < 4L) return false
+        try {
+            apk.inputStream().use { input ->
+                if (input.read() != 0x50 || input.read() != 0x4B) return false
+            }
+            val flags = android.content.pm.PackageManager.GET_SIGNATURES
+            val archive = activity.packageManager.getPackageArchiveInfo(apk.absolutePath, flags)
+                ?: return false
+            if (archive.packageName != activity.packageName) return false
+            if (archive.versionName != expectedName || archive.versionCode != expectedCode) return false
+            val installed = activity.packageManager.getPackageInfo(activity.packageName, flags)
+            val downloadedSignatures = archive.signatures?.map { it.toCharsString() }?.toSet().orEmpty()
+            val installedSignatures = installed.signatures?.map { it.toCharsString() }?.toSet().orEmpty()
+            return downloadedSignatures.isNotEmpty() && downloadedSignatures == installedSignatures
+        } catch (_: Exception) {
+            return false
+        }
+    }
+
     /** Called on return from Android's 'install unknown apps' settings screen. */
     fun installPendingUpdateIfAllowed() {
         if (activity.isFinishing || activity.isDestroyed) return
         val path = preferences.getString(KEY_PENDING_APK, null) ?: return
         val apk = File(path)
-        if (!apk.isFile || apk.length() == 0L) {
-            preferences.edit().remove(KEY_PENDING_APK).apply()
+        val expectedName = preferences.getString(KEY_EXPECTED_VERSION_NAME, null)
+        val expectedCode = preferences.getInt(KEY_EXPECTED_VERSION_CODE, -1)
+        if (expectedName == null || !isValidUpdateApk(apk, expectedName, expectedCode)) {
+            apk.delete()
+            preferences.edit()
+                .remove(KEY_PENDING_APK)
+                .remove(KEY_EXPECTED_VERSION_NAME)
+                .remove(KEY_EXPECTED_VERSION_CODE)
+                .apply()
+            showToast("تم رفض ملف تحديث غير صالح. نزّل التحديث من داخل التطبيق مرة أخرى.")
             return
         }
 
@@ -310,6 +363,8 @@ class ApkUpdateChecker(private val activity: Activity) {
         const val APK_FILE_NAME = "Aqim-Salat-update.apk"
         const val KEY_DOWNLOAD_ID = "download_id"
         const val KEY_PENDING_APK = "pending_apk"
+        const val KEY_EXPECTED_VERSION_NAME = "expected_version_name"
+        const val KEY_EXPECTED_VERSION_CODE = "expected_version_code"
         const val KEY_DISMISSED_VERSION = "dismissed_version"
         const val EMERALD = 0xFF0F6B46.toInt()
         const val GOLD = 0xFFD4AF37.toInt()
