@@ -158,6 +158,87 @@ fun SettingsScreen(
             }
         }
 
+        // Floating adhkar appearance and schedule controls.
+        item {
+            val prefs = context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE)
+            var overlayOpacity by remember { mutableFloatStateOf(prefs.getFloat("opacity", 0.94f)) }
+            var overlayScale by remember { mutableFloatStateOf(prefs.getFloat("scale", 1.0f)) }
+            var autoRotateAdhkar by remember { mutableStateOf(prefs.getBoolean("auto_rotate", true)) }
+            var adhkarInterval by remember { mutableIntStateOf(prefs.getInt("interval_minutes", 10)) }
+
+            Card(
+                modifier = Modifier.fillMaxWidth().testTag("setting_floating_adhkar_controls"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("تخصيص الأذكار العائمة", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+                    Text("اسحب عنوان البطاقة لنقلها، واضبط حجمها وشفافيتها من هنا.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Text("شفافية البطاقة", fontSize = 14.sp)
+                        Text((overlayOpacity * 100).toInt().toString() + "%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Slider(
+                        value = overlayOpacity,
+                        onValueChange = {
+                            overlayOpacity = it
+                            prefs.edit().putFloat("opacity", it).apply()
+                            if (floatingAdhkarEnabled) ContextCompat.startForegroundService(context, Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_REFRESH))
+                        },
+                        valueRange = 0.55f..1.0f
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Text("حجم البطاقة", fontSize = 14.sp)
+                        Text((overlayScale * 100).toInt().toString() + "%", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Slider(
+                        value = overlayScale,
+                        onValueChange = {
+                            overlayScale = it
+                            prefs.edit().putFloat("scale", it).apply()
+                            if (floatingAdhkarEnabled) ContextCompat.startForegroundService(context, Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_REFRESH))
+                        },
+                        valueRange = 0.8f..1.25f
+                    )
+                    HorizontalDivider()
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("تغيير الذكر تلقائيًا", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text("تتغير الأذكار حسب الفترة: الصباح والمساء وبقية اليوم.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f))
+                        }
+                        Switch(
+                            checked = autoRotateAdhkar,
+                            onCheckedChange = {
+                                autoRotateAdhkar = it
+                                prefs.edit().putBoolean("auto_rotate", it).apply()
+                                if (floatingAdhkarEnabled) ContextCompat.startForegroundService(context, Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_REFRESH))
+                            }
+                        )
+                    }
+                    if (autoRotateAdhkar) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                            Text("الفاصل بين الأذكار", fontSize = 14.sp)
+                            Text(adhkarInterval.toString() + " دقيقة", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Slider(
+                            value = adhkarInterval.toFloat(),
+                            onValueChange = {
+                                val minutes = (((it / 5f) + 0.5f).toInt() * 5).coerceIn(5, 60)
+                                adhkarInterval = minutes
+                                prefs.edit().putInt("interval_minutes", minutes).apply()
+                            },
+                            onValueChangeFinished = {
+                                if (floatingAdhkarEnabled) ContextCompat.startForegroundService(context, Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_REFRESH))
+                            },
+                            valueRange = 5f..60f,
+                            steps = 10
+                        )
+                    }
+                    Text("مصدر كل ذكر يظهر أسفله، مع الاعتماد على الأحاديث الصحيحة أو الحسنة الموثقة.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+                }
+            }
+        }
+
         // 3. Notifications Manager
         item {
             Card(
