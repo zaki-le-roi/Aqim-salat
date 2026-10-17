@@ -1,6 +1,8 @@
 package com.example.ui
 
 import android.widget.Toast
+import android.media.AudioAttributes
+import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -409,23 +411,91 @@ fun SettingsScreen(
     // D. Muadhin selector controls the actual adhan playback.
     if (activeDialog == "MUADHIN") {
         var selectedMuadhin by remember(defaultMuadhinVal) { mutableStateOf(defaultMuadhinVal) }
+        var previewingCode by remember { mutableStateOf<String?>(null) }
+        val previewPlayer = remember { arrayOfNulls<MediaPlayer>(1) }
+        DisposableEffect(Unit) {
+            onDispose {
+                previewPlayer[0]?.runCatching { stop() }
+                previewPlayer[0]?.release()
+                previewPlayer[0] = null
+            }
+        }
+        fun stopAdhanPreview() {
+            previewPlayer[0]?.runCatching { stop() }
+            previewPlayer[0]?.release()
+            previewPlayer[0] = null
+            previewingCode = null
+        }
+        fun previewAdhan(code: String) {
+            stopAdhanPreview()
+            val url = when (code) {
+                "MADINAH" -> "https://www.islamcan.com/audio/adhan/azan2.mp3"
+                "ALAFASY" -> "https://www.islamcan.com/audio/adhan/azan8.mp3"
+                "FAJR_SPECIAL" -> "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
+                else -> "https://www.islamcan.com/audio/adhan/azan1.mp3"
+            }
+            previewingCode = code
+            runCatching {
+                MediaPlayer().apply {
+                    previewPlayer[0] = this
+                    setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build()
+                    )
+                    setDataSource(url)
+                    setOnPreparedListener { player ->
+                        if (previewPlayer[0] === player) player.start()
+                    }
+                    setOnCompletionListener { player ->
+                        player.release()
+                        if (previewPlayer[0] === player) {
+                            previewPlayer[0] = null
+                            previewingCode = null
+                        }
+                    }
+                    setOnErrorListener { player, _, _ ->
+                        player.release()
+                        if (previewPlayer[0] === player) {
+                            previewPlayer[0] = null
+                            previewingCode = null
+                        }
+                        Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت ثم أعد المحاولة." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
+                        true
+                    }
+                    prepareAsync()
+                }
+            }.onFailure {
+                stopAdhanPreview()
+                Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت ثم أعد المحاولة." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
+            }
+        }
         AlertDialog(
-            onDismissRequest = { activeDialog = null },
+            onDismissRequest = { stopAdhanPreview(); activeDialog = null },
             title = { Text(if (lang == "ar") "اختر صوت المؤذن" else "Choose Adhan Voice", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     muadhinOptions.forEach { (code, label) ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable { selectedMuadhin = code }.padding(vertical = 8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(selected = code == selectedMuadhin, onClick = { selectedMuadhin = code })
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(label, fontSize = 15.sp)
+                            Text(label, fontSize = 14.sp, modifier = Modifier.weight(1f).clickable { selectedMuadhin = code })
+                            TextButton(onClick = { if (previewingCode == code) stopAdhanPreview() else previewAdhan(code) }) {
+                                Icon(
+                                    imageVector = if (previewingCode == code) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(if (previewingCode == code) (if (lang == "ar") "إيقاف" else "Stop") else (if (lang == "ar") "استماع" else "Listen"))
+                            }
                         }
                     }
                     Text(
-                        text = if (lang == "ar") "يُحفظ اختيارك على الهاتف ويُستخدم عند تشغيل الأذان. يتطلب تشغيل التسجيل اتصالًا بالإنترنت." else "Your choice is saved on this phone and used for adhan playback. Streaming requires internet.",
+                        text = if (lang == "ar") "اضغط «استماع» لسماع عينة قبل الحفظ. يُستخدم الصوت المحفوظ عند موعد الصلاة، ويتطلب الإنترنت." else "Tap Listen to preview before saving. The saved voice plays at prayer time and requires internet.",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                         modifier = Modifier.padding(top = 8.dp)
@@ -435,6 +505,7 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        stopAdhanPreview()
                         viewModel.setDefaultMuadhin(selectedMuadhin)
                         activeDialog = null
                         val label = muadhinOptions.firstOrNull { it.first == selectedMuadhin }?.second ?: selectedMuadhin
@@ -442,6 +513,11 @@ fun SettingsScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) { Text(if (lang == "ar") "حفظ" else "Save") }
+            },
+            dismissButton = {
+                TextButton(onClick = { stopAdhanPreview(); activeDialog = null }) {
+                    Text(if (lang == "ar") "إلغاء" else "Cancel")
+                }
             }
         )
     }
