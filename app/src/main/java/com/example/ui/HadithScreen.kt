@@ -190,46 +190,136 @@ fun HadithScreen(
                 .background(MaterialTheme.colorScheme.background)
                 .statusBarsPadding()
         ) {
-            // Header Top Bar
+            // Refined library header — visual-only change; book data and navigation remain unchanged.
             Surface(
                 color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 2.dp
+                shadowElevation = 3.dp
             ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (onBack != null) {
-                            IconButton(onClick = onBack, modifier = Modifier.testTag("hadith_back_button")) {
+                            IconButton(
+                                onClick = onBack,
+                                modifier = Modifier.testTag("hadith_back_button")
+                            ) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
                             }
                             Spacer(modifier = Modifier.width(4.dp))
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "مكتبة كتب الحديث الشريف",
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
+                                text = "مكتبة الحديث الشريف",
+                                fontSize = 21.sp,
+                                fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "عشرة كتب من أمهات مصادر السنة النبوية المطهرة بأبوابها الموثقة",
-                                fontSize = 11.sp,
-                                color = Color.Gray
+                                text = "أمهات مصادر السنة النبوية",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFFD4AF37).copy(alpha = 0.16f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MenuBook,
+                                contentDescription = null,
+                                tint = Color(0xFFB38A20),
+                                modifier = Modifier.size(26.dp)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    // Compact premium banner; it does not replace or modify any book content.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(Color(0xFF0F4C3A), Color(0xFF176B52))
+                                )
+                            )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 15.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(RoundedCornerShape(15.dp))
+                                    .background(Color.White.copy(alpha = 0.12f))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color(0xFFD4AF37).copy(alpha = 0.75f),
+                                        shape = RoundedCornerShape(15.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.AutoStories,
+                                    contentDescription = null,
+                                    tint = Color(0xFFFFE082),
+                                    modifier = Modifier.size(27.dp)
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                Text(
+                                    text = "اقرأ وتصفّح براحة",
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "ابحث بين الكتب والأبواب ونصوص الأحاديث",
+                                    color = Color.White.copy(alpha = 0.82f),
+                                    fontSize = 11.sp,
+                                    lineHeight = 16.sp
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "10",
+                                    color = Color(0xFFFFE082),
+                                    fontSize = 23.sp,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                                Text(
+                                    text = "كتب",
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+                    }
 
-                    // Search Field
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
                         modifier = Modifier.fillMaxWidth().testTag("hadith_library_search"),
-                        placeholder = { Text("ابحث في أسماء الكتب، الأبواب، أو الأحاديث...", fontSize = 12.sp) },
-                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "بحث", tint = Color(0xFFD4AF37)) },
+                        placeholder = {
+                            Text("ابحث عن كتاب أو باب أو حديث...", fontSize = 12.sp)
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Filled.Search, contentDescription = "بحث", tint = Color(0xFFB38A20))
+                        },
                         trailingIcon = {
                             if (searchQuery.isNotEmpty()) {
                                 IconButton(onClick = { searchQuery = "" }) {
@@ -237,30 +327,42 @@ fun HadithScreen(
                                 }
                             }
                         },
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(16.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color(0xFFD4AF37),
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
                         )
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Category Tabs
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(vertical = 4.dp)
+                        contentPadding = PaddingValues(vertical = 1.dp)
                     ) {
                         items(categories) { (catKey, catLabel) ->
                             val isSelected = selectedCategory == catKey
                             FilterChip(
                                 selected = isSelected,
                                 onClick = { selectedCategory = catKey },
-                                label = { Text(catLabel, fontSize = 12.sp, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
+                                label = {
+                                    Text(
+                                        catLabel,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    )
+                                },
+                                shape = RoundedCornerShape(12.dp),
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
                                     selectedLabelColor = Color.White
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = isSelected,
+                                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.22f),
+                                    selectedBorderColor = MaterialTheme.colorScheme.primary
                                 )
                             )
                         }
@@ -395,22 +497,22 @@ fun BookCardItem(
             .fillMaxWidth()
             .clickable { onClick() }
             .testTag("book_card_${book.id}"),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(19.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = androidx.compose.foundation.BorderStroke(0.6.dp, Color(0xFFE0E0E0))
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp, pressedElevation = 1.dp),
+        border = androidx.compose.foundation.BorderStroke(0.8.dp, Color(book.primaryColorHex).copy(alpha = 0.28f))
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Book Cover Graphic (Specific to each book, title & author clearly embedded)
+            // Existing individual cover artwork and book metadata are preserved.
             BookCoverCanvas(
                 book = book,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(170.dp)
+                    .height(158.dp)
             )
 
-            // Book Information Footer
-            Column(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+            // Clear, compact book information footer.
+            Column(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
                 Text(
                     text = book.title,
                     fontSize = 14.sp,
