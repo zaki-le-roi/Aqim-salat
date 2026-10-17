@@ -31,7 +31,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "9.7.1"
+          gradle-version: "9.3.1"
           validate-wrappers: false
 
       - name: Configure persistent signing key
@@ -87,7 +87,7 @@ jobs:
           PY
 
       - name: Build signed release APK
-        run: gradle --no-daemon assembleRelease
+        run: ./gradlew --no-daemon assembleRelease
 
       - name: Validate APK before publishing
         shell: bash
@@ -96,8 +96,10 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk Aqim-Salat.apk
           test -s Aqim-Salat.apk
           unzip -t Aqim-Salat.apk >/dev/null
-          test "$(apkanalyzer manifest application-id Aqim-Salat.apk)" = "com.example"
-          test "$(apkanalyzer manifest version-name Aqim-Salat.apk)" = "$RELEASE_VERSION"
+          APKANALYZER="$(find "$ANDROID_HOME" -type f -name apkanalyzer 2>/dev/null | sort -V | tail -n 1)"
+          test -n "$APKANALYZER"
+          test "$("$APKANALYZER" manifest application-id Aqim-Salat.apk)" = "com.example"
+          test "$("$APKANALYZER" manifest version-name Aqim-Salat.apk)" = "$RELEASE_VERSION"
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           test -n "$APKSIGNER"
           "$APKSIGNER" verify --verbose Aqim-Salat.apk
