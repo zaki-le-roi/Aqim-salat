@@ -76,6 +76,18 @@ class AdhkarOverlayService : Service() {
         getSharedPreferences("floating_adhkar", MODE_PRIVATE)
             .getInt("interval_minutes", 30).coerceIn(5, 60) * 60_000L
 
+    private fun dismissCurrentAdhkar() {
+        if (currentItems.isEmpty()) currentItems = getAdhkarForCurrentTime()
+        currentIndex = (currentIndex + 1) % currentItems.size
+        handler.removeCallbacks(rotationRunnable)
+        handler.removeCallbacks(reappearRunnable)
+        removeOverlay()
+        val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
+        if (prefs.getBoolean("enabled", false)) {
+            handler.postDelayed(reappearRunnable, intervalMillis())
+        }
+    }
+
     private val rotationRunnable = object : Runnable {
         override fun run() {
             val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
@@ -89,10 +101,8 @@ class AdhkarOverlayService : Service() {
             }
             renderCurrentAdhkar()
             // Align changes to clock boundaries: e.g. 10:00, 10:05, 10:10.
-            val now = System.currentTimeMillis()
             val interval = prefs.getInt("interval_minutes", 30).coerceIn(5, 60) * 60_000L
-            val delay = interval - (now % interval)
-            handler.postDelayed(this, delay.coerceAtLeast(1_000L))
+            handler.postDelayed(this, interval)
         }
     }
 
@@ -164,9 +174,7 @@ class AdhkarOverlayService : Service() {
         handler.removeCallbacks(rotationRunnable)
         val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
         if (prefs.getBoolean("auto_rotate", true)) {
-            val interval = prefs.getInt("interval_minutes", 5).coerceIn(5, 60) * 60_000L
-            val delay = interval - (System.currentTimeMillis() % interval)
-            handler.postDelayed(rotationRunnable, delay.coerceAtLeast(1_000L))
+            handler.postDelayed(rotationRunnable, intervalMillis())
         }
     }
 
@@ -210,6 +218,8 @@ class AdhkarOverlayService : Service() {
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
+            isClickable = true
+            setOnClickListener { dismissCurrentAdhkar() }
         }
         var bubbleDragging = false
         val bubble = TextView(this).apply {
@@ -221,26 +231,20 @@ class AdhkarOverlayService : Service() {
         header.addView(bubble, LinearLayout.LayoutParams(dp(30), dp(34)))
         adhkarText = TextView(this).apply {
             textSize = 13f
-            maxLines = 3
-            ellipsize = android.text.TextUtils.TruncateAt.END
             gravity = Gravity.CENTER_VERTICAL
             setTextColor(Color.rgb(30, 48, 40))
             typeface = Typeface.DEFAULT_BOLD
-            setPadding(dp(5), dp(2), dp(5), dp(2))
+            setPadding(dp(5), dp(6), dp(5), dp(6))
+            isClickable = true
+            setOnClickListener { dismissCurrentAdhkar() }
         }
-        header.addView(adhkarText, LinearLayout.LayoutParams(0, dp(34), 1f))
+        header.addView(adhkarText, LinearLayout.LayoutParams(0, WindowManager.LayoutParams.WRAP_CONTENT, 1f))
         val close = TextView(this).apply {
             text = "×"
             textSize = 20f
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(100, 100, 100))
-            setOnClickListener {
-                // X hides only this card. The feature remains enabled and returns after the chosen interval.
-                handler.removeCallbacks(rotationRunnable)
-                removeOverlay()
-                handler.removeCallbacks(reappearRunnable)
-                handler.postDelayed(reappearRunnable, intervalMillis())
-            }
+            setOnClickListener { dismissCurrentAdhkar() }
         }
         header.addView(close, LinearLayout.LayoutParams(dp(28), dp(34)))
         root.addView(header)
@@ -291,6 +295,8 @@ class AdhkarOverlayService : Service() {
                 MotionEvent.ACTION_UP -> {
                     if (bubbleDragging) {
                         view.performClick()
+                    } else {
+                        dismissCurrentAdhkar()
                     }
                     true
                 }
