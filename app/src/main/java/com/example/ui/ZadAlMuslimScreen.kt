@@ -201,9 +201,10 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         zoom=newZoom
                                         // Keep panning direct and lightweight; avoid rescaling the old offset on every frame.
                                         if(newZoom>1.01f) {
-                                            // Follow the finger directly while reading a zoomed page.
-                                            offsetX=(offsetX+pan.x*1.6f).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
-                                            offsetY=(offsetY+pan.y*1.6f).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
+                                            // Increase pan sensitivity with zoom: up to 4x (400%) at maximum zoom.
+                                            val panSpeed = (1.6f + (newZoom - 1f) * 0.8f).coerceIn(1.6f, 4.0f)
+                                            offsetX=(offsetX+pan.x*panSpeed).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
+                                            offsetY=(offsetY+pan.y*panSpeed).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
