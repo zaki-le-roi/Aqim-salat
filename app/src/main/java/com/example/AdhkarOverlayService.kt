@@ -26,10 +26,7 @@ class AdhkarOverlayService : Service() {
     private var windowManager: WindowManager? = null
     private var overlay: LinearLayout? = null
     private var adhkarText: TextView? = null
-    private var sourceText: TextView? = null
-    private var details: LinearLayout? = null
     private var windowParams: WindowManager.LayoutParams? = null
-    private var expanded = false
     private var currentIndex = 0
     private var currentItems: List<Adhkar> = emptyList()
     private val handler = Handler(Looper.getMainLooper())
@@ -66,6 +63,19 @@ class AdhkarOverlayService : Service() {
         Adhkar("اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ", "سنن أبي داود 5045، وجامع الترمذي 3398")
     )
 
+    private val reappearRunnable = object : Runnable {
+        override fun run() {
+            val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
+            if (!prefs.getBoolean("enabled", false) || !Settings.canDrawOverlays(this@AdhkarOverlayService)) return
+            showOverlay()
+            scheduleRotation()
+        }
+    }
+
+    private fun intervalMillis() =
+        getSharedPreferences("floating_adhkar", MODE_PRIVATE)
+            .getInt("interval_minutes", 30).coerceIn(5, 60) * 60_000L
+
     private val rotationRunnable = object : Runnable {
         override fun run() {
             val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
@@ -80,7 +90,7 @@ class AdhkarOverlayService : Service() {
             renderCurrentAdhkar()
             // Align changes to clock boundaries: e.g. 10:00, 10:05, 10:10.
             val now = System.currentTimeMillis()
-            val interval = prefs.getInt("interval_minutes", 5).coerceIn(5, 60) * 60_000L
+            val interval = prefs.getInt("interval_minutes", 30).coerceIn(5, 60) * 60_000L
             val delay = interval - (now % interval)
             handler.postDelayed(this, delay.coerceAtLeast(1_000L))
         }
@@ -108,8 +118,9 @@ class AdhkarOverlayService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val prefs = getSharedPreferences("floating_adhkar", MODE_PRIVATE)
         if (intent?.action == ACTION_STOP) {
-            prefs.edit().putBoolean("enabled", false).apply()
+            prefs.edit().putBoolean("enabled", false).commit()
             handler.removeCallbacks(rotationRunnable)
+            handler.removeCallbacks(reappearRunnable)
             removeOverlay()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
@@ -117,6 +128,7 @@ class AdhkarOverlayService : Service() {
         }
         if (!prefs.getBoolean("enabled", false)) {
             handler.removeCallbacks(rotationRunnable)
+            handler.removeCallbacks(reappearRunnable)
             removeOverlay()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
@@ -131,8 +143,8 @@ class AdhkarOverlayService : Service() {
         }
         if (intent?.action == ACTION_REFRESH) {
             removeOverlay()
-            expanded = false
         }
+        handler.removeCallbacks(reappearRunnable)
         showOverlay()
         scheduleRotation()
         return START_STICKY
@@ -162,12 +174,9 @@ class AdhkarOverlayService : Service() {
         if (currentItems.isEmpty()) currentItems = getAdhkarForCurrentTime()
         val item = currentItems[currentIndex.coerceIn(0, currentItems.lastIndex)]
         adhkarText?.text = item.text
-        sourceText?.text = "المصدر: " + item.source
-        sourceText?.visibility = if (expanded) View.VISIBLE else View.GONE
-        details?.visibility = if (expanded) View.VISIBLE else View.GONE
         overlay?.let { root ->
             val density = resources.displayMetrics.density
-            val width = (if (expanded) 292 else 270) * density
+            val width = 270 * density
             windowParams?.width = width.toInt()
             windowParams?.height = WindowManager.LayoutParams.WRAP_CONTENT
             try { windowManager?.updateViewLayout(root, windowParams) } catch (_: Exception) { }
@@ -218,11 +227,6 @@ class AdhkarOverlayService : Service() {
             setTextColor(Color.rgb(30, 48, 40))
             typeface = Typeface.DEFAULT_BOLD
             setPadding(dp(5), dp(2), dp(5), dp(2))
-            setOnClickListener {
-                expanded = !expanded
-                maxLines = if (expanded) 6 else 1
-                renderCurrentAdhkar()
-            }
         }
         header.addView(adhkarText, LinearLayout.LayoutParams(0, dp(34), 1f))
         val close = TextView(this).apply {
@@ -231,28 +235,16 @@ class AdhkarOverlayService : Service() {
             gravity = Gravity.CENTER
             setTextColor(Color.rgb(100, 100, 100))
             setOnClickListener {
-                getSharedPreferences("floating_adhkar", MODE_PRIVATE).edit().putBoolean("enabled", false).apply()
+                // X hides only this card. The feature remains enabled and returns after the chosen interval.
                 handler.removeCallbacks(rotationRunnable)
                 removeOverlay()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
+                handler.removeCallbacks(reappearRunnable)
+                handler.postDelayed(reappearRunnable, intervalMillis())
             }
         }
         header.addView(close, LinearLayout.LayoutParams(dp(28), dp(34)))
         root.addView(header)
 
-        details = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            visibility = View.GONE
-        }
-        sourceText = TextView(this).apply {
-            textSize = 10f
-            gravity = Gravity.CENTER
-            setTextColor(Color.rgb(88, 100, 91))
-            setPadding(dp(4), dp(4), dp(4), dp(3))
-        }
-        details?.addView(sourceText, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
-        root.addView(details)
         renderCurrentAdhkar()
 
         val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -297,10 +289,7 @@ class AdhkarOverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
-                    if (!bubbleDragging) {
-                        expanded = !expanded
-                        renderCurrentAdhkar()
-                    } else {
+                    if (bubbleDragging) {
                         view.performClick()
                     }
                     true
@@ -327,8 +316,6 @@ class AdhkarOverlayService : Service() {
         }
         overlay = null
         adhkarText = null
-        sourceText = null
-        details = null
         windowParams = null
     }
 
@@ -345,6 +332,7 @@ class AdhkarOverlayService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacks(rotationRunnable)
+        handler.removeCallbacks(reappearRunnable)
         removeOverlay()
         super.onDestroy()
     }

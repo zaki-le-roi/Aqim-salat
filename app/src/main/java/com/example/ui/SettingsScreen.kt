@@ -190,7 +190,7 @@ fun SettingsScreen(
             var overlayOpacity by remember { mutableFloatStateOf(prefs.getFloat("opacity", 0.94f)) }
             var overlayScale by remember { mutableFloatStateOf(prefs.getFloat("scale", 1.0f)) }
             var autoRotateAdhkar by remember { mutableStateOf(prefs.getBoolean("auto_rotate", true)) }
-            var adhkarInterval by remember { mutableIntStateOf(prefs.getInt("interval_minutes", 5)) }
+            var adhkarInterval by remember { mutableIntStateOf(prefs.getInt("interval_minutes", 30)) }
 
             Card(
                 modifier = Modifier.fillMaxWidth().testTag("setting_floating_adhkar_controls"),
@@ -251,7 +251,7 @@ fun SettingsScreen(
                             onValueChange = {
                                 val minutes = (((it / 5f) + 0.5f).toInt() * 5).coerceIn(5, 60)
                                 adhkarInterval = minutes
-                                prefs.edit().putInt("interval_minutes", minutes).apply()
+                                prefs.edit().putInt("interval_minutes", minutes).commit()
                             },
                             onValueChangeFinished = {
                                 if (floatingAdhkarEnabled) ContextCompat.startForegroundService(context, Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_REFRESH))
