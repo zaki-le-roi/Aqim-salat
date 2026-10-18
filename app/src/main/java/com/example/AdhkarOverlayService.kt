@@ -221,7 +221,7 @@ class AdhkarOverlayService : Service() {
         header.addView(bubble, LinearLayout.LayoutParams(dp(30), dp(34)))
         adhkarText = TextView(this).apply {
             textSize = 13f
-            maxLines = if (expanded) 4 else 1
+            maxLines = 3
             ellipsize = android.text.TextUtils.TruncateAt.END
             gravity = Gravity.CENTER_VERTICAL
             setTextColor(Color.rgb(30, 48, 40))
