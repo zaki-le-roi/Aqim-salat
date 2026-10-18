@@ -167,7 +167,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                         },modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.CloudDownload,null);Spacer(Modifier.width(8.dp));Text(if(downloading==b.id)"جارٍ التنزيل $progress%" else "تنزيل الكتاب")}
                         if(downloading==b.id)LinearProgressIndicator(progress={progress/100f},modifier=Modifier.fillMaxWidth())
                     }
-                    OutlinedButton(onClick={runCatching{ctx.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(b.source)))},modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.OpenInNew,null);Spacer(Modifier.width(8.dp));Text("فتح صفحة المصدر")}
+                    OutlinedButton(onClick={runCatching{ctx.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(b.source))) }},modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.OpenInNew,null);Spacer(Modifier.width(8.dp));Text("فتح صفحة المصدر")}
                     if(message.isNotBlank())Text(message,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.bodySmall)
                 }
             }
