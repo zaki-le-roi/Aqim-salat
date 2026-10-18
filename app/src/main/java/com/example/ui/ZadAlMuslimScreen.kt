@@ -200,7 +200,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                                     validPdf=true
                                                 } else {
                                                     val html=tmp.inputStream().bufferedReader(Charsets.UTF_8).use{it.readText().take(1_000_000)}
-                                                    val pattern=java.util.regex.Pattern.compile("""(?i)href\\s*=\\s*["']([^"']+(?:\\.pdf(?:\\?[^"']*)?|/download/[^"']+))["']""")
+                                                    val pattern=java.util.regex.Pattern.compile("""(?i)href\s*=\s*["']([^"']+(?:\.pdf(?:\?[^"']*)?|/download/[^"']+))["']""")
                                                     val matcher=pattern.matcher(html)
                                                     var found=0
                                                     while(matcher.find() && found<5) {
@@ -213,7 +213,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                                         } catch(_:Exception) {}
                                                     }
                                                     if(found==0) {
-                                                        val direct=java.util.regex.Pattern.compile("""https?://[^"'\\s<>]+\\.pdf(?:\\?[^"'\\s<>]*)?""",java.util.regex.Pattern.CASE_INSENSITIVE).matcher(html)
+                                                        val direct=java.util.regex.Pattern.compile("""https?://[^"'\s<>]+\.pdf(?:\?[^"'\s<>]*)?""",java.util.regex.Pattern.CASE_INSENSITIVE).matcher(html)
                                                         while(direct.find() && found<5) {
                                                             val resolved=direct.group()
                                                             if(resolved.startsWith("https://") && !candidates.contains(resolved)) {
