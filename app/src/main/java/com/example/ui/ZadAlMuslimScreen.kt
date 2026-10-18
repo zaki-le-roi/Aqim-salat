@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.pointerInput
@@ -201,8 +202,8 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         // Keep panning direct and lightweight; avoid rescaling the old offset on every frame.
                                         if(newZoom>1.01f) {
                                             // Follow the finger directly while reading a zoomed page.
-                                            offsetX=(offsetX+pan.x).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
-                                            offsetY=(offsetY+pan.y).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
+                                            offsetX=(offsetX+pan.x*1.6f).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
+                                            offsetY=(offsetY+pan.y*1.6f).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
@@ -215,7 +216,17 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         }
                                     }
                                 }
-
+                                .pointerInput(reader?.id) {
+                                    detectTapGestures(onDoubleTap = {
+                                        if (zoom <= 1.05f) {
+                                            zoom = 2.2f
+                                        } else {
+                                            zoom = 1f
+                                            offsetX = 0f
+                                            offsetY = 0f
+                                        }
+                                    })
+                                }
                         )
                     }
                 }
