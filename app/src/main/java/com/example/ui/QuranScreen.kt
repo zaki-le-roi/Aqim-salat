@@ -422,7 +422,7 @@ fun QuranScreen(
                         contentPadding = PaddingValues(bottom = 88.dp, top = 2.dp),
                         verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
-                        if (selectedTab == "BOOKMARKS") {
+                        if (selectedTab == "BOOKMARKS" && searchQuery.isBlank()) {
                             val quranBookmarks = bookmarks.filter { it.type == "QURAN" }
                             if (quranBookmarks.isEmpty()) {
                                 item {
