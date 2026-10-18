@@ -138,6 +138,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
     var zoom by remember(reader?.id) { mutableFloatStateOf(1f) }
     var offsetX by remember(reader?.id) { mutableFloatStateOf(0f) }
     var offsetY by remember(reader?.id) { mutableFloatStateOf(0f) }
+    val swipeThreshold = with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
     BackHandler(enabled=reader!=null) {
         reader=null
         bitmap=null
@@ -190,7 +191,6 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                 .pointerInput(page, reader?.id) {
                                     var swipeDistance=0f
                                     var swipeHandled=false
-                                    val threshold=with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
                                     detectTransformGestures { _, pan, zoomChange, _ ->
                                         val newZoom=(zoom*zoomChange).coerceIn(1f,4f)
                                         zoom=newZoom
@@ -200,9 +200,9 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
-                                            if(!swipeHandled && swipeDistance < -threshold && page<pageCount-1) {
+                                            if(!swipeHandled && swipeDistance < -swipeThreshold && page<pageCount-1) {
                                                 page++;swipeHandled=true
-                                            } else if(!swipeHandled && swipeDistance > threshold && page>0) {
+                                            } else if(!swipeHandled && swipeDistance > swipeThreshold && page>0) {
                                                 page--;swipeHandled=true
                                             }
                                         }
