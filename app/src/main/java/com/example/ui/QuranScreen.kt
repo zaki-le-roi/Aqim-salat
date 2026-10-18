@@ -239,100 +239,25 @@ fun QuranScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                // --- Refined Quran library hero ---
-                Box(
+                // --- Compact Quran header: keep more room for the surah list ---
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF0F4C3A), Color(0xFF0B382C), Color(0xFF082B22))
-                            )
-                        )
+                        .background(Brush.verticalGradient(listOf(Color(0xFF0F4C3A), Color(0xFF082B22))))
                         .statusBarsPadding()
-                        .padding(start = 14.dp, end = 14.dp, top = 2.dp, bottom = 6.dp)
+                        .padding(horizontal = 16.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Quiet decorative motif, kept behind the readable content.
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 8.dp, end = 2.dp)
-                            .size(112.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.035f))
+                    Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFFE3C47D), modifier = Modifier.size(25.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = if (lang == "en") "The Holy Quran" else "المصحف الشريف",
+                        color = Color.White,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
                     )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 25.dp, end = 19.dp)
-                            .size(78.dp)
-                            .clip(CircleShape)
-                            .border(1.dp, Color(0xFFD7B56D).copy(alpha = 0.22f), CircleShape)
-                    )
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(Color.White.copy(alpha = 0.10f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.MenuBook,
-                                        contentDescription = null,
-                                        tint = Color(0xFFE3C47D),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(11.dp))
-                                Column {
-                                    Text(
-                                        text = "المصحف الشريف",
-                                        color = Color.White,
-                                        fontSize = 17.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "رفيق تلاوتك وتدبّرك",
-                                        color = Color.White.copy(alpha = 0.70f),
-                                        fontSize = 11.sp
-                                    )
-                                }
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(50),
-                                color = Color.White.copy(alpha = 0.10f),
-                                border = androidx.compose.foundation.BorderStroke(
-                                    1.dp, Color.White.copy(alpha = 0.10f)
-                                )
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.MenuBook,
-                                        contentDescription = null,
-                                        tint = Color(0xFFE3C47D),
-                                        modifier = Modifier.size(15.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text("١١٤ سورة", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
-                                }
-                            }
-                        }
-
-
-                    }
+                    Text("١١٤ سورة", color = Color(0xFFE3C47D), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
 
                 Column(
@@ -343,75 +268,40 @@ fun QuranScreen(
                 ) {
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Continue Reading Banner (Linked directly to Room History)
+                    // Compact continue-reading strip; hidden while searching to maximize results.
                     val lastRead = history.firstOrNull()
-                    if (lastRead != null) {
-                        Card(
+                    if (lastRead != null && searchQuery.isBlank()) {
+                        Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    val originalSurah = QuranData.surahs.find { it.id == lastRead.surahId }
-                                    if (originalSurah != null) {
-                                        selectedSurah = originalSurah
-                                    }
+                                    QuranData.surahs.find { it.id == lastRead.surahId }?.let { selectedSurah = it }
                                 },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF042B1D).copy(alpha = 0.05f)),
-                            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFE2E2E2))
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFF0F4C3A).copy(alpha = 0.06f),
+                            border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFD8E4DD))
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                            .background(Color(0xFFD4AF37).copy(alpha = 0.15f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.Bookmark,
-                                            contentDescription = null,
-                                            tint = Color(0xFFD4AF37),
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            text = if (lang == "en") "Continue reading from last position" else "مواصلة القراءة من آخر موضع",
-                                            fontSize = 11.sp,
-                                            color = Color.Gray,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            text = if (lang == "en") "Surah ${lastRead.surahName} • Ayah ${lastRead.ayahId}" else "سورة ${lastRead.surahName} • الآية ${lastRead.ayahId}",
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
+                                Icon(Icons.Filled.Bookmark, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(19.dp))
+                                Spacer(Modifier.width(9.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(if (lang == "en") "Continue reading" else "مواصلة القراءة", fontSize = 11.sp, color = Color.Gray)
+                                    Text(
+                                        text = if (lang == "en") "${lastRead.surahName} • Ayah ${lastRead.ayahId}" else "سورة ${lastRead.surahName} • الآية ${lastRead.ayahId}",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                 }
-                                FilledTonalButton(
-                                    onClick = {
-                                        val originalSurah = QuranData.surahs.find { it.id == lastRead.surahId }
-                                        if (originalSurah != null) {
-                                            selectedSurah = originalSurah
-                                        }
-                                    },
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = Color(0xFFD4AF37).copy(alpha = 0.2f))
-                                ) {
-                                    Text(if (lang == "en") "Resume" else "استكمال القراءة", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8B6B15))
-                                }
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(18.dp))
                             }
                         }
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     // --- Search Bar ---
@@ -442,6 +332,7 @@ fun QuranScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    if (searchQuery.isBlank()) {
                     // --- Category Tabs ---
                     Row(
                         modifier = Modifier
@@ -521,6 +412,8 @@ fun QuranScreen(
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
+
+                                        }
 
                     // --- Surah Scrollable List ---
                     LazyColumn(
