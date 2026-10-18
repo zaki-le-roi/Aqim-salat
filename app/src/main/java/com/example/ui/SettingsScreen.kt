@@ -160,14 +160,18 @@ fun SettingsScreen(
                         onCheckedChange = { enabled ->
                             val prefs = context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE)
                             if (enabled && !AndroidSettings.canDrawOverlays(context)) {
-                                Toast.makeText(context, "اسمح بالظهور فوق التطبيقات الأخرى، ثم ارجع وفعّل الأذكار العائمة.", Toast.LENGTH_LONG).show()
+                                // Persist the user's choice before opening Android settings.
+                                // ON_RESUME will start the overlay as soon as permission is granted.
+                                prefs.edit().putBoolean("enabled", true).commit()
+                                floatingAdhkarEnabled = true
+                                Toast.makeText(context, "اسمح بالظهور فوق التطبيقات الأخرى، ثم ارجع إلى التطبيق.", Toast.LENGTH_LONG).show()
                                 context.startActivity(
                                     Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.packageName))
                                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 )
                             } else {
                                 floatingAdhkarEnabled = enabled
-                                prefs.edit().putBoolean("enabled", enabled).apply()
+                                prefs.edit().putBoolean("enabled", enabled).commit()
                                 val serviceIntent = Intent(context, com.example.AdhkarOverlayService::class.java).apply {
                                     action = if (enabled) com.example.AdhkarOverlayService.ACTION_SHOW else com.example.AdhkarOverlayService.ACTION_STOP
                                 }
