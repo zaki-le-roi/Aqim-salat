@@ -150,6 +150,279 @@
           "sourceUrl": "https://shamela.org/pdf/d12e1221a42b05d1104019075146ab26.pdf"
         }
       ]
+    },
+    {
+      "id": "bidaya-wa-nihaya",
+      "title": "البداية والنهاية",
+      "description": "ابن كثير — الأجزاء مرتبة. نزّل كل جزء لقراءته دون إنترنت.",
+      "books": [
+        {
+          "id": "bidaya-0a",
+          "title": "البداية والنهاية — الجزء التمهيدي أ",
+          "author": "ابن كثير",
+          "description": "الجزء 1 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/0a.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-0b",
+          "title": "البداية والنهاية — الجزء التمهيدي ب",
+          "author": "ابن كثير",
+          "description": "الجزء 2 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/0b.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-1",
+          "title": "البداية والنهاية — الجزء 1",
+          "author": "ابن كثير",
+          "description": "الجزء 3 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/1.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-2",
+          "title": "البداية والنهاية — الجزء 2",
+          "author": "ابن كثير",
+          "description": "الجزء 4 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/2.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-3",
+          "title": "البداية والنهاية — الجزء 3",
+          "author": "ابن كثير",
+          "description": "الجزء 5 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/3.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-4",
+          "title": "البداية والنهاية — الجزء 4",
+          "author": "ابن كثير",
+          "description": "الجزء 6 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/4.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-5",
+          "title": "البداية والنهاية — الجزء 5",
+          "author": "ابن كثير",
+          "description": "الجزء 7 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/5.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-6",
+          "title": "البداية والنهاية — الجزء 6",
+          "author": "ابن كثير",
+          "description": "الجزء 8 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/6.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-7",
+          "title": "البداية والنهاية — الجزء 7",
+          "author": "ابن كثير",
+          "description": "الجزء 9 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/7.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-8",
+          "title": "البداية والنهاية — الجزء 8",
+          "author": "ابن كثير",
+          "description": "الجزء 10 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/8.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-9",
+          "title": "البداية والنهاية — الجزء 9",
+          "author": "ابن كثير",
+          "description": "الجزء 11 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/9.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-10",
+          "title": "البداية والنهاية — الجزء 10",
+          "author": "ابن كثير",
+          "description": "الجزء 12 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/10.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-11",
+          "title": "البداية والنهاية — الجزء 11",
+          "author": "ابن كثير",
+          "description": "الجزء 13 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/11.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-12",
+          "title": "البداية والنهاية — الجزء 12",
+          "author": "ابن كثير",
+          "description": "الجزء 14 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/12.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-13",
+          "title": "البداية والنهاية — الجزء 13",
+          "author": "ابن كثير",
+          "description": "الجزء 15 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/13.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-14",
+          "title": "البداية والنهاية — الجزء 14",
+          "author": "ابن كثير",
+          "description": "الجزء 16 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/14.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-15",
+          "title": "البداية والنهاية — الجزء 15",
+          "author": "ابن كثير",
+          "description": "الجزء 17 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/15.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-16",
+          "title": "البداية والنهاية — الجزء 16",
+          "author": "ابن كثير",
+          "description": "الجزء 18 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/16.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-17",
+          "title": "البداية والنهاية — الجزء 17",
+          "author": "ابن كثير",
+          "description": "الجزء 19 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/17.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        },
+        {
+          "id": "bidaya-18",
+          "title": "البداية والنهاية — الجزء 18",
+          "author": "ابن كثير",
+          "description": "الجزء 20 من طبعة رقمية متعددة الأجزاء.",
+          "pages": 0,
+          "downloadUrl": "https://archive.org/download/BidayahwanNihayah/18.pdf",
+          "sourceUrl": "https://archive.org/download/BidayahwanNihayah/"
+        }
+      ]
+    },
+    {
+      "id": "muqaddimat-ibn-khaldun",
+      "title": "مقدمة ابن خلدون",
+      "description": "الكتاب في قسم مستقل، نسخة مصورة عربية من طبعة 1900.",
+      "books": [
+        {
+          "id": "muqaddimah-ibn-khaldun-full",
+          "title": "مقدمة ابن خلدون — الكتاب كاملًا",
+          "author": "عبد الرحمن بن خلدون",
+          "description": "نسخة عربية مصورة من الطبعة الأدبية، 1900؛ 596 صفحة.",
+          "pages": 596,
+          "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9c/%D9%85%D9%82%D8%AF%D9%85%D8%A9_%D8%A7%D9%84%D8%B9%D9%84%D8%A7%D9%85%D8%A9_%D8%A7%D8%A8%D9%86_%D8%AE%D9%84%D8%AF%D9%88%D9%86_%28%D8%A7%D9%84%D9%85%D8%B7%D8%A8%D8%B9%D8%A9_%D8%A7%D9%84%D8%A3%D8%AF%D8%A8%D9%8A%D8%A9%D8%8C_1900%29.pdf",
+          "sourceUrl": "https://ar.wikisource.org/wiki/ملف:مقدمة_العلامة_ابن_خلدون_(المطبعة_الأدبية،_1900).pdf"
+        }
+      ]
+    },
+    {
+      "id": "zad-al-maad",
+      "title": "زاد المعاد في هدي خير العباد",
+      "description": "ابن قيم الجوزية — المجلدات السبعة مرتبة، مع الفهارس.",
+      "books": [
+        {
+          "id": "zad-al-maad-1",
+          "title": "زاد المعاد — المجلد 1",
+          "author": "ابن قيم الجوزية",
+          "description": "مقدمة التحقيق والمؤلف وفصول السيرة والهدي في العبادات",
+          "pages": 0,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad1.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        },
+        {
+          "id": "zad-al-maad-2",
+          "title": "زاد المعاد — المجلد 2",
+          "author": "ابن قيم الجوزية",
+          "description": "تابع فصول الهدي في العبادات",
+          "pages": 557,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad2.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        },
+        {
+          "id": "zad-al-maad-3",
+          "title": "زاد المعاد — المجلد 3",
+          "author": "ابن قيم الجوزية",
+          "description": "الهدي في الجهاد والمغازي والسرايا والبعوث",
+          "pages": 0,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad3.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        },
+        {
+          "id": "zad-al-maad-4",
+          "title": "زاد المعاد — المجلد 4",
+          "author": "ابن قيم الجوزية",
+          "description": "الهدي في الطب",
+          "pages": 630,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad4.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        },
+        {
+          "id": "zad-al-maad-5",
+          "title": "زاد المعاد — المجلد 5",
+          "author": "ابن قيم الجوزية",
+          "description": "الهدي في الأقضية والأحكام",
+          "pages": 601,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad5.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        },
+        {
+          "id": "zad-al-maad-6",
+          "title": "زاد المعاد — المجلد 6",
+          "author": "ابن قيم الجوزية",
+          "description": "تابع الهدي في الأقضية والأحكام",
+          "pages": 535,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad6.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        },
+        {
+          "id": "zad-al-maad-7",
+          "title": "زاد المعاد — المجلد 7 (الفهارس)",
+          "author": "ابن قيم الجوزية",
+          "description": "الفهارس",
+          "pages": 607,
+          "downloadUrl": "https://d1.islamhouse.com/data/ar/ih_books/single-03/ar-Zaad-Almaad7.pdf",
+          "sourceUrl": "https://islamhouse.com/ar/books/35239/"
+        }
+      ]
     }
   ]
 }
