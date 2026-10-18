@@ -164,22 +164,44 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                     withContext(Dispatchers.IO) {
                                         val dir=File(ctx.filesDir,"zad_al_muslim").apply{mkdirs()}
                                         val tmp=File(dir,"${b.id}.pdf.part")
-                                        val con=URL(b.url).openConnection() as HttpURLConnection
-                                        try {
-                                            con.connectTimeout=20000;con.readTimeout=60000;con.instanceFollowRedirects=true
-                                            con.setRequestProperty("User-Agent","Mozilla/5.0 Android AqimSalat")
-                                            con.connect();if(con.responseCode !in 200..299)throw IllegalStateException("HTTP")
-                                            val total=con.contentLengthLong
-                                            con.inputStream.use{input->FileOutputStream(tmp).use{out->
-                                                val buf=ByteArray(32768);var got=0L
-                                                while(true){val n=input.read(buf);if(n<0)break;if(n==0)continue;out.write(buf,0,n);got+=n
-                                                    if(total>0)withContext(Dispatchers.Main){progress=((got*100/total).toInt()).coerceIn(0,99)}
-                                                }
-                                            }}
-                                        }finally{con.disconnect()}
-                                        val head=ByteArray(5)
-                                        val headerCount=tmp.inputStream().use{it.read(head)}
-                                        if(headerCount<5||String(head,Charsets.US_ASCII)!="%PDF-"){tmp.delete();throw IllegalStateException("Not PDF")}
+                                        val candidates=listOf(b.url,b.source).filter{it.startsWith("https://")}.distinct()
+                                        var lastFailure:Exception?=null
+                                        var validPdf=false
+                                        for(candidate in candidates) {
+                                            tmp.delete()
+                                            try {
+                                                val con=URL(candidate).openConnection() as HttpURLConnection
+                                                try {
+                                                    con.connectTimeout=20000
+                                                    con.readTimeout=60000
+                                                    con.instanceFollowRedirects=true
+                                                    con.setRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36")
+                                                    con.setRequestProperty("Accept","application/pdf,application/octet-stream,*/*")
+                                                    con.setRequestProperty("Referer","https://shamela.org/")
+                                                    con.connect()
+                                                    val code=con.responseCode
+                                                    if(code !in 200..299) throw IllegalStateException("HTTP $code")
+                                                    val total=con.contentLengthLong
+                                                    con.inputStream.use{input->FileOutputStream(tmp).use{out->
+                                                        val buf=ByteArray(32768);var got=0L
+                                                        while(true) {
+                                                            val n=input.read(buf);if(n<0)break;if(n==0)continue
+                                                            out.write(buf,0,n);got+=n
+                                                            if(total>0)withContext(Dispatchers.Main){progress=((got*100/total).toInt()).coerceIn(0,99)}
+                                                        }
+                                                    }}
+                                                } finally { con.disconnect() }
+                                                val head=ByteArray(5)
+                                                val headerCount=tmp.inputStream().use{it.read(head)}
+                                                if(headerCount<5||String(head,Charsets.US_ASCII)!="%PDF-") throw IllegalStateException("الرابط لا يعيد ملف PDF")
+                                                validPdf=true
+                                                break
+                                            } catch(e:Exception) {
+                                                lastFailure=e
+                                                tmp.delete()
+                                            }
+                                        }
+                                        if(!validPdf) throw IllegalStateException(lastFailure?.message ?: "فشل الاتصال بمصدر الكتاب")
                                         val target=zadFile(ctx,b);target.delete()
                                         if(!tmp.renameTo(target)){tmp.copyTo(target,true);tmp.delete()}
                                     }
