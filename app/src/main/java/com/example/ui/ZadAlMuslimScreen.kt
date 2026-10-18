@@ -164,10 +164,13 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                     withContext(Dispatchers.IO) {
                                         val dir=File(ctx.filesDir,"zad_al_muslim").apply{mkdirs()}
                                         val tmp=File(dir,"${b.id}.pdf.part")
-                                        val candidates=listOf(b.url,b.source).filter{it.startsWith("https://")}.distinct()
+                                        val candidates=mutableListOf<String>()
+                                        listOf(b.url,b.source).filter{it.startsWith("https://")}.distinct().forEach{candidates.add(it)}
                                         var lastFailure:Exception?=null
                                         var validPdf=false
-                                        for(candidate in candidates) {
+                                        var candidateIndex=0
+                                        while(candidateIndex<candidates.size && candidateIndex<8 && !validPdf) {
+                                            val candidate=candidates[candidateIndex++]
                                             tmp.delete()
                                             try {
                                                 val con=URL(candidate).openConnection() as HttpURLConnection
@@ -176,7 +179,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                                     con.readTimeout=60000
                                                     con.instanceFollowRedirects=true
                                                     con.setRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36")
-                                                    con.setRequestProperty("Accept","application/pdf,application/octet-stream,*/*")
+                                                    con.setRequestProperty("Accept","application/pdf,application/octet-stream,text/html,*/*")
                                                     con.setRequestProperty("Referer","https://shamela.org/")
                                                     con.connect()
                                                     val code=con.responseCode
@@ -193,15 +196,39 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                                 } finally { con.disconnect() }
                                                 val head=ByteArray(5)
                                                 val headerCount=tmp.inputStream().use{it.read(head)}
-                                                if(headerCount<5||String(head,Charsets.US_ASCII)!="%PDF-") throw IllegalStateException("الرابط لا يعيد ملف PDF")
-                                                validPdf=true
-                                                break
+                                                if(headerCount>=5 && String(head,Charsets.US_ASCII)=="%PDF-") {
+                                                    validPdf=true
+                                                } else {
+                                                    val html=tmp.inputStream().bufferedReader(Charsets.UTF_8).use{it.readText().take(1_000_000)}
+                                                    val pattern=java.util.regex.Pattern.compile("""(?i)href\\s*=\\s*["']([^"']+(?:\\.pdf(?:\\?[^"']*)?|/download/[^"']+))["']""")
+                                                    val matcher=pattern.matcher(html)
+                                                    var found=0
+                                                    while(matcher.find() && found<5) {
+                                                        val raw=matcher.group(1)?:continue
+                                                        try {
+                                                            val resolved=URL(URL(candidate),raw).toString()
+                                                            if(resolved.startsWith("https://") && !candidates.contains(resolved)) {
+                                                                candidates.add(resolved);found++
+                                                            }
+                                                        } catch(_:Exception) {}
+                                                    }
+                                                    if(found==0) {
+                                                        val direct=java.util.regex.Pattern.compile("""https?://[^"'\\s<>]+\\.pdf(?:\\?[^"'\\s<>]*)?""",java.util.regex.Pattern.CASE_INSENSITIVE).matcher(html)
+                                                        while(direct.find() && found<5) {
+                                                            val resolved=direct.group()
+                                                            if(resolved.startsWith("https://") && !candidates.contains(resolved)) {
+                                                                candidates.add(resolved);found++
+                                                            }
+                                                        }
+                                                    }
+                                                    throw IllegalStateException(if(found>0) "المصدر أعاد صفحة؛ يجري تجربة رابط PDF الداخلي" else "المصدر أعاد صفحة ويب بدل ملف PDF")
+                                                }
                                             } catch(e:Exception) {
                                                 lastFailure=e
                                                 tmp.delete()
                                             }
                                         }
-                                        if(!validPdf) throw IllegalStateException(lastFailure?.message ?: "فشل الاتصال بمصدر الكتاب")
+                                        if(!validPdf) throw IllegalStateException(lastFailure?.message ?: "تعذر العثور على رابط PDF مباشر")
                                         val target=zadFile(ctx,b);target.delete()
                                         if(!tmp.renameTo(target)){tmp.copyTo(target,true);tmp.delete()}
                                     }
