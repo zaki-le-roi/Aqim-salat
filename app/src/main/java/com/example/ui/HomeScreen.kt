@@ -530,33 +530,46 @@ fun HomeScreen(
                     }
                 }
 
-                // "زاد المسلم" downloadable Islamic books library.
+                // "زاد المسلم" — coordinated emerald, deep green and gold library card.
                 Card(
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 104.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
                         .testTag("home_service_zad_al_muslim"),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF243E32)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                            .background(Brush.horizontalGradient(listOf(Color(0xFF0B2F26), Color(0xFF17634A), Color(0xFF234B3A))))
                     ) {
                         Box(
-                            modifier = Modifier.size(58.dp).clip(RoundedCornerShape(16.dp))
-                                .background(Color.White.copy(alpha = 0.09f)),
-                            contentAlignment = Alignment.Center
+                            modifier = Modifier.align(Alignment.CenterEnd).size(150.dp)
+                                .offset(x = 28.dp, y = 18.dp).clip(CircleShape)
+                                .background(Color(0xFFD7B65D).copy(alpha = 0.08f))
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 17.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(34.dp))
+                            Box(
+                                modifier = Modifier.size(62.dp).clip(RoundedCornerShape(18.dp))
+                                    .background(Brush.verticalGradient(listOf(Color(0xFFF1D995), Color(0xFFB88A2C)))),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFF173D30), modifier = Modifier.size(36.dp))
+                            }
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Text("زاد المسلم", color = Color(0xFFFFE6A0), fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                                Text("مكتبة كتب إسلامية في تخصصات متعددة", color = Color.White, fontSize = 12.sp)
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                                    Icon(Icons.Filled.CloudDownload, contentDescription = null, tint = Color(0xFFFFD979), modifier = Modifier.size(15.dp))
+                                    Text("نزّل كتبك واقرأها دون إنترنت", color = Color(0xFFFFD979), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                            Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Color(0xFFFFE6A0), modifier = Modifier.size(20.dp))
                         }
-                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("زاد المسلم", color = Color(0xFFD4AF37), fontSize = 19.sp, fontWeight = FontWeight.ExtraBold)
-                            Text("كتب إسلامية تنزّلها وتقرأها دون إنترنت", color = Color.White.copy(alpha = 0.88f), fontSize = 12.sp)
-                            Text("تصفّح التخصصات والكتب", color = Color(0xFFE6C687), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Color(0xFFE6C687))
                     }
                 }
 

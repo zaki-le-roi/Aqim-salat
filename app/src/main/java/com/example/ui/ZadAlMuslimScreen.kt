@@ -19,6 +19,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +69,25 @@ private suspend fun zadCatalog(ctx:Context,remote:Boolean):List<ZadCategory> = w
         finally { con.disconnect() }
     } else ctx.assets.open("zad_al_muslim_catalog.json").bufferedReader(Charsets.UTF_8).use{it.readText()}
     parseZad(raw)
+}
+
+
+@Composable
+private fun ZadBookCover(title:String, author:String, bookId:String, modifier:Modifier=Modifier) {
+    val palette = when {
+        bookId.contains("prayer") || title.contains("الصلاة") -> listOf(Color(0xFF174A3B), Color(0xFF0B2C25))
+        bookId.contains("aqidah") || title.contains("التوحيد") || title.contains("العقيدة") -> listOf(Color(0xFF294A73), Color(0xFF142B48))
+        bookId.contains("seerah") || title.contains("الرحيق") || title.contains("السيرة") -> listOf(Color(0xFF7C4934), Color(0xFF45291F))
+        bookId.contains("hadith") || title.contains("رياض") || title.contains("شرح") -> listOf(Color(0xFF725329), Color(0xFF3E2C18))
+        else -> listOf(Color(0xFF3C6650), Color(0xFF193A2D))
+    }
+    Box(modifier.clip(RoundedCornerShape(10.dp)).background(Brush.verticalGradient(palette)).border(1.dp,Color(0xFFD6B66A).copy(alpha=.75f),RoundedCornerShape(10.dp)),contentAlignment=Alignment.Center) {
+        Column(Modifier.fillMaxSize().padding(6.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.SpaceBetween) {
+            Icon(Icons.Filled.AutoStories,null,tint=Color(0xFFE7CA80),modifier=Modifier.size(25.dp))
+            Text(title,color=Color.White,fontSize=10.sp,fontWeight=FontWeight.Bold,lineHeight=13.sp,maxLines=4,overflow=TextOverflow.Ellipsis,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
+            Text(author,color=Color(0xFFE7D9B0),fontSize=7.sp,maxLines=2,overflow=TextOverflow.Ellipsis,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,7 +147,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                 val b=book!!
                 Column(Modifier.fillMaxSize().padding(padding).padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)) {
                     Card { Column(Modifier.fillMaxWidth().padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
-                        Icon(Icons.Filled.Book,null,tint=Color(0xFFB28B31),modifier=Modifier.size(42.dp))
+                        ZadBookCover(b.title,b.author,b.id,Modifier.width(118.dp).height(164.dp).align(Alignment.CenterHorizontally))
                         Text(b.title,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold)
                         Text("المؤلف: ${b.author}")
                         Text(b.description)
@@ -161,13 +184,12 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         if(!tmp.renameTo(target)){tmp.copyTo(target,true);tmp.delete()}
                                     }
                                     refresh++;progress=100;message="اكتمل التنزيل؛ أصبح الكتاب متاحًا دون إنترنت."
-                                }catch(_:Exception){message="تعذر تنزيل ملف PDF من المصدر. جرّب فتح صفحة المصدر."}
+                                }catch(e:Exception){message="تعذر التنزيل: "+(e.message?.take(100) ?: "تحقق من اتصال الإنترنت أو رابط الكتاب") }
                                 finally{downloading=null}
                             }
                         },modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.CloudDownload,null);Spacer(Modifier.width(8.dp));Text(if(downloading==b.id)"جارٍ التنزيل $progress%" else "تنزيل الكتاب")}
                         if(downloading==b.id)LinearProgressIndicator(progress={progress/100f},modifier=Modifier.fillMaxWidth())
                     }
-                    OutlinedButton(onClick={runCatching{ctx.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(b.source))) }},modifier=Modifier.fillMaxWidth()){Icon(Icons.Filled.OpenInNew,null);Spacer(Modifier.width(8.dp));Text("فتح صفحة المصدر")}
                     if(message.isNotBlank())Text(message,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.bodySmall)
                 }
             }
@@ -175,7 +197,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                 val c=categories.firstOrNull{it.id==category!!.id}?:category!!
                 LazyColumn(Modifier.fillMaxSize().padding(padding),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
                     item{Text(c.description,color=MaterialTheme.colorScheme.onSurfaceVariant);Text("${c.books.size} كتاب",color=MaterialTheme.colorScheme.primary)}
-                    items(c.books, key = { it.id }){b->Card(Modifier.fillMaxWidth().clickable{book=b},shape=RoundedCornerShape(16.dp)){Row(Modifier.fillMaxWidth().padding(14.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Filled.Book,null,tint=Color(0xFF205A42),modifier=Modifier.size(38.dp));Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(b.title,fontWeight=FontWeight.Bold);Text(b.author,style=MaterialTheme.typography.bodySmall);Text(if(downloaded(b))"محفوظ دون إنترنت" else "متاح للتنزيل",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)};Icon(if(downloaded(b))Icons.Filled.CheckCircle else Icons.Filled.CloudDownload,null)}}}
+                    items(c.books, key = { it.id }){b->Card(Modifier.fillMaxWidth().clickable{book=b},shape=RoundedCornerShape(16.dp)){Row(Modifier.fillMaxWidth().padding(12.dp),verticalAlignment=Alignment.CenterVertically){ZadBookCover(b.title,b.author,b.id,Modifier.width(66.dp).height(92.dp));Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(b.title,fontWeight=FontWeight.Bold);Text(b.author,style=MaterialTheme.typography.bodySmall);Text(if(downloaded(b))"محفوظ دون إنترنت" else "متاح للتنزيل",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)};Icon(if(downloaded(b))Icons.Filled.CheckCircle else Icons.Filled.CloudDownload,null)}}}
                 }
             }
             else -> {
@@ -185,7 +207,6 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                     item{OutlinedTextField(search,{search=it},modifier=Modifier.fillMaxWidth(),singleLine=true,label={Text("ابحث عن تخصص أو كتاب أو مؤلف")},leadingIcon={Icon(Icons.Filled.Search,null)})}
                     if(message.isNotBlank())item{Text(message,color=MaterialTheme.colorScheme.onSurfaceVariant)}
                     items(filtered, key = { it.id }){c->Card(Modifier.fillMaxWidth().clickable{category=c},shape=RoundedCornerShape(16.dp)){Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Filled.LibraryBooks,null,tint=Color(0xFF205A42),modifier=Modifier.size(36.dp));Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(c.title,fontWeight=FontWeight.Bold);Text(c.description,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant);Text("${c.books.size} كتاب",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)};Icon(Icons.Filled.ArrowBack,null)}}}
-                    item{Text("الكتب تُنزّل من مصادرها الخارجية؛ قد يختلف توفر الملف حسب المصدر.",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
                 }
             }
         }
