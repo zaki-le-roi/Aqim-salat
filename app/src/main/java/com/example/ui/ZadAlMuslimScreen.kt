@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.pointerInput
@@ -125,7 +126,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                 ParcelFileDescriptor.open(zadFile(ctx,b),ParcelFileDescriptor.MODE_READ_ONLY).use{fd->
                     PdfRenderer(fd).use{renderer->
                         renderer.openPage(page.coerceIn(0,renderer.pageCount-1)).use{p->
-                            val w=1100;val h=(p.height.toFloat()*w/p.width).toInt().coerceAtLeast(1)
+                            val w=1800;val h=(p.height.toFloat()*w/p.width).toInt().coerceAtLeast(1)
                             Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{p.render(it,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)} to renderer.pageCount
                         }
                     }
@@ -135,7 +136,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
             ctx.getSharedPreferences("zad_al_muslim_reader",Context.MODE_PRIVATE).edit().putInt("page_${b.id}",page).apply()
         } catch(_:Exception){bitmap=null;message="تعذر فتح ملف PDF. أعد تنزيل الكتاب."}
     }
-    var zoom by remember(reader?.id) { mutableFloatStateOf(1f) }
+    var zoom by remember(reader?.id) { mutableFloatStateOf(1.15f) }
     var offsetX by remember(reader?.id) { mutableFloatStateOf(0f) }
     var offsetY by remember(reader?.id) { mutableFloatStateOf(0f) }
     val swipeThreshold = with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
@@ -157,13 +158,13 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
         TopAppBar(
             title={Text(title,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Bold)},
             navigationIcon={
-                IconButton(onClick={when{reader!=null->{reader=null;bitmap=null;zoom=1f;offsetX=0f;offsetY=0f};book!=null->book=null;category!=null->category=null;else->onBack()}}){Icon(Icons.Filled.ArrowBack,"رجوع")}
+                IconButton(onClick={when{reader!=null->{reader=null;bitmap=null;zoom=1.15f;offsetX=0f;offsetY=0f};book!=null->book=null;category!=null->category=null;else->onBack()}}){Icon(Icons.Filled.ArrowBack,"رجوع")}
             },
             actions={
                 if(reader!=null) {
                     IconButton(onClick={zoom=(zoom/1.25f).coerceAtLeast(1f);if(zoom==1f){offsetX=0f;offsetY=0f}}){Icon(Icons.Filled.ZoomOut,"تصغير")}
                     IconButton(onClick={zoom=(zoom*1.25f).coerceAtMost(4f)}){Icon(Icons.Filled.ZoomIn,"تكبير")}
-                    IconButton(onClick={zoom=1f;offsetX=0f;offsetY=0f}){Icon(Icons.Filled.FitScreen,"ملاءمة الصفحة")}
+                    IconButton(onClick={zoom=1.15f;offsetX=0f;offsetY=0f}){Icon(Icons.Filled.FitScreen,"ملاءمة الصفحة")}
                 } else if(book==null&&category==null) {
                     IconButton(onClick={scope.launch{try{categories=zadCatalog(ctx,true);message=""}catch(_:Exception){message="تعذر تحديث الفهرس."}}}){Icon(Icons.Filled.Refresh,"تحديث")}
                 }
@@ -200,14 +201,14 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                     detectTransformGestures { _, pan, zoomChange, _ ->
                                         val newZoom=(zoom*zoomChange).coerceIn(1f,4f)
                                         zoom=newZoom
-                                        if(newZoom>1f) {
-                                            offsetX=(offsetX*zoomChange+pan.x).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
-                                            offsetY=(offsetY*zoomChange+pan.y).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
+                                        // Keep panning direct and lightweight; avoid rescaling the old offset on every frame.
+                                        if(newZoom>1.15f) {
+                                            offsetX=(offsetX+pan.x).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
+                                            offsetY=(offsetY+pan.y).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
-                                            // Arabic books follow right-to-left page progression:
-                                            // swipe right advances, swipe left returns.
+                                            // Arabic books: swipe right advances to the next page.
                                             if(!swipeHandled && swipeDistance > swipeThreshold && page<pageCount-1) {
                                                 page++;swipeHandled=true
                                             } else if(!swipeHandled && swipeDistance < -swipeThreshold && page>0) {
@@ -215,6 +216,13 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                             }
                                         }
                                     }
+                                }
+                                .pointerInput(reader?.id) {
+                                    detectTapGestures(onDoubleTap = {
+                                        zoom=1f
+                                        offsetX=0f
+                                        offsetY=0f
+                                    })
                                 }
                         )
                     }
