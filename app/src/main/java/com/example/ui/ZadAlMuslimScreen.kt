@@ -10,7 +10,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.pointerInput
@@ -136,7 +135,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
             ctx.getSharedPreferences("zad_al_muslim_reader",Context.MODE_PRIVATE).edit().putInt("page_${b.id}",page).apply()
         } catch(_:Exception){bitmap=null;message="تعذر فتح ملف PDF. أعد تنزيل الكتاب."}
     }
-    var zoom by remember(reader?.id) { mutableFloatStateOf(1.15f) }
+    var zoom by remember(reader?.id) { mutableFloatStateOf(1f) }
     var offsetX by remember(reader?.id) { mutableFloatStateOf(0f) }
     var offsetY by remember(reader?.id) { mutableFloatStateOf(0f) }
     val swipeThreshold = with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
@@ -158,13 +157,11 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
         TopAppBar(
             title={Text(title,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Bold)},
             navigationIcon={
-                IconButton(onClick={when{reader!=null->{reader=null;bitmap=null;zoom=1.15f;offsetX=0f;offsetY=0f};book!=null->book=null;category!=null->category=null;else->onBack()}}){Icon(Icons.Filled.ArrowBack,"رجوع")}
+                IconButton(onClick={when{reader!=null->{reader=null;bitmap=null;zoom=1f;offsetX=0f;offsetY=0f};book!=null->book=null;category!=null->category=null;else->onBack()}}){Icon(Icons.Filled.ArrowBack,"رجوع")}
             },
             actions={
                 if(reader!=null) {
-                    IconButton(onClick={zoom=(zoom/1.25f).coerceAtLeast(1f);if(zoom==1f){offsetX=0f;offsetY=0f}}){Icon(Icons.Filled.ZoomOut,"تصغير")}
-                    IconButton(onClick={zoom=(zoom*1.25f).coerceAtMost(4f)}){Icon(Icons.Filled.ZoomIn,"تكبير")}
-                    IconButton(onClick={zoom=1.15f;offsetX=0f;offsetY=0f}){Icon(Icons.Filled.FitScreen,"ملاءمة الصفحة")}
+                    IconButton(onClick={zoom=1f;offsetX=0f;offsetY=0f}){Icon(Icons.Filled.FitScreen,"إرجاع الصفحة إلى حجمها الطبيعي")}
                 } else if(book==null&&category==null) {
                     IconButton(onClick={scope.launch{try{categories=zadCatalog(ctx,true);message=""}catch(_:Exception){message="تعذر تحديث الفهرس."}}}){Icon(Icons.Filled.Refresh,"تحديث")}
                 }
@@ -202,10 +199,10 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         val newZoom=(zoom*zoomChange).coerceIn(1f,4f)
                                         zoom=newZoom
                                         // Keep panning direct and lightweight; avoid rescaling the old offset on every frame.
-                                        if(newZoom>1.15f) {
-                                            val panFactor=if(newZoom>=3f) 0.38f else 0.52f
-                                            offsetX=(offsetX+pan.x*panFactor).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
-                                            offsetY=(offsetY+pan.y*panFactor).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
+                                        if(newZoom>1.01f) {
+                                            // Follow the finger directly while reading a zoomed page.
+                                            offsetX=(offsetX+pan.x).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
+                                            offsetY=(offsetY+pan.y).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
@@ -218,13 +215,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         }
                                     }
                                 }
-                                .pointerInput(reader?.id) {
-                                    detectTapGestures(onDoubleTap = {
-                                        zoom=1f
-                                        offsetX=0f
-                                        offsetY=0f
-                                    })
-                                }
+
                         )
                     }
                 }
