@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "purification",
+      "title": "الطهارة والوضوء",
+      "description": "أحكام الطهارة والوضوء والعبادات.",
+      "books": [
+        {
+          "id": "fiqh-ibadat-maliki",
+          "title": "فقه العبادات على المذهب المالكي",
+          "author": "كوكب عبيد",
+          "description": "كتاب فقهي يعرض مسائل العبادات على المذهب المالكي.",
+          "pages": 0,
+          "downloadUrl": "https://shamela.org/pdf/7bfd3b89ab3441df42e2e8feadc6a2ae.pdf",
+          "sourceUrl": "https://shamela.org/pdf/7bfd3b89ab3441df42e2e8feadc6a2ae.pdf"
+        },
+        {
+          "id": "bidayat-al-mujtahid",
+          "title": "بداية المجتهد ونهاية المقتصد",
+          "author": "ابن رشد الحفيد",
+          "description": "مرجع فقهي مقارن يتناول أبواب الطهارة والصلاة وغيرها.",
+          "pages": 0,
+          "downloadUrl": "https://shamela.org/pdf/6194c1baabcd0_212449e190d5b9083ac7d11e5cfccea2.pdf",
+          "sourceUrl": "https://shamela.org/pdf/6194c1baabcd0_212449e190d5b9083ac7d11e5cfccea2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "prayer",
+      "title": "الصلاة",
+      "description": "كتب تعين على فهم صفة الصلاة وأحكامها.",
+      "books": [
+        {
+          "id": "sifat-salat",
+          "title": "صفة صلاة النبي صلى الله عليه وسلم",
+          "author": "محمد ناصر الدين الألباني",
+          "description": "كتاب يشرح صفة الصلاة من التكبير إلى التسليم.",
+          "pages": 44,
+          "downloadUrl": "https://shamela.org/gen/b79899caae08d0f7d3da286d2351b648_gen.pdf",
+          "sourceUrl": "https://shamela.org/pdf/b79899caae08d0f7d3da286d2351b648"
+        },
+        {
+          "id": "asl-sifat-salat",
+          "title": "أصل صفة صلاة النبي صلى الله عليه وسلم",
+          "author": "محمد ناصر الدين الألباني",
+          "description": "نسخة موسعة في صفة الصلاة وأدلتها.",
+          "pages": 651,
+          "downloadUrl": "https://shamela.org/pdf/69d11b0a97ec9_49bbd8872e181dd64b9a44c04e1f4c59",
+          "sourceUrl": "https://shamela.org/pdf/69d11b0a97ec9_49bbd8872e181dd64b9a44c04e1f4c59"
+        }
+      ]
+    },
+    {
+      "id": "aqidah",
+      "title": "العقيدة والتوحيد",
+      "description": "متون في أصول الإيمان والتوحيد.",
+      "books": [
+        {
+          "id": "aqidah-wasitiyyah",
+          "title": "العقيدة الواسطية",
+          "author": "شيخ الإسلام ابن تيمية",
+          "description": "رسالة في أصول الاعتقاد وأبواب الإيمان.",
+          "pages": 16,
+          "downloadUrl": "https://shamela.org/pdf/89a2679773ecdda9f66d4d9f893c54a7.pdf",
+          "sourceUrl": "https://shamela.org/pdf/89a2679773ecdda9f66d4d9f893c54a7.pdf"
+        },
+        {
+          "id": "kitab-at-tawhid",
+          "title": "كتاب التوحيد",
+          "author": "محمد بن عبد الوهاب",
+          "description": "كتاب في أبواب التوحيد مع الاستدلال بالآيات والأحاديث.",
+          "pages": 61,
+          "downloadUrl": "https://shamela.org/pdf/c45b8b6738f613b048cc9f67e03df488.pdf",
+          "sourceUrl": "https://shamela.org/pdf/c45b8b6738f613b048cc9f67e03df488.pdf"
+        }
+      ]
+    },
+    {
+      "id": "hadith-ethics",
+      "title": "الحديث والأخلاق",
+      "description": "أحاديث وآداب وسلوك المسلم.",
+      "books": [
+        {
+          "id": "riyad-as-salihin",
+          "title": "رياض الصالحين",
+          "author": "الإمام النووي",
+          "description": "أحاديث في العبادات والأخلاق والآداب والترغيب والترهيب.",
+          "pages": 415,
+          "downloadUrl": "https://shamela.org/pdf/26a93133703b32de2f3836f857d08f8d.pdf",
+          "sourceUrl": "https://shamela.org/pdf/26a93133703b32de2f3836f857d08f8d.pdf"
+        },
+        {
+          "id": "sharh-riyad-as-salihin",
+          "title": "شرح رياض الصالحين",
+          "author": "محمد بن صالح العثيمين",
+          "description": "شرح لأحاديث رياض الصالحين مع بيان المعاني والفوائد.",
+          "pages": 1182,
+          "downloadUrl": "https://shamela.org/pdf/a31ea515f8387de87c29a9e2b00a79e2.pdf",
+          "sourceUrl": "https://shamela.org/pdf/a31ea515f8387de87c29a9e2b00a79e2.pdf"
+        }
+      ]
+    },
+    {
+      "id": "seerah",
+      "title": "السيرة النبوية والتاريخ",
+      "description": "كتب في سيرة النبي صلى الله عليه وسلم وأحداث السيرة.",
+      "books": [
+        {
+          "id": "ar-raheeq-al-makhtum",
+          "title": "الرحيق المختوم",
+          "author": "صفي الرحمن المباركفوري",
+          "description": "كتاب في السيرة النبوية، طبعة إحياء التراث.",
+          "pages": 470,
+          "downloadUrl": "https://archive.org/download/waq31129/31129.pdf",
+          "sourceUrl": "https://waqfeya.com/books/الرحيق-المختوم-ط-إحياء-التراث-b98aca33f5ae426fb38a10a8eeec108e"
+        },
+        {
+          "id": "ar-rawd-al-anf",
+          "title": "الروض الأنف",
+          "author": "أبو القاسم السهيلي",
+          "description": "شرح للسيرة النبوية ورواياتها.",
+          "pages": 0,
+          "downloadUrl": "https://shamela.org/pdf/67818707103ce_a32ef5cf6c31ef2e49e03a5e74be0f4c.pdf",
+          "sourceUrl": "https://shamela.org/pdf/67818707103ce_a32ef5cf6c31ef2e49e03a5e74be0f4c.pdf"
+        }
+      ]
+    },
+    {
+      "id": "self-purification",
+      "title": "تزكية النفس والرقائق",
+      "description": "كتب في إصلاح القلب والأخلاق والسلوك.",
+      "books": [
+        {
+          "id": "madarij-as-salikin",
+          "title": "مدارج السالكين",
+          "author": "ابن قيم الجوزية",
+          "description": "كتاب في منازل السلوك وتزكية النفس.",
+          "pages": 861,
+          "downloadUrl": "https://shamela.org/pdf/98d376482f720751796eb501560b8be4.pdf",
+          "sourceUrl": "https://shamela.org/pdf/98d376482f720751796eb501560b8be4.pdf"
+        },
+        {
+          "id": "jalaa-al-afham",
+          "title": "جلاء الأفهام",
+          "author": "ابن قيم الجوزية",
+          "description": "كتاب في الصلاة والسلام على النبي صلى الله عليه وسلم وفضلهما.",
+          "pages": 156,
+          "downloadUrl": "https://shamela.org/pdf/d12e1221a42b05d1104019075146ab26.pdf",
+          "sourceUrl": "https://shamela.org/pdf/d12e1221a42b05d1104019075146ab26.pdf"
+        }
+      ]
+    }
+  ]
+}

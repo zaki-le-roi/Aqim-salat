@@ -214,7 +214,7 @@ fun AqimSalahApp(
                 initialToolParam = "MOSQUES"
             }
             "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "SEERAH",
-            "SCHOLARS_LIBRARY" -> {
+            "SCHOLARS_LIBRARY", "ZAD_ALMUSLIM" -> {
                 activeDetailScreen = routeKey
             }
         }
@@ -360,6 +360,7 @@ fun AqimSalahApp(
                     }
                     "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "SCHOLARS_LIBRARY" -> ScholarsLibraryScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
+                    "ZAD_ALMUSLIM" -> ZadAlMuslimScreen(onBack = { activeDetailScreen = null })
 
                     "TOOLS" -> {
                         Scaffold(

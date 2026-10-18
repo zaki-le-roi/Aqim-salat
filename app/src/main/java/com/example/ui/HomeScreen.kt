@@ -200,6 +200,7 @@ fun HomeScreen(
                                         Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
                                         Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
                                         Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
+                                        Triple("ZAD_ALMUSLIM", "زاد المسلم", Icons.Filled.MenuBook),
                                         Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
                                         Triple("QIBLA", "القبلة", Icons.Filled.Explore)
                                     )
@@ -526,6 +527,36 @@ fun HomeScreen(
                                 )
                             }
                         }
+                    }
+                }
+
+                // "زاد المسلم" downloadable Islamic books library.
+                Card(
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 104.dp)
+                        .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
+                        .testTag("home_service_zad_al_muslim"),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF243E32)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.size(58.dp).clip(RoundedCornerShape(16.dp))
+                                .background(Color.White.copy(alpha = 0.09f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.MenuBook, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(34.dp))
+                        }
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("زاد المسلم", color = Color(0xFFD4AF37), fontSize = 19.sp, fontWeight = FontWeight.ExtraBold)
+                            Text("كتب إسلامية تنزّلها وتقرأها دون إنترنت", color = Color.White.copy(alpha = 0.88f), fontSize = 12.sp)
+                            Text("تصفّح التخصصات والكتب", color = Color(0xFFE6C687), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = Color(0xFFE6C687))
                     }
                 }
 
