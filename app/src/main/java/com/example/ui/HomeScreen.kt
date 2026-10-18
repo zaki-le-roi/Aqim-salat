@@ -789,8 +789,19 @@ fun HomeScreen(
         }
 
 
-
-
+        item {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "© 2026 Djenba Zakaria. جميع الحقوق محفوظة.",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .testTag("home_copyright"),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                fontSize = 11.sp,
+                textAlign = TextAlign.Center
+            )
+        }
 
     }
     }
