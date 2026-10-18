@@ -126,7 +126,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                 ParcelFileDescriptor.open(zadFile(ctx,b),ParcelFileDescriptor.MODE_READ_ONLY).use{fd->
                     PdfRenderer(fd).use{renderer->
                         renderer.openPage(page.coerceIn(0,renderer.pageCount-1)).use{p->
-                            val w=1800;val h=(p.height.toFloat()*w/p.width).toInt().coerceAtLeast(1)
+                            val w=2000;val h=(p.height.toFloat()*w/p.width).toInt().coerceAtLeast(1)
                             Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888).also{p.render(it,null,null,PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)} to renderer.pageCount
                         }
                     }
@@ -203,8 +203,9 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         zoom=newZoom
                                         // Keep panning direct and lightweight; avoid rescaling the old offset on every frame.
                                         if(newZoom>1.15f) {
-                                            offsetX=(offsetX+pan.x).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
-                                            offsetY=(offsetY+pan.y).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
+                                            val panFactor=if(newZoom>=3f) 0.38f else 0.52f
+                                            offsetX=(offsetX+pan.x*panFactor).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
+                                            offsetY=(offsetY+pan.y*panFactor).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
