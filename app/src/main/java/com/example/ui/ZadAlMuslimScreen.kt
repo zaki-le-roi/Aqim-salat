@@ -6,8 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -130,17 +135,92 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
             ctx.getSharedPreferences("zad_al_muslim_reader",Context.MODE_PRIVATE).edit().putInt("page_${b.id}",page).apply()
         } catch(_:Exception){bitmap=null;message="تعذر فتح ملف PDF. أعد تنزيل الكتاب."}
     }
+    var zoom by remember(reader?.id) { mutableFloatStateOf(1f) }
+    var offsetX by remember(reader?.id) { mutableFloatStateOf(0f) }
+    var offsetY by remember(reader?.id) { mutableFloatStateOf(0f) }
+    BackHandler(enabled=reader!=null) {
+        reader=null
+        bitmap=null
+        zoom=1f
+        offsetX=0f
+        offsetY=0f
+    }
     val title=when{reader!=null->reader!!.title;book!=null->book!!.title;category!=null->category!!.title;else->"زاد المسلم"}
-    Scaffold(modifier=modifier.fillMaxSize(),topBar={TopAppBar(title={Text(title,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Bold)},navigationIcon={
-        IconButton(onClick={when{reader!=null->{reader=null;bitmap=null};book!=null->book=null;category!=null->category=null;else->onBack()}}){Icon(Icons.Filled.ArrowBack,"رجوع")}
-    },actions={if(reader==null&&book==null&&category==null)IconButton(onClick={scope.launch{try{categories=zadCatalog(ctx,true);message=""}catch(_:Exception){message="تعذر تحديث الفهرس."}}}){Icon(Icons.Filled.Refresh,"تحديث")}})}) { padding ->
+    Scaffold(modifier=modifier.fillMaxSize(),topBar={
+        TopAppBar(
+            title={Text(title,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Bold)},
+            navigationIcon={
+                IconButton(onClick={when{reader!=null->{reader=null;bitmap=null;zoom=1f;offsetX=0f;offsetY=0f};book!=null->book=null;category!=null->category=null;else->onBack()}}){Icon(Icons.Filled.ArrowBack,"رجوع")}
+            },
+            actions={
+                if(reader!=null) {
+                    IconButton(onClick={zoom=(zoom/1.25f).coerceAtLeast(1f);if(zoom==1f){offsetX=0f;offsetY=0f}}){Icon(Icons.Filled.ZoomOut,"تصغير")}
+                    IconButton(onClick={zoom=(zoom*1.25f).coerceAtMost(4f)}){Icon(Icons.Filled.ZoomIn,"تكبير")}
+                    IconButton(onClick={zoom=1f;offsetX=0f;offsetY=0f}){Icon(Icons.Filled.FitScreen,"ملاءمة الصفحة")}
+                } else if(book==null&&category==null) {
+                    IconButton(onClick={scope.launch{try{categories=zadCatalog(ctx,true);message=""}catch(_:Exception){message="تعذر تحديث الفهرس."}}}){Icon(Icons.Filled.Refresh,"تحديث")}
+                }
+            }
+        )
+    }) { padding ->
         when {
-            reader!=null -> Column(Modifier.fillMaxSize().padding(padding).padding(8.dp),horizontalAlignment=Alignment.CenterHorizontally) {
-                if(bitmap==null){CircularProgressIndicator();Text("جارٍ فتح الصفحة...")}else Image(bitmap!!.asImageBitmap(),"صفحة من الكتاب",Modifier.weight(1f).fillMaxWidth())
-                Row(Modifier.fillMaxWidth().padding(8.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-                    OutlinedButton(onClick={if(page>0)page--},enabled=page>0){Text("السابقة")}
-                    Text("${page+1} / $pageCount")
-                    Button(onClick={if(page<pageCount-1)page++},enabled=pageCount>0&&page<pageCount-1){Text("التالية")}
+            reader!=null -> Column(
+                Modifier.fillMaxSize().padding(padding).background(Color(0xFFE8E0CF)),
+                horizontalAlignment=Alignment.CenterHorizontally
+            ) {
+                Box(
+                    Modifier.weight(1f).fillMaxWidth().padding(horizontal=2.dp, vertical=2.dp),
+                    contentAlignment=Alignment.Center
+                ) {
+                    if(bitmap==null) {
+                        CircularProgressIndicator()
+                        Text("جارٍ فتح الصفحة...", modifier=Modifier.padding(top=64.dp), color=Color(0xFF4A4033))
+                    } else {
+                        Image(
+                            bitmap!!.asImageBitmap(),
+                            contentDescription="صفحة من الكتاب؛ اسحب للتقليب واستخدم إصبعين للتكبير",
+                            contentScale=ContentScale.Fit,
+                            modifier=Modifier.fillMaxSize()
+                                .graphicsLayer {
+                                    scaleX=zoom
+                                    scaleY=zoom
+                                    translationX=offsetX
+                                    translationY=offsetY
+                                }
+                                .pointerInput(page, reader?.id) {
+                                    var swipeDistance=0f
+                                    var swipeHandled=false
+                                    val threshold=with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
+                                    detectTransformGestures { _, pan, zoomChange, _ ->
+                                        val newZoom=(zoom*zoomChange).coerceIn(1f,4f)
+                                        zoom=newZoom
+                                        if(newZoom>1f) {
+                                            offsetX=(offsetX*zoomChange+pan.x).coerceIn(-size.width*(newZoom-1f)/2f,size.width*(newZoom-1f)/2f)
+                                            offsetY=(offsetY*zoomChange+pan.y).coerceIn(-size.height*(newZoom-1f)/2f,size.height*(newZoom-1f)/2f)
+                                        } else {
+                                            offsetX=0f;offsetY=0f
+                                            swipeDistance+=pan.x
+                                            if(!swipeHandled && swipeDistance < -threshold && page<pageCount-1) {
+                                                page++;swipeHandled=true
+                                            } else if(!swipeHandled && swipeDistance > threshold && page>0) {
+                                                page--;swipeHandled=true
+                                            }
+                                        }
+                                    }
+                                }
+                        )
+                    }
+                }
+                Row(
+                    Modifier.fillMaxWidth().background(Color(0xFF153D30)).padding(horizontal=16.dp, vertical=7.dp),
+                    horizontalArrangement=Arrangement.Center,
+                    verticalAlignment=Alignment.CenterVertically
+                ) {
+                    Text(
+                        if(pageCount>0) "صفحة ${page+1} من $pageCount  •  اسحب للتقليب" else "جارٍ تحميل الصفحات",
+                        color=Color(0xFFF7EBCB),
+                        style=MaterialTheme.typography.labelMedium
+                    )
                 }
             }
             book!=null -> {
