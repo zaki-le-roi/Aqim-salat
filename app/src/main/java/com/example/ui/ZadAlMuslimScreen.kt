@@ -139,12 +139,18 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
     var offsetX by remember(reader?.id) { mutableFloatStateOf(0f) }
     var offsetY by remember(reader?.id) { mutableFloatStateOf(0f) }
     val swipeThreshold = with(androidx.compose.ui.platform.LocalDensity.current) { 72.dp.toPx() }
-    BackHandler(enabled=reader!=null) {
-        reader=null
-        bitmap=null
-        zoom=1f
-        offsetX=0f
-        offsetY=0f
+    BackHandler(enabled=reader!=null || book!=null || category!=null) {
+        when {
+            reader!=null -> {
+                reader=null
+                bitmap=null
+                zoom=1f
+                offsetX=0f
+                offsetY=0f
+            }
+            book!=null -> book=null
+            category!=null -> category=null
+        }
     }
     val title=when{reader!=null->reader!!.title;book!=null->book!!.title;category!=null->category!!.title;else->"زاد المسلم"}
     Scaffold(modifier=modifier.fillMaxSize(),topBar={
@@ -166,7 +172,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
     }) { padding ->
         when {
             reader!=null -> Column(
-                Modifier.fillMaxSize().padding(padding).background(Color(0xFFE8E0CF)),
+                Modifier.fillMaxSize().padding(padding).background(Color(0xFFF7F5EF)),
                 horizontalAlignment=Alignment.CenterHorizontally
             ) {
                 Box(
@@ -175,7 +181,7 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                 ) {
                     if(bitmap==null) {
                         CircularProgressIndicator()
-                        Text("جارٍ فتح الصفحة...", modifier=Modifier.padding(top=64.dp), color=Color(0xFF4A4033))
+                        Text("جارٍ فتح الصفحة...", modifier=Modifier.padding(top=64.dp), color=Color(0xFF514B40))
                     } else {
                         Image(
                             bitmap!!.asImageBitmap(),
@@ -200,9 +206,11 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                                         } else {
                                             offsetX=0f;offsetY=0f
                                             swipeDistance+=pan.x
-                                            if(!swipeHandled && swipeDistance < -swipeThreshold && page<pageCount-1) {
+                                            // Arabic books follow right-to-left page progression:
+                                            // swipe right advances, swipe left returns.
+                                            if(!swipeHandled && swipeDistance > swipeThreshold && page<pageCount-1) {
                                                 page++;swipeHandled=true
-                                            } else if(!swipeHandled && swipeDistance > swipeThreshold && page>0) {
+                                            } else if(!swipeHandled && swipeDistance < -swipeThreshold && page>0) {
                                                 page--;swipeHandled=true
                                             }
                                         }
@@ -212,13 +220,13 @@ fun ZadAlMuslimScreen(onBack:()->Unit,modifier:Modifier=Modifier) {
                     }
                 }
                 Row(
-                    Modifier.fillMaxWidth().background(Color(0xFF153D30)).padding(horizontal=16.dp, vertical=7.dp),
+                    Modifier.fillMaxWidth().background(Color(0xFFF0EDE4)).padding(horizontal=16.dp, vertical=7.dp),
                     horizontalArrangement=Arrangement.Center,
                     verticalAlignment=Alignment.CenterVertically
                 ) {
                     Text(
                         if(pageCount>0) "صفحة ${page+1} من $pageCount  •  اسحب للتقليب" else "جارٍ تحميل الصفحات",
-                        color=Color(0xFFF7EBCB),
+                        color=Color(0xFF4A453C),
                         style=MaterialTheme.typography.labelMedium
                     )
                 }
