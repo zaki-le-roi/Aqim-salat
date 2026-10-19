@@ -16,7 +16,7 @@ object MishkatAnswerRepository {
         "ما", "ماذا", "هل", "كيف", "متى", "اين", "لماذا", "كم", "هو", "هي",
         "من", "عن", "على", "في", "الى", "إلى", "مع", "هذا", "هذه", "ذلك",
         "الذي", "التي", "لي", "لي؟", "اريد", "اعرف", "اخبرني", "قل", "ماهو",
-        "ماهي", "فضلا", "من فضلك", "يا", "رب", "الله", "الاسلام", "الاسلامي"
+        "ماهي", "فضلا", "من فضلك", "يا", "رب", "الله", "الاسلام", "الاسلامي", "القران", "قران", "اية", "ايات", "دليل"
     )
 
     suspend fun answer(context: Context, question: String): String = withContext(Dispatchers.IO) {
@@ -47,7 +47,7 @@ object MishkatAnswerRepository {
 
         val terms = meaningfulTerms(normalized)
         if (terms.isNotEmpty()) {
-            if (normalized.contains("القران") || normalized.contains("اية")) {
+            if (normalized.contains("القران") || normalized.contains("اية") || normalized.contains("ايات")) {
                 val surahNames = listOf(
                     "", "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف",
                     "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر",
