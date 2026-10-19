@@ -49,12 +49,12 @@ object MishkatAnswerRepository {
             val officialResults = MishkatOfficialSourceSearch.search(question, rulingQuestion = true)
             if (officialResults.isNotEmpty()) {
                 return@withContext buildString {
-                    append("نتائج من مصادر شرعية منشورة، وليست فتوى جديدة من التطبيق:\\n")
+                    append("نتائج من مصادر شرعية منشورة، وليست فتوى جديدة من التطبيق:\n")
                     officialResults.forEachIndexed { index, result ->
-                        append("\\n").append(index + 1).append(") ").append(result.title)
-                        if (result.snippet.isNotBlank()) append("\\nالمقتطف: ").append(result.snippet)
-                        append("\\nالمصدر: ").append(result.sourceName)
-                        append("\\nالرابط: ").append(result.url).append("\\n")
+                        append("\n").append(index + 1).append(") ").append(result.title)
+                        if (result.snippet.isNotBlank()) append("\nالمقتطف: ").append(result.snippet)
+                        append("\nالمصدر: ").append(result.sourceName)
+                        append("\nالرابط: ").append(result.url).append("\n")
                     }
                 }
             }
@@ -146,6 +146,19 @@ object MishkatAnswerRepository {
                         if (chapter.reference.isNotBlank()) append("، ").append(chapter.reference)
                         append("\nالمؤلف: ").append(book.authorAr)
                     }
+                }
+            }
+        }
+
+        val sourceResults = MishkatOfficialSourceSearch.search(question)
+        if (sourceResults.isNotEmpty()) {
+            return@withContext buildString {
+                append("عُثر على صفحات ذات صلة في مصادر شرعية منشورة. هذه مقتطفات من نتائج البحث وليست فتوى جديدة من التطبيق؛ افتح المرجع الأصلي للتحقق من السياق.\\n")
+                sourceResults.forEachIndexed { index, result ->
+                    append("\\n").append(index + 1).append(") ").append(result.title)
+                    if (result.snippet.isNotBlank()) append("\\nالمقتطف: ").append(result.snippet)
+                    append("\\nالمصدر: ").append(result.sourceName)
+                    append("\\nالرابط: ").append(result.url).append("\\n")
                 }
             }
         }
