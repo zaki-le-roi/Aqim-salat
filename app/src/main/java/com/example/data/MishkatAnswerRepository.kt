@@ -142,11 +142,12 @@ object MishkatAnswerRepository {
     }
 
     fun isRulingQuestion(question: String): Boolean {
+        val normalizedQuestion = normalize(question)
         val terms = listOf(
             "حلال", "حرام", "يجوز", "لا يجوز", "حكم", "فتوى", "طلاق",
             "ميراث", "زكاة", "كفارة", "يمين", "عدة", "رضاعة"
         )
-        return terms.any(question::contains)
+        return terms.any(normalizedQuestion::contains)
     }
 
     private fun meaningfulTerms(value: String): List<String> =
