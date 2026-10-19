@@ -23,6 +23,9 @@ object MishkatAnswerRepository {
         val normalized = normalize(question)
         if (normalized.isBlank()) return@withContext "اكتب سؤالك لأبحث في المصادر المتاحة."
 
+        // إجابات إسلامية محررة يدويًا تسبق البحث بالكلمات حتى لا يعود البحث بمقتطف عشوائي.
+        MishkatKnowledgeBase.answer(question)?.let { return@withContext it }
+
         if (normalized.contains("اية الكرسي") ||
             normalized.contains("ayat al kursi") ||
             normalized.contains("ayatul kursi")) {
