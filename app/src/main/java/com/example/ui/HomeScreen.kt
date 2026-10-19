@@ -459,6 +459,68 @@ fun HomeScreen(
                     )
                 }
 
+                // Mishkat: independent conversational Islamic reference, separate from Zad Al-Muslim.
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 104.dp)
+                        .clickable { onNavigateToFeature("MISHKAT") }
+                        .testTag("home_service_mishkat"),
+                    shape = RoundedCornerShape(22.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(Color(0xFF0B2F26), Color(0xFF17634A), Color(0xFF234B3A))
+                                )
+                            )
+                            .padding(horizontal = 18.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(58.dp)
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(Color(0xFFF1D995)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Filled.AutoAwesome,
+                                contentDescription = null,
+                                tint = Color(0xFF173D30),
+                                modifier = Modifier.size(31.dp)
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                "مِشكاة",
+                                color = Color(0xFFFFE6A0),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                            Text(
+                                "اسأل في محادثة واحدة، مع توثيق المصادر",
+                                color = Color.White.copy(alpha = 0.9f),
+                                fontSize = 12.sp
+                            )
+                        }
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = null,
+                            tint = Color(0xFFFFE6A0),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
                 // Premium full-width Quran card.
                 Card(
                     modifier = Modifier
