@@ -31,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -60,14 +59,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.json.JSONArray
 import org.json.JSONObject
-import android.content.Intent
-import android.net.Uri
 
 private data class MishkatMessage(
     val id: Long,
     val text: String,
     val isUser: Boolean,
-    val sourceQuery: String? = null
 )
 
 private val MishkatGreen = Color(0xFF115E3F)
@@ -102,7 +98,6 @@ fun MishkatScreen(onBack: () -> Unit) {
                         id = System.currentTimeMillis(),
                         text = answer,
                         isUser = false,
-                        sourceQuery = submitted.takeIf { MishkatAnswerRepository.isRulingQuestion(it) }
                     )
                 )
                 isAnswering = false
@@ -122,7 +117,6 @@ fun MishkatScreen(onBack: () -> Unit) {
                             id = item.optLong("id", System.currentTimeMillis() + index),
                             text = item.optString("text"),
                             isUser = item.optBoolean("isUser"),
-                            sourceQuery = item.optString("sourceQuery").takeIf { it.isNotBlank() }
                         )
                     )
                 }
@@ -139,7 +133,6 @@ fun MishkatScreen(onBack: () -> Unit) {
                     put("id", message.id)
                     put("text", message.text)
                     put("isUser", message.isUser)
-                    message.sourceQuery?.let { put("sourceQuery", it) }
                 })
             }
             historyPrefs.edit().putString("messages", array.toString()).apply()
@@ -310,33 +303,6 @@ fun MishkatScreen(onBack: () -> Unit) {
                                     fontSize = 15.sp,
                                     lineHeight = 24.sp
                                 )
-                                if (!message.isUser && message.sourceQuery != null) {
-                                    Text(
-                                        "بحث في مواقع الإفتاء الرسمية:",
-                                        fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    TextButton(
-                                        onClick = {
-                                            val query = Uri.encode("site:marw.gov.dz ${message.sourceQuery}")
-                                            context.startActivity(
-                                                Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=$query"))
-                                            )
-                                        }
-                                    ) {
-                                        Text("وزارة الشؤون الدينية والأوقاف الجزائرية")
-                                    }
-                                    TextButton(
-                                        onClick = {
-                                            val query = Uri.encode("site:dar-alifta.org/ar ${message.sourceQuery}")
-                                            context.startActivity(
-                                                Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/search?q=$query"))
-                                            )
-                                        }
-                                    ) {
-                                        Text("دار الإفتاء المصرية")
-                                    }
-                                }
                             }
                         }
                     }

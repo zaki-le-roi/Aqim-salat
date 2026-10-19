@@ -45,6 +45,22 @@ object MishkatAnswerRepository {
             return@withContext "يضم المصحف 114 سورة.\n\nالمصدر: قائمة سور القرآن الكريم المعتمدة في المصحف المرفق بالتطبيق."
         }
 
+        if (isRulingQuestion(normalized)) {
+            val officialResults = MishkatOfficialSourceSearch.search(question, rulingQuestion = true)
+            if (officialResults.isNotEmpty()) {
+                return@withContext buildString {
+                    append("نتائج من مصادر شرعية منشورة، وليست فتوى جديدة من التطبيق:\\n")
+                    officialResults.forEachIndexed { index, result ->
+                        append("\\n").append(index + 1).append(") ").append(result.title)
+                        if (result.snippet.isNotBlank()) append("\\nالمقتطف: ").append(result.snippet)
+                        append("\\nالمصدر: ").append(result.sourceName)
+                        append("\\nالرابط: ").append(result.url).append("\\n")
+                    }
+                }
+            }
+            return@withContext "لم أعثر في المصادر الشرعية المنشورة التي أمكن البحث فيها على فتوى موثقة تطابق سؤالك. لن أصدر حكمًا من عندي أو أستنتج فتوى من مقتطف غير كافٍ. راجع جهة إفتاء مؤهلة، خصوصًا في مسائل الطلاق والميراث والحالات الشخصية."
+        }
+
         val terms = meaningfulTerms(normalized)
         if (terms.isNotEmpty()) {
             if (normalized.contains("القران") || normalized.contains("اية") || normalized.contains("ايات")) {
@@ -132,10 +148,6 @@ object MishkatAnswerRepository {
                     }
                 }
             }
-        }
-
-        if (isRulingQuestion(normalized)) {
-            return@withContext "لم أعثر في المصادر المحلية على فتوى موثقة تطابق سؤالك. لن أصدر حكمًا من عندي أو أنسب قولًا إلى جهة بلا مرجع. يمكنك فتح البحث في مواقع الإفتاء الرسمية أدناه، والتحقق من نص الفتوى والجهة التي أصدرتها. في مسائل الطلاق والميراث والحالات الشخصية، اعرض التفاصيل على جهة إفتاء مؤهلة."
         }
 
         "لم أعثر في المصادر المرفقة حاليًا على نص موثق يجيب عن السؤال مباشرة. لا أريد اختلاق آية أو حديث أو مرجع. البحث الحالي يعتمد على محتوى القرآن والحديث والمكتبة العلمية المتاح محليًا داخل التطبيق، ولا يتصل حتى الآن بمحرك ذكاء اصطناعي عام."
