@@ -47,6 +47,49 @@ object MishkatAnswerRepository {
 
         val terms = meaningfulTerms(normalized)
         if (terms.isNotEmpty()) {
+            if (normalized.contains("القران") || normalized.contains("اية")) {
+                val surahNames = listOf(
+                    "", "الفاتحة", "البقرة", "آل عمران", "النساء", "المائدة", "الأنعام", "الأعراف",
+                    "الأنفال", "التوبة", "يونس", "هود", "يوسف", "الرعد", "إبراهيم", "الحجر",
+                    "النحل", "الإسراء", "الكهف", "مريم", "طه", "الأنبياء", "الحج", "المؤمنون",
+                    "النور", "الفرقان", "الشعراء", "النمل", "القصص", "العنكبوت", "الروم", "لقمان",
+                    "السجدة", "الأحزاب", "سبأ", "فاطر", "يس", "الصافات", "ص", "الزمر",
+                    "غافر", "فصلت", "الشورى", "الزخرف", "الدخان", "الجاثية", "الأحقاف", "محمد",
+                    "الفتح", "الحجرات", "ق", "الذاريات", "الطور", "النجم", "القمر", "الرحمن",
+                    "الواقعة", "الحديد", "المجادلة", "الحشر", "الممتحنة", "الصف", "الجمعة", "المنافقون",
+                    "التغابن", "الطلاق", "التحريم", "الملك", "القلم", "الحاقة", "المعارج", "نوح",
+                    "الجن", "المزمل", "المدثر", "القيامة", "الإنسان", "المرسلات", "النبأ", "النازعات",
+                    "عبس", "التكوير", "الانفطار", "المطففين", "الانشقاق", "البروج", "الطارق", "الأعلى",
+                    "الغاشية", "الفجر", "البلد", "الشمس", "الليل", "الضحى", "الشرح", "التين",
+                    "العلق", "القدر", "البينة", "الزلزلة", "العاديات", "القارعة", "التكاثر", "العصر",
+                    "الهمزة", "الفيل", "قريش", "الماعون", "الكوثر", "الكافرون", "النصر", "المسد",
+                    "الإخلاص", "الفلق", "الناس"
+                )
+                val verseMatches = (1..114).asSequence()
+                    .flatMap { surahId ->
+                        QuranOfflineData.loadSurah(context.applicationContext, surahId).orEmpty()
+                            .asSequence()
+                            .map { verse -> Triple(surahId, verse, terms.count(normalize(verse.arabicText)::contains)) }
+                    }
+                    .filter { it.third >= minimumMatches(terms.size) }
+                    .sortedByDescending { it.third }
+                    .take(3)
+                    .toList()
+                if (verseMatches.isNotEmpty()) {
+                    return@withContext buildString {
+                        append("وجدت آيات قرآنية تحتوي على ألفاظ قريبة من سؤالك. أورد النص كما هو من المصحف المحلي، وقد تحتاج دلالة الآية إلى تفسير متخصص:\\n")
+                        verseMatches.forEachIndexed { index, (surahId, verse, _) ->
+                            append("\\n").append(index + 1).append(") ")
+                            append(verse.arabicText)
+                            append("\\nالمصدر: القرآن الكريم، سورة ")
+                            append(surahNames.getOrElse(surahId) { "رقم $surahId" })
+                            append("، الآية ").append(verse.numberInSurah)
+                            append(" (").append(surahId).append(":").append(verse.numberInSurah).append(").")
+                        }
+                    }
+                }
+            }
+
             val hadithMatches = HadithData.books
                 .flatMap { book -> book.allHadiths.map { hadith -> Triple(book, hadith, searchableText(hadith.arabicText + " " + hadith.explanation + " " + hadith.chapterTitle + " " + hadith.reference)) } }
                 .map { (book, hadith, text) -> Triple(book, hadith, terms.count(text::contains)) }
