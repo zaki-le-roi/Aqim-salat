@@ -77,11 +77,11 @@ object MishkatAnswerRepository {
                     .toList()
                 if (verseMatches.isNotEmpty()) {
                     return@withContext buildString {
-                        append("وجدت آيات قرآنية تحتوي على ألفاظ قريبة من سؤالك. أورد النص كما هو من المصحف المحلي، وقد تحتاج دلالة الآية إلى تفسير متخصص:\\n")
+                        append("وجدت آيات قرآنية تحتوي على ألفاظ قريبة من سؤالك. أورد النص كما هو من المصحف المحلي، وقد تحتاج دلالة الآية إلى تفسير متخصص:\n")
                         verseMatches.forEachIndexed { index, (surahId, verse, _) ->
-                            append("\\n").append(index + 1).append(") ")
+                            append("\n").append(index + 1).append(") ")
                             append(verse.arabicText)
-                            append("\\nالمصدر: القرآن الكريم، سورة ")
+                            append("\nالمصدر: القرآن الكريم، سورة ")
                             append(surahNames.getOrElse(surahId) { "رقم $surahId" })
                             append("، الآية ").append(verse.numberInSurah)
                             append(" (").append(surahId).append(":").append(verse.numberInSurah).append(").")
