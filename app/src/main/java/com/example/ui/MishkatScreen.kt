@@ -40,12 +40,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalContext
+import com.example.data.MishkatAnswerRepository
+import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,6 +71,9 @@ fun MishkatScreen(onBack: () -> Unit) {
     var question by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val keyboard = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isAnswering by remember { mutableStateOf(false) }
 
     BackHandler(onBack = onBack)
 
@@ -139,20 +146,19 @@ fun MishkatScreen(onBack: () -> Unit) {
                         IconButton(
                             onClick = {
                                 val submitted = question.trim()
-                                if (submitted.isNotEmpty()) {
+                                if (submitted.isNotEmpty() && !isAnswering) {
                                     messages.add(MishkatMessage(System.currentTimeMillis(), submitted, true))
-                                    messages.add(
-                                        MishkatMessage(
-                                            System.currentTimeMillis() + 1,
-                                            "وصل سؤالك. لن أخمّن في المسائل الدينية أو أنسب قولًا إلى القرآن أو الحديث أو العلماء بلا مصدر يمكن التحقق منه. قاعدة المصادر الموثقة وربط الإجابات بها ما زالا قيد الإعداد؛ لذلك لا أستطيع تقديم جواب موثّق لهذا السؤال في هذه النسخة.",
-                                            false
-                                        )
-                                    )
                                     question = ""
                                     keyboard?.hide()
+                                    isAnswering = true
+                                    scope.launch {
+                                        val answer = MishkatAnswerRepository.answer(context, submitted)
+                                        messages.add(MishkatMessage(System.currentTimeMillis(), answer, false))
+                                        isAnswering = false
+                                    }
                                 }
                             },
-                            enabled = question.isNotBlank(),
+                            enabled = question.isNotBlank() && !isAnswering,
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(CircleShape)
@@ -250,6 +256,32 @@ fun MishkatScreen(onBack: () -> Unit) {
                                 fontSize = 15.sp,
                                 lineHeight = 24.sp
                             )
+                        }
+                    }
+                }
+                if (isAnswering) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.size(16.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MishkatGreen
+                                    )
+                                    Text("أتحقق من المصادر المتاحة…", fontSize = 13.sp)
+                                }
+                            }
                         }
                     }
                 }

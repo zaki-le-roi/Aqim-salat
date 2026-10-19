@@ -490,7 +490,7 @@ fun HomeScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                Icons.Filled.AutoAwesome,
+                                Icons.Filled.MenuBook,
                                 contentDescription = null,
                                 tint = Color(0xFF173D30),
                                 modifier = Modifier.size(31.dp)
