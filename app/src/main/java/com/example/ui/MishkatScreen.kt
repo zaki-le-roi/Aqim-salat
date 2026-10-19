@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -51,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.data.MishkatAnswerRepository
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -74,6 +77,21 @@ fun MishkatScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isAnswering by remember { mutableStateOf(false) }
+
+    val sendQuestion: () -> Unit = {
+        val submitted = question.trim()
+        if (submitted.isNotEmpty() && !isAnswering) {
+            messages.add(MishkatMessage(System.currentTimeMillis(), submitted, true))
+            question = ""
+            keyboard?.hide()
+            isAnswering = true
+            scope.launch {
+                val answer = MishkatAnswerRepository.answer(context, submitted)
+                messages.add(MishkatMessage(System.currentTimeMillis(), answer, false))
+                isAnswering = false
+            }
+        }
+    }
 
     BackHandler(onBack = onBack)
 
@@ -131,8 +149,10 @@ fun MishkatScreen(onBack: () -> Unit) {
                             value = question,
                             onValueChange = { question = it },
                             modifier = Modifier.weight(1f),
-                            placeholder = { Text("اسأل مشكاة…") },
+                            placeholder = { Text("اكتب سؤالك...") },
                             maxLines = 5,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                            keyboardActions = KeyboardActions(onSend = { sendQuestion() }),
                             textStyle = MaterialTheme.typography.bodyLarge,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
@@ -144,20 +164,7 @@ fun MishkatScreen(onBack: () -> Unit) {
                             )
                         )
                         IconButton(
-                            onClick = {
-                                val submitted = question.trim()
-                                if (submitted.isNotEmpty() && !isAnswering) {
-                                    messages.add(MishkatMessage(System.currentTimeMillis(), submitted, true))
-                                    question = ""
-                                    keyboard?.hide()
-                                    isAnswering = true
-                                    scope.launch {
-                                        val answer = MishkatAnswerRepository.answer(context, submitted)
-                                        messages.add(MishkatMessage(System.currentTimeMillis(), answer, false))
-                                        isAnswering = false
-                                    }
-                                }
-                            },
+                            onClick = { sendQuestion() },
                             enabled = question.isNotBlank() && !isAnswering,
                             modifier = Modifier
                                 .size(44.dp)
@@ -172,15 +179,6 @@ fun MishkatScreen(onBack: () -> Unit) {
                             )
                         }
                     }
-                    Text(
-                        "تُعرض الأحكام فقط مع مصدر موثوق، ولا تصدر مشكاة فتاوى من عندها.",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 7.dp, start = 8.dp, end = 8.dp),
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
                 }
             }
         }
