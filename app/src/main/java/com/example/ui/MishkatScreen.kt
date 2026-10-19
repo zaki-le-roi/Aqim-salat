@@ -57,6 +57,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.json.JSONArray
+import org.json.JSONObject
 
 private data class MishkatMessage(
     val id: Long,
@@ -77,6 +79,10 @@ fun MishkatScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isAnswering by remember { mutableStateOf(false) }
+    var historyLoaded by remember { mutableStateOf(false) }
+    val historyPrefs = remember(context) {
+        context.getSharedPreferences("mishkat_conversation", android.content.Context.MODE_PRIVATE)
+    }
 
     val sendQuestion: () -> Unit = {
         val submitted = question.trim()
@@ -90,6 +96,40 @@ fun MishkatScreen(onBack: () -> Unit) {
                 messages.add(MishkatMessage(System.currentTimeMillis(), answer, false))
                 isAnswering = false
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val saved = historyPrefs.getString("messages", null)
+        if (!saved.isNullOrBlank()) {
+            runCatching {
+                val array = JSONArray(saved)
+                for (index in 0 until array.length()) {
+                    val item = array.getJSONObject(index)
+                    messages.add(
+                        MishkatMessage(
+                            id = item.optLong("id", System.currentTimeMillis() + index),
+                            text = item.optString("text"),
+                            isUser = item.optBoolean("isUser")
+                        )
+                    )
+                }
+            }
+        }
+        historyLoaded = true
+    }
+
+    LaunchedEffect(messages.size, historyLoaded) {
+        if (historyLoaded) {
+            val array = JSONArray()
+            messages.forEach { message ->
+                array.put(JSONObject().apply {
+                    put("id", message.id)
+                    put("text", message.text)
+                    put("isUser", message.isUser)
+                })
+            }
+            historyPrefs.edit().putString("messages", array.toString()).apply()
         }
     }
 
