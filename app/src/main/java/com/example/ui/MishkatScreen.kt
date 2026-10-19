@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -50,10 +51,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import com.example.data.MishkatAnswerRepository
 import kotlinx.coroutines.launch
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +84,7 @@ fun MishkatScreen(onBack: () -> Unit) {
     val listState = rememberLazyListState()
     val keyboard = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     var isAnswering by remember { mutableStateOf(false) }
     var historyLoaded by remember { mutableStateOf(false) }
@@ -297,12 +305,56 @@ fun MishkatScreen(onBack: () -> Unit) {
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Text(
-                                    message.text,
-                                    color = if (message.isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                    fontSize = 15.sp,
-                                    lineHeight = 24.sp
-                                )
+                                if (!message.isUser && message.text.contains("https://")) {
+                                    val linkedText = remember(message.text) {
+                                        buildAnnotatedString {
+                                            append(message.text)
+                                            Regex("https://\\\\S+").findAll(message.text).forEach { match ->
+                                                val cleanUrl = match.value.trimEnd('.', ',', '،', ')', ']', '»')
+                                                if (cleanUrl.isNotBlank()) {
+                                                    addStringAnnotation(
+                                                        tag = "MISHKAT_SOURCE_URL",
+                                                        annotation = cleanUrl,
+                                                        start = match.range.first,
+                                                        end = match.range.last + 1
+                                                    )
+                                                    addStyle(
+                                                        SpanStyle(
+                                                            color = Color(0xFF1565C0),
+                                                            textDecoration = TextDecoration.Underline
+                                                        ),
+                                                        start = match.range.first,
+                                                        end = match.range.last + 1
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    ClickableText(
+                                        text = linkedText,
+                                        style = TextStyle(
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 15.sp,
+                                            lineHeight = 24.sp
+                                        ),
+                                        onClick = { offset ->
+                                            linkedText.getStringAnnotations(
+                                                tag = "MISHKAT_SOURCE_URL",
+                                                start = offset,
+                                                end = offset
+                                            ).firstOrNull()?.let { annotation ->
+                                                runCatching { uriHandler.openUri(annotation.item) }
+                                            }
+                                        }
+                                    )
+                                } else {
+                                    Text(
+                                        message.text,
+                                        color = if (message.isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                        fontSize = 15.sp,
+                                        lineHeight = 24.sp
+                                    )
+                                }
                             }
                         }
                     }
