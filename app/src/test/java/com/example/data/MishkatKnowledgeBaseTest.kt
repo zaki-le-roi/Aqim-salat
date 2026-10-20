@@ -9,6 +9,7 @@ class MishkatKnowledgeBaseTest {
         val answer = MishkatKnowledgeBase.answer("كم ركعة صلاة المغرب") ?: error("No answer")
         assertTrue(answer.contains("ثلاث ركعات"))
         assertTrue(answer.contains("https://binbaz.org.sa/fatwas/17464/"))
+        assertTrue(answer.contains("حكم صلاة الفجر ووقتها"))
     }
 
     @Test
