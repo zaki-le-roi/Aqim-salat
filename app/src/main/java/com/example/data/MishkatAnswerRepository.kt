@@ -156,12 +156,12 @@ object MishkatAnswerRepository {
         val sourceResults = MishkatOfficialSourceSearch.search(question)
         if (sourceResults.isNotEmpty()) {
             return@withContext buildString {
-                append("عُثر على صفحات ذات صلة في مصادر شرعية منشورة. هذه مقتطفات من نتائج البحث وليست فتوى جديدة من التطبيق؛ افتح المرجع الأصلي للتحقق من السياق.\\n")
+                append("عُثر على صفحات ذات صلة في مصادر شرعية منشورة. هذه مقتطفات من نتائج البحث وليست فتوى جديدة من التطبيق؛ افتح المرجع الأصلي للتحقق من السياق.\n")
                 sourceResults.forEachIndexed { index, result ->
-                    append("\\n").append(index + 1).append(") ").append(result.title)
-                    if (result.snippet.isNotBlank()) append("\\nالمقتطف: ").append(result.snippet)
-                    append("\\nالمصدر: ").append(result.sourceName)
-                    append("\\nالرابط: ").append(result.url).append("\\n")
+                    append("\n").append(index + 1).append(") ").append(result.title)
+                    if (result.snippet.isNotBlank()) append("\nالمقتطف: ").append(result.snippet)
+                    append("\nالمصدر: ").append(result.sourceName)
+                    append("\nالرابط: ").append(result.url).append("\n")
                 }
             }
         }

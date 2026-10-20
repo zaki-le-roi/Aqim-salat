@@ -309,7 +309,7 @@ fun MishkatScreen(onBack: () -> Unit) {
                                     val linkedText = remember(message.text) {
                                         buildAnnotatedString {
                                             append(message.text)
-                                            Regex("https://\\\\S+").findAll(message.text).forEach { match ->
+                                            Regex("https://\\S+").findAll(message.text).forEach { match ->
                                                 val cleanUrl = match.value.trimEnd('.', ',', '،', ')', ']', '»')
                                                 if (cleanUrl.isNotBlank()) {
                                                     addStringAnnotation(
