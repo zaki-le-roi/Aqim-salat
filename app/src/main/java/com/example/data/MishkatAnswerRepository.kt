@@ -166,7 +166,42 @@ object MishkatAnswerRepository {
             }
         }
 
-        "لم أعثر في المصادر المرفقة حاليًا على نص موثق يجيب عن السؤال مباشرة. لا أريد اختلاق آية أو حديث أو مرجع. البحث الحالي يعتمد على محتوى القرآن والحديث والمكتبة العلمية المتاح محليًا داخل التطبيق، ولا يتصل حتى الآن بمحرك ذكاء اصطناعي عام."
+        askCloud(question)
+            ?: "لم أعثر في المصادر المرفقة على إجابة موثقة، وتعذّر الاتصال بمِشكاة الذكي الآن. تحقق من اتصال الإنترنت ثم أعد المحاولة."
+    }
+
+    /**
+     * يرسل السؤال إلى وسيط Cloudflare؛ مفتاح Gemini يبقى محفوظًا سرًا على الخادم.
+     * لا نعرض إجابة من إنشاء النموذج على أنها نص شرعي موثق.
+     */
+    private fun askCloud(question: String): String? {
+        return try {
+            val connection = java.net.URL("https://mishkat-ai-api.zakidj181.workers.dev/ask")
+                .openConnection() as java.net.HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.connectTimeout = 15000
+            connection.readTimeout = 30000
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+            connection.setRequestProperty("Accept", "application/json")
+
+            val payload = JSONObject().put("message", question).toString()
+            connection.outputStream.use { output ->
+                output.write(payload.toByteArray(Charsets.UTF_8))
+            }
+
+            val status = connection.responseCode
+            val stream = if (status in 200..299) connection.inputStream else connection.errorStream
+            val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
+            connection.disconnect()
+
+            if (status !in 200..299) return null
+            val answer = JSONObject(body).optString("answer").trim()
+            if (answer.isBlank()) null else
+                "$answer\n\nتنبيه: هذه إجابة مولّدة آليًا وليست فتوى ملزمة؛ تحقّق من الأدلة والمراجع، وارجع إلى عالم مؤهل في المسائل الخاصة."
+        } catch (_: Exception) {
+            null
+        }
     }
 
     fun isRulingQuestion(question: String): Boolean {
