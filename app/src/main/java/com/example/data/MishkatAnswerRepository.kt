@@ -53,16 +53,20 @@ object MishkatAnswerRepository {
             val officialResults = MishkatOfficialSourceSearch.search(question, rulingQuestion = true)
             if (officialResults.isNotEmpty()) {
                 return@withContext buildString {
-                    append("نتائج من مصادر شرعية منشورة، وليست فتوى جديدة من التطبيق:\n")
+                    append("نتائج من مصادر شرعية منشورة، وليست فتوى جديدة من التطبيق:\\n")
                     officialResults.forEachIndexed { index, result ->
-                        append("\n").append(index + 1).append(") ").append(result.title)
-                        if (result.snippet.isNotBlank()) append("\nالمقتطف: ").append(result.snippet)
-                        append("\nالمصدر: ").append(result.sourceName)
-                        append("\nالرابط: ").append(result.url).append("\n")
+                        append("\\n").append(index + 1).append(") ").append(result.title)
+                        if (result.snippet.isNotBlank()) append("\\nالمقتطف: ").append(result.snippet)
+                        append("\\nالمصدر: ").append(result.sourceName)
+                        append("\\nالرابط: ").append(result.url).append("\\n")
                     }
                 }
             }
-            return@withContext "لم أعثر في المصادر الشرعية المنشورة التي أمكن البحث فيها على فتوى موثقة تطابق سؤالك. لن أصدر حكمًا من عندي أو أستنتج فتوى من مقتطف غير كافٍ. راجع جهة إفتاء مؤهلة، خصوصًا في مسائل الطلاق والميراث والحالات الشخصية."
+            val cloudAnswer = askCloud(question)
+            if (!cloudAnswer.isNullOrBlank()) {
+                return@withContext "$cloudAnswer\\n\\nتنبيه: الإجابة مولّدة آليًا؛ تحقّق من المراجع ولا تعتمد عليها وحدها في الفتاوى الخاصة."
+            }
+            return@withContext "لم أتمكن من الوصول إلى جواب موثق أو إلى المساعد الذكي الآن. تحقق من الإنترنت ثم أعد المحاولة. لن أختلق فتوى أو مصدرًا."
         }
 
         val terms = meaningfulTerms(normalized)
