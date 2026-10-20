@@ -1,35 +1,40 @@
 package com.example.data
 
 import android.content.Context
+import org.json.JSONObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 /**
- * يرسل كل سؤال مباشرة إلى مساعد مِشكاة بالذكاء الاصطناعي.
- * لا يستخدم إجابات محلية أو قاعدة أسئلة أو بحثًا محليًا قبل الاتصال.
+ * مِشكاة يعتمد على المساعد الذكي عبر وسيط Cloudflare فقط.
+ * لا توجد إجابات محلية أو قاعدة أسئلة بديلة في هذا المسار.
+ * يبقى مفتاح Gemini على الخادم ولا يوضع داخل التطبيق.
  */
 object MishkatAnswerRepository {
 
     suspend fun answer(context: Context, question: String): String = withContext(Dispatchers.IO) {
-        val submittedQuestion = question.trim()
-        if (submittedQuestion.isBlank()) {
+        val submitted = question.trim()
+        if (submitted.isBlank()) {
             return@withContext "اكتب سؤالك أولًا."
         }
 
-        try {
-            val connection = (URL(ENDPOINT).openConnection() as HttpURLConnection).apply {
+        askCloud(submitted) ?: "تعذّر على مساعد مِشكاة الإجابة الآن. تحقق من اتصال الإنترنت ثم أعد المحاولة. إذا استمر الخطأ، فقد تكون خدمة الذكاء الاصطناعي غير متاحة مؤقتًا."
+    }
+
+    private fun askCloud(question: String): String? {
+        var connection: java.net.HttpURLConnection? = null
+        return try {
+            connection = (java.net.URL("https://mishkat-ai-api.zakidj181.workers.dev/ask")
+                .openConnection() as java.net.HttpURLConnection).apply {
                 requestMethod = "POST"
                 connectTimeout = 15000
-                readTimeout = 45000
+                readTimeout = 40000
                 doOutput = true
                 setRequestProperty("Content-Type", "application/json; charset=utf-8")
                 setRequestProperty("Accept", "application/json")
             }
 
-            val payload = JSONObject().put("message", submittedQuestion).toString()
+            val payload = JSONObject().put("message", question).toString()
             connection.outputStream.use { output ->
                 output.write(payload.toByteArray(Charsets.UTF_8))
             }
@@ -37,33 +42,30 @@ object MishkatAnswerRepository {
             val status = connection.responseCode
             val stream = if (status in 200..299) connection.inputStream else connection.errorStream
             val body = stream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()
-            connection.disconnect()
+            val result = runCatching { JSONObject(body) }.getOrNull()
 
             if (status !in 200..299) {
-                val serviceError = runCatching {
-                    JSONObject(body).optString("error").trim()
-                }.getOrNull().orEmpty()
-                val detail = when {
-                    serviceError.isNotBlank() -> "\\nتفاصيل الخدمة: $serviceError"
-                    status == 502 -> "\\nقد تكون خدمة الذكاء الاصطناعي أو إعداد مفتاح Gemini قد تعثّر."
-                    else -> ""
+                val detail = result?.optString("error").orEmpty().ifBlank {
+                    "رمز الاتصال $status"
                 }
-                return@withContext "تعذّر على مساعد مِشكاة الإجابة الآن (رمز الاتصال $status).$detail\\nتحقق من الخدمة ثم أعد المحاولة."
+                return "تعذّر على مساعد مِشكاة الإجابة الآن: $detail (رمز الاتصال $status). تحقق من الخدمة ثم أعد المحاولة."
             }
 
-            val generatedAnswer = runCatching {
-                JSONObject(body).optString("answer").trim()
-            }.getOrNull().orEmpty()
-
-            if (generatedAnswer.isBlank()) {
-                "وصل الرد من الخادم، لكنه لا يحتوي على إجابة مفهومة. أعد المحاولة بعد قليل."
-            } else {
-                "$generatedAnswer\n\nتنبيه: هذه إجابة مولّدة بالذكاء الاصطناعي، وليست فتوى ملزمة. تحقّق من الأدلة والمراجع، وارجع إلى عالم مؤهل في المسائل الخاصة."
+            val answer = result?.optString("answer")?.trim().orEmpty()
+            if (answer.isBlank()) {
+                val detail = result?.optString("error").orEmpty()
+                return if (detail.isNotBlank()) {
+                    "لم تصل إجابة من مساعد مِشكاة: $detail"
+                } else {
+                    "وصل رد غير مكتمل من خدمة الذكاء الاصطناعي. أعد المحاولة."
+                }
             }
+
+            "$answer\n\nتنبيه: مِشكاة مساعد آلي للمعرفة الإسلامية؛ تحقّق من الأدلة والمراجع، وارجع إلى عالم مؤهل في المسائل الشرعية الخاصة."
         } catch (_: Exception) {
-            "تعذّر الاتصال بمساعد مِشكاة الذكي. تحقق من اتصال الإنترنت ثم أعد إرسال السؤال."
+            null
+        } finally {
+            connection?.disconnect()
         }
     }
-
-    private const val ENDPOINT = "https://mishkat-ai-api.zakidj181.workers.dev/ask"
 }
