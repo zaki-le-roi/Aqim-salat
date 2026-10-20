@@ -173,7 +173,7 @@ fun MishkatScreen(onBack: () -> Unit) {
                     Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
                         Text("مِشكاة", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Text(
-                            "إجابات موثّقة من المصادر",
+                            "مساعد إسلامي بالذكاء الاصطناعي",
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -390,7 +390,7 @@ fun MishkatScreen(onBack: () -> Unit) {
                                         strokeWidth = 2.dp,
                                         color = MishkatGreen
                                     )
-                                    Text("أتحقق من المصادر المتاحة…", fontSize = 13.sp)
+                                    Text("يُعدّ الذكاء الاصطناعي الإجابة…", fontSize = 13.sp)
                                 }
                             }
                         }
