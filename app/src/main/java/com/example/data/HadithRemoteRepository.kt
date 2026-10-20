@@ -85,8 +85,8 @@ object HadithRemoteRepository {
                     val chapterTitle = chapterNames[chapterId] ?: "أحاديث الكتاب"
                     val arabic = item.optString("arabic").trim()
                     if (arabic.isBlank()) continue
-                    // The interface is Arabic-only; do not leak the dataset's English narrator field.
-                    val narrator = "إسناد الحديث"
+                    // Use the narrator phrase present in the Arabic matn; never invent a narrator name.
+                    val narrator = extractArabicNarrator(arabic)
                     grouped.getOrPut(chapterId) { mutableListOf() }.add(
                         HadithData.BookHadith(
                             id = "${book.id}_source_${number}",
@@ -123,4 +123,14 @@ object HadithRemoteRepository {
                 null
             }
         }
+}
+
+
+/** Extracts a narrator phrase only when the Arabic text explicitly begins with "عن ... قال". */
+internal fun extractArabicNarrator(arabic: String): String {
+    val withoutDiacritics = arabic.replace(Regex("[\\u064B-\\u065F\\u0670\\u06D6-\\u06ED]"), "")
+    val match = Regex("""^\s*عن\s+(.{1,180}?)\s+(?:قالت?|يقول|سمعت)(?=\s|[:،])""")
+        .find(withoutDiacritics)
+    return match?.groupValues?.get(1)?.trim()?.takeIf { it.isNotBlank() }
+        ?: "لم يُفصل اسم الراوي في نص المصدر"
 }
