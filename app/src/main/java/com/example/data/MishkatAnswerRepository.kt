@@ -40,7 +40,15 @@ object MishkatAnswerRepository {
             connection.disconnect()
 
             if (status !in 200..299) {
-                return@withContext "تعذّر على مساعد مِشكاة الإجابة الآن (رمز الاتصال $status). تحقق من الإنترنت ثم أعد المحاولة."
+                val serviceError = runCatching {
+                    JSONObject(body).optString("error").trim()
+                }.getOrNull().orEmpty()
+                val detail = when {
+                    serviceError.isNotBlank() -> "\\nتفاصيل الخدمة: $serviceError"
+                    status == 502 -> "\\nقد تكون خدمة الذكاء الاصطناعي أو إعداد مفتاح Gemini قد تعثّر."
+                    else -> ""
+                }
+                return@withContext "تعذّر على مساعد مِشكاة الإجابة الآن (رمز الاتصال $status).$detail\\nتحقق من الخدمة ثم أعد المحاولة."
             }
 
             val generatedAnswer = runCatching {
