@@ -100,15 +100,26 @@ fun MishkatScreen(onBack: () -> Unit) {
             keyboard?.hide()
             isAnswering = true
             scope.launch {
-                val answer = MishkatAnswerRepository.answer(context, submitted)
-                messages.add(
-                    MishkatMessage(
-                        id = System.currentTimeMillis(),
-                        text = answer,
-                        isUser = false,
+                try {
+                    val answer = MishkatAnswerRepository.answer(context, submitted)
+                    messages.add(
+                        MishkatMessage(
+                            id = System.currentTimeMillis(),
+                            text = answer,
+                            isUser = false,
+                        )
                     )
-                )
-                isAnswering = false
+                } catch (_: Exception) {
+                    messages.add(
+                        MishkatMessage(
+                            id = System.currentTimeMillis(),
+                            text = "تعذّر إكمال الإجابة بسبب خطأ غير متوقع. تحقق من اتصال الإنترنت ثم أعد إرسال السؤال.",
+                            isUser = false,
+                        )
+                    )
+                } finally {
+                    isAnswering = false
+                }
             }
         }
     }
