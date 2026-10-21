@@ -1,6 +1,6 @@
 {
-  "versionCode": 1003002,
-  "versionName": "1.3.2",
+  "versionCode": 1004051,
+  "versionName": "1.4.51",
   "downloadUrl": "https://github.com/zaki-le-roi/Aqim-salat/releases/latest/download/Aqim-Salat.apk",
-  "releaseNotes": "استبدال صفحات المصحف بالمصحف الملوّن للتجويد، مع إطارات وزخارف الصفحة، وعرض الصفحة بعرض الشاشة بالكامل."
+  "releaseNotes": "إصلاح استجابة حقل الكتابة للوحة المفاتيح في مِشكاة، وإزالة المساحة البيضاء الزائدة."
 }
