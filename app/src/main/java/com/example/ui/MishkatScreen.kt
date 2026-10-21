@@ -2,6 +2,7 @@ package com.example.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,13 +25,17 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -87,6 +92,7 @@ fun MishkatScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     var isAnswering by remember { mutableStateOf(false) }
     var historyLoaded by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
     val historyPrefs = remember(context) {
         context.getSharedPreferences("mishkat_conversation", android.content.Context.MODE_PRIVATE)
     }
@@ -159,8 +165,40 @@ fun MishkatScreen(onBack: () -> Unit) {
 
     BackHandler(onBack = onBack)
 
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
+    suspend fun scrollToLatestMessage() {
+        val lastIndex = listState.layoutInfo.totalItemsCount - 1
+        if (lastIndex >= 0) {
+            listState.animateScrollToItem(lastIndex)
+            // Also reach the bottom of a very long final answer, not just its first line.
+            listState.animateScrollBy(1_000_000f)
+        }
+    }
+
+    LaunchedEffect(messages.size, isAnswering, historyLoaded) {
+        if (historyLoaded && messages.isNotEmpty()) {
+            scrollToLatestMessage()
+        }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("حذف المحادثة؟") },
+            text = { Text("سيتم حذف جميع الرسائل المحفوظة في مِشكاة من هذا الجهاز. لا يمكن التراجع عن الحذف.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        messages.clear()
+                        question = ""
+                        historyPrefs.edit().remove("messages").apply()
+                        showDeleteConfirmation = false
+                    }
+                ) { Text("حذف") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) { Text("إلغاء") }
+            }
+        )
     }
 
     Scaffold(
@@ -181,6 +219,26 @@ fun MishkatScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "رجوع")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { scope.launch { scrollToLatestMessage() } },
+                        enabled = messages.isNotEmpty(),
+                    ) {
+                        Icon(
+                            Icons.Filled.KeyboardArrowDown,
+                            contentDescription = "الانتقال إلى آخر المحادثة",
+                        )
+                    }
+                    IconButton(
+                        onClick = { showDeleteConfirmation = true },
+                        enabled = messages.isNotEmpty() && !isAnswering,
+                    ) {
+                        Icon(
+                            Icons.Filled.DeleteOutline,
+                            contentDescription = "حذف المحادثة",
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
