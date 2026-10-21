@@ -58,6 +58,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import com.example.data.MishkatAnswerRepository
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -80,6 +82,8 @@ private data class MishkatMessage(
 private val MishkatGreen = Color(0xFF115E3F)
 private val MishkatGold = Color(0xFFD4AF37)
 
+private fun newMishkatMessageId(): Long = System.nanoTime()
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MishkatScreen(onBack: () -> Unit) {
@@ -100,7 +104,7 @@ fun MishkatScreen(onBack: () -> Unit) {
     val sendQuestion: () -> Unit = {
         val submitted = question.trim()
         if (submitted.isNotEmpty() && !isAnswering) {
-            messages.add(MishkatMessage(System.currentTimeMillis(), submitted, true))
+            messages.add(MishkatMessage(newMishkatMessageId(), submitted, true))
             question = ""
             keyboard?.hide()
             isAnswering = true
@@ -109,7 +113,7 @@ fun MishkatScreen(onBack: () -> Unit) {
                     val answer = MishkatAnswerRepository.answer(context, submitted)
                     messages.add(
                         MishkatMessage(
-                            id = System.currentTimeMillis(),
+                            id = newMishkatMessageId(),
                             text = answer,
                             isUser = false,
                         )
@@ -117,7 +121,7 @@ fun MishkatScreen(onBack: () -> Unit) {
                 } catch (_: Exception) {
                     messages.add(
                         MishkatMessage(
-                            id = System.currentTimeMillis(),
+                            id = newMishkatMessageId(),
                             text = "تعذّر إكمال الإجابة بسبب خطأ غير متوقع. تحقق من اتصال الإنترنت ثم أعد إرسال السؤال.",
                             isUser = false,
                         )
@@ -166,6 +170,16 @@ fun MishkatScreen(onBack: () -> Unit) {
     BackHandler(onBack = onBack)
 
     suspend fun scrollToLatestMessage() {
+        val expectedCount = messages.size + if (isAnswering) 1 else 0
+        if (expectedCount <= 0) return
+
+        // Wait until Compose has measured the newly added message/loading row.
+        // This prevents scrolling using a stale item count immediately after sending.
+        if (listState.layoutInfo.totalItemsCount < expectedCount) {
+            snapshotFlow { listState.layoutInfo.totalItemsCount }
+                .first { itemCount -> itemCount >= expectedCount }
+        }
+
         val lastIndex = listState.layoutInfo.totalItemsCount - 1
         if (lastIndex >= 0) {
             listState.animateScrollToItem(lastIndex)
