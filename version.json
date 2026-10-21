@@ -1,6 +1,6 @@
 {
-  "versionCode": 1004051,
-  "versionName": "1.4.51",
+  "versionCode": 1004052,
+  "versionName": "1.4.52",
   "downloadUrl": "https://github.com/zaki-le-roi/Aqim-salat/releases/latest/download/Aqim-Salat.apk",
-  "releaseNotes": "إصلاح استجابة حقل الكتابة للوحة المفاتيح في مِشكاة، وإزالة المساحة البيضاء الزائدة."
+  "releaseNotes": "منع أشرطة وأيقونات النظام من تغطية حقل اكتب سؤالك في مِشكاة، وضبط موضع الحقل عند ظهور لوحة المفاتيح."
 }
