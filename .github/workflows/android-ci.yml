@@ -40,7 +40,7 @@ jobs:
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          python3 -m pip install --user Pillow
+          python3 -m pip install --user --break-system-packages Pillow
           python3 - <<'PY'
           import concurrent.futures
           import io
