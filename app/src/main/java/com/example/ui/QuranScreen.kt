@@ -863,7 +863,7 @@ fun SurahReader(
                 .fillMaxWidth()
         ) { pageIndex ->
             // صفحات مصحف حفص الملون، عمودية وبلا تدوير أو عناصر تغطي الصفحة.
-            val pageUrl = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images/${(pageIndex + 1).toString().padStart(3, '0')}.jpg"
+            val pageUrl = "file:///android_asset/quran_pages/${(pageIndex + 1).toString().padStart(3, '0')}.webp"
             Box(
                 modifier = Modifier
                     .fillMaxSize()
