@@ -115,7 +115,7 @@ jobs:
           with zipfile.ZipFile(apk) as archive:
               pages = sorted(
                   name for name in archive.namelist()
-                  if re.fullmatch(r"assets/quran_pages/\\d{3}\\.webp", name)
+                  if re.fullmatch(r"assets/quran_pages/\d{3}\.webp", name)
               )
               if len(pages) != 604:
                   raise SystemExit(
