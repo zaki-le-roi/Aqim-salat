@@ -100,6 +100,39 @@ jobs:
       - name: Debug APK
         run: gradle --no-daemon assembleDebug
 
+      - name: Verify all Quran pages are bundled for offline reading
+        run: |
+          python3 - <<'PY'
+          import io
+          import re
+          import zipfile
+          from pathlib import Path
+          from PIL import Image
+
+          apk = Path("app/build/outputs/apk/debug/app-debug.apk")
+          if not apk.is_file():
+              raise SystemExit("Debug APK was not created")
+          with zipfile.ZipFile(apk) as archive:
+              pages = sorted(
+                  name for name in archive.namelist()
+                  if re.fullmatch(r"assets/quran_pages/\\d{3}\\.webp", name)
+              )
+              if len(pages) != 604:
+                  raise SystemExit(
+                      f"Offline Quran verification failed: expected 604 page images in APK, found {len(pages)}"
+                  )
+              total_bytes = 0
+              for index, name in enumerate(pages, start=1):
+                  expected = f"assets/quran_pages/{index:03d}.webp"
+                  if name != expected:
+                      raise SystemExit(f"Missing or misnamed Quran page: {expected}")
+                  data = archive.read(name)
+                  with Image.open(io.BytesIO(data)) as image:
+                      image.verify()
+                  total_bytes += len(data)
+          print(f"Verified all 604 readable Quran page images inside APK ({total_bytes / (1024 * 1024):.1f} MiB).")
+          PY
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
