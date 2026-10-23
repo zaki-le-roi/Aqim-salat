@@ -109,19 +109,27 @@ fun MishkatScreen(onBack: () -> Unit) {
             keyboard?.hide()
             isAnswering = true
             val assistantId = newMishkatMessageId()
-            messages.add(MishkatMessage(id = assistantId, text = "يتصل مِشكاة...", isUser = false))
+            // لا نعرض رسالة انتظار ولا نحدّث فقاعة الإجابة تدريجيًا.
+            // تظهر إجابة مِشكاة كاملة مرة واحدة عند انتهاء الطلب.
             scope.launch {
                 try {
-                    val answer = MishkatAnswerRepository.answer(context, submitted) { partial ->
-                        val index = messages.indexOfFirst { it.id == assistantId }
-                        if (index >= 0) messages[index] = messages[index].copy(text = partial)
+                    val answer = MishkatAnswerRepository.answer(context, submitted) { _ ->
+                        // تجاهل الأجزاء الجزئية؛ تُعرض الإجابة النهائية فقط.
                     }
-                    val index = messages.indexOfFirst { it.id == assistantId }
-                    if (index >= 0) messages[index] = messages[index].copy(text = answer)
+                    messages.add(
+                        MishkatMessage(
+                            id = assistantId,
+                            text = answer,
+                            isUser = false
+                        )
+                    )
                 } catch (_: Exception) {
-                    val index = messages.indexOfFirst { it.id == assistantId }
-                    if (index >= 0) messages[index] = messages[index].copy(
-                        text = "تعذّر إكمال الإجابة بسبب خطأ غير متوقع. تحقق من اتصال الإنترنت ثم أعد المحاولة."
+                    messages.add(
+                        MishkatMessage(
+                            id = assistantId,
+                            text = "تعذّر إكمال الإجابة. تحقق من اتصال الإنترنت ثم أعد المحاولة.",
+                            isUser = false
+                        )
                     )
                 } finally {
                     isAnswering = false
@@ -167,7 +175,7 @@ fun MishkatScreen(onBack: () -> Unit) {
     BackHandler(onBack = onBack)
 
     suspend fun scrollToLatestMessage() {
-        val expectedCount = messages.size + if (isAnswering) 1 else 0
+        val expectedCount = messages.size
         if (expectedCount <= 0) return
 
         // Wait until Compose has measured the newly added message/loading row.
