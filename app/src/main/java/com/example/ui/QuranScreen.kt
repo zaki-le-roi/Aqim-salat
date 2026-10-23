@@ -1,11 +1,14 @@
 package com.example.ui
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -862,8 +866,18 @@ fun SurahReader(
                 .weight(1f)
                 .fillMaxWidth()
         ) { pageIndex ->
-            // صفحات مصحف حفص الملون، عمودية وبلا تدوير أو عناصر تغطي الصفحة.
-            val pageUrl = "file:///android_asset/quran_pages/${(pageIndex + 1).toString().padStart(3, '0')}.webp"
+            // قراءة صورة المصحف مباشرة من assets؛ Coil لا يعامل file:///android_asset كملف عادي.
+            val assetName = "quran_pages/${(pageIndex + 1).toString().padStart(3, '0')}.webp"
+            var pageBitmap by remember(pageIndex) { mutableStateOf<Bitmap?>(null) }
+            LaunchedEffect(pageIndex) {
+                pageBitmap = withContext(Dispatchers.IO) {
+                    runCatching {
+                        context.assets.open(assetName).use { input ->
+                            BitmapFactory.decodeStream(input)
+                        }
+                    }.getOrNull()
+                }
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -872,12 +886,23 @@ fun SurahReader(
                     .clickable { controlsVisible = !controlsVisible },
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = pageUrl,
-                    contentDescription = "صفحة المصحف الشريف رقم ${pageIndex + 1}",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
-                )
+                val bitmap = pageBitmap
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = "صفحة المصحف الشريف رقم ${pageIndex + 1}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
+                    )
+                } else {
+                    // إبقاء مسار الإنترنت احتياطياً إذا لم تكن الصورة المحلية موجودة في النسخة المثبتة.
+                    AsyncImage(
+                        model = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images/${(pageIndex + 1).toString().padStart(3, '0')}.jpg",
+                        contentDescription = "صفحة المصحف الشريف رقم ${pageIndex + 1}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.FillBounds
+                    )
+                }
             }
         }
 
