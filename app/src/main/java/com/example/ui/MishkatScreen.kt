@@ -108,23 +108,20 @@ fun MishkatScreen(onBack: () -> Unit) {
             question = ""
             keyboard?.hide()
             isAnswering = true
+            val assistantId = newMishkatMessageId()
+            messages.add(MishkatMessage(id = assistantId, text = "يتصل مِشكاة...", isUser = false))
             scope.launch {
                 try {
-                    val answer = MishkatAnswerRepository.answer(context, submitted)
-                    messages.add(
-                        MishkatMessage(
-                            id = newMishkatMessageId(),
-                            text = answer,
-                            isUser = false,
-                        )
-                    )
+                    val answer = MishkatAnswerRepository.answer(context, submitted) { partial ->
+                        val index = messages.indexOfFirst { it.id == assistantId }
+                        if (index >= 0) messages[index] = messages[index].copy(text = partial)
+                    }
+                    val index = messages.indexOfFirst { it.id == assistantId }
+                    if (index >= 0) messages[index] = messages[index].copy(text = answer)
                 } catch (_: Exception) {
-                    messages.add(
-                        MishkatMessage(
-                            id = newMishkatMessageId(),
-                            text = "تعذّر إكمال الإجابة بسبب خطأ غير متوقع. تحقق من اتصال الإنترنت ثم أعد إرسال السؤال.",
-                            isUser = false,
-                        )
+                    val index = messages.indexOfFirst { it.id == assistantId }
+                    if (index >= 0) messages[index] = messages[index].copy(
+                        text = "تعذّر إكمال الإجابة بسبب خطأ غير متوقع. تحقق من اتصال الإنترنت ثم أعد المحاولة."
                     )
                 } finally {
                     isAnswering = false
