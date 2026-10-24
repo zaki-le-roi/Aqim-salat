@@ -76,8 +76,11 @@ class AdhanPlaybackService : Service() {
                     .setUsage(AudioAttributes.USAGE_ALARM)
                     .build()
             )
-            val selectedMuadhin = getSharedPreferences("audio_preferences", android.content.Context.MODE_PRIVATE)
-                .getString("default_muadhin", "MAKKAH") ?: "MAKKAH"
+            val audioPrefs = getSharedPreferences("audio_preferences", android.content.Context.MODE_PRIVATE)
+            val selectedMuadhin = audioPrefs.getString(
+                "muadhin_${prayerKey}",
+                audioPrefs.getString("default_muadhin", "MAKKAH")
+            ) ?: "MAKKAH"
             val adhanUrl = when (selectedMuadhin) {
                 "MADINAH" -> MADINAH_ATHAN_URL
                 "ALAFASY" -> ALAFASY_ATHAN_URL

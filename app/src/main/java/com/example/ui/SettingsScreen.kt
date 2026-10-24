@@ -409,7 +409,7 @@ fun SettingsScreen(
             SettingsItemCard(
                 icon = Icons.Filled.RecordVoiceOver,
                 title = if (lang == "ar") "اختيار المؤذن" else "Choose Muadhin",
-                subtitle = if (lang == "ar") "الصوت الحالي: $selectedMuadhinLabel" else "Current voice: $selectedMuadhinLabel",
+                subtitle = if (lang == "ar") "تخصيص صوت مستقل لكل صلاة" else "Set a separate voice for each prayer",
                 tag = "setting_muadhin",
                 onClick = { activeDialog = "MUADHIN" }
             )
@@ -570,9 +570,15 @@ fun SettingsScreen(
         )
     }
 
-    // D. Muadhin selector controls the actual adhan playback.
+    // D. Per-prayer muadhin selector.
     if (activeDialog == "MUADHIN") {
-        var selectedMuadhin by remember(defaultMuadhinVal) { mutableStateOf(defaultMuadhinVal) }
+        val prayerChoices = listOf(
+            "Fajr" to "الفجر", "Dhuhr" to "الظهر", "Asr" to "العصر",
+            "Maghrib" to "المغرب", "Isha" to "العشاء"
+        )
+        val audioPrefs = remember { context.getSharedPreferences("audio_preferences", android.content.Context.MODE_PRIVATE) }
+        var selectedPrayer by remember { mutableStateOf("Fajr") }
+        var selectedMuadhin by remember { mutableStateOf(audioPrefs.getString("muadhin_Fajr", defaultMuadhinVal) ?: defaultMuadhinVal) }
         var previewingCode by remember { mutableStateOf<String?>(null) }
         val previewPlayer = remember { arrayOfNulls<MediaPlayer>(1) }
         DisposableEffect(Unit) {
@@ -600,87 +606,75 @@ fun SettingsScreen(
             runCatching {
                 MediaPlayer().apply {
                     previewPlayer[0] = this
-                    setAudioAttributes(
-                        AudioAttributes.Builder()
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build()
-                    )
+                    setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
                     setDataSource(url)
-                    setOnPreparedListener { player ->
-                        if (previewPlayer[0] === player) player.start()
-                    }
+                    setOnPreparedListener { player -> if (previewPlayer[0] === player) player.start() }
                     setOnCompletionListener { player ->
                         player.release()
-                        if (previewPlayer[0] === player) {
-                            previewPlayer[0] = null
-                            previewingCode = null
-                        }
+                        if (previewPlayer[0] === player) { previewPlayer[0] = null; previewingCode = null }
                     }
                     setOnErrorListener { player, _, _ ->
                         player.release()
-                        if (previewPlayer[0] === player) {
-                            previewPlayer[0] = null
-                            previewingCode = null
-                        }
-                        Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت ثم أعد المحاولة." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
+                        if (previewPlayer[0] === player) { previewPlayer[0] = null; previewingCode = null }
+                        Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
                         true
                     }
                     prepareAsync()
                 }
             }.onFailure {
                 stopAdhanPreview()
-                Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت ثم أعد المحاولة." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
             }
         }
         AlertDialog(
             onDismissRequest = { stopAdhanPreview(); activeDialog = null },
-            title = { Text(if (lang == "ar") "اختر صوت المؤذن" else "Choose Adhan Voice", fontWeight = FontWeight.Bold) },
+            title = { Text(if (lang == "ar") "مؤذّن مستقل لكل صلاة" else "Choose a voice for each prayer", fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    muadhinOptions.forEach { (code, label) ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(if (lang == "ar") "اختر الصلاة أولًا، ثم اختر صوت المؤذن الخاص بها." else "Select a prayer, then its adhan voice.", fontSize = 13.sp)
+                    prayerChoices.forEach { (key, label) ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                stopAdhanPreview()
+                                selectedPrayer = key
+                                selectedMuadhin = audioPrefs.getString("muadhin_$key", audioPrefs.getString("default_muadhin", defaultMuadhinVal)) ?: defaultMuadhinVal
+                            }.padding(vertical = 2.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            RadioButton(selected = selectedPrayer == key, onClick = {
+                                stopAdhanPreview()
+                                selectedPrayer = key
+                                selectedMuadhin = audioPrefs.getString("muadhin_$key", audioPrefs.getString("default_muadhin", defaultMuadhinVal)) ?: defaultMuadhinVal
+                            })
+                            Text(label, fontSize = 14.sp)
+                        }
+                    }
+                    Divider()
+                    muadhinOptions.forEach { (code, label) ->
+                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selected = code == selectedMuadhin, onClick = { selectedMuadhin = code })
-                            Text(label, fontSize = 14.sp, modifier = Modifier.weight(1f).clickable { selectedMuadhin = code })
+                            Text(label, fontSize = 13.sp, modifier = Modifier.weight(1f).clickable { selectedMuadhin = code })
                             TextButton(onClick = { if (previewingCode == code) stopAdhanPreview() else previewAdhan(code) }) {
-                                Icon(
-                                    imageVector = if (previewingCode == code) Icons.Filled.Stop else Icons.Filled.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(imageVector = if (previewingCode == code) Icons.Filled.Stop else Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Text(if (previewingCode == code) (if (lang == "ar") "إيقاف" else "Stop") else (if (lang == "ar") "استماع" else "Listen"))
                             }
                         }
                     }
-                    Text(
-                        text = if (lang == "ar") "اضغط «استماع» لسماع عينة قبل الحفظ. يُستخدم الصوت المحفوظ عند موعد الصلاة، ويتطلب الإنترنت." else "Tap Listen to preview before saving. The saved voice plays at prayer time and requires internet.",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        stopAdhanPreview()
-                        viewModel.setDefaultMuadhin(selectedMuadhin)
-                        activeDialog = null
-                        val label = muadhinOptions.firstOrNull { it.first == selectedMuadhin }?.second ?: selectedMuadhin
-                        Toast.makeText(context, if (lang == "ar") "تم حفظ صوت المؤذن: $label" else "Adhan voice saved: $label", Toast.LENGTH_SHORT).show()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) { Text(if (lang == "ar") "حفظ" else "Save") }
-            },
-            dismissButton = {
-                TextButton(onClick = { stopAdhanPreview(); activeDialog = null }) {
-                    Text(if (lang == "ar") "إلغاء" else "Cancel")
+                Button(onClick = {
+                    stopAdhanPreview()
+                    audioPrefs.edit().putString("muadhin_$selectedPrayer", selectedMuadhin).apply()
+                    activeDialog = null
+                    val prayerLabel = prayerChoices.firstOrNull { it.first == selectedPrayer }?.second ?: selectedPrayer
+                    val voiceLabel = muadhinOptions.firstOrNull { it.first == selectedMuadhin }?.second ?: selectedMuadhin
+                    Toast.makeText(context, if (lang == "ar") "تم حفظ $voiceLabel لصلاة $prayerLabel" else "Saved $voiceLabel for $selectedPrayer", Toast.LENGTH_SHORT).show()
+                }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+                    Text(if (lang == "ar") "حفظ هذه الصلاة" else "Save this prayer")
                 }
-            }
+            },
+            dismissButton = { TextButton(onClick = { stopAdhanPreview(); activeDialog = null }) { Text(if (lang == "ar") "إغلاق" else "Close") } }
         )
     }
 

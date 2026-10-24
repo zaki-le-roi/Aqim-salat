@@ -73,7 +73,7 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
     }
     fun showFallbackForService(context: Context, prayerName: String) {
         val manager = context.getSystemService(NotificationManager::class.java)
-        val channelId = "adhan"
+        val channelId = "adhan_playback_failure_silent"
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             val attrs = AudioAttributes.Builder()
@@ -81,10 +81,10 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                 .build()
             manager?.createNotificationChannel(
-                NotificationChannel(channelId, "الأذان", NotificationManager.IMPORTANCE_HIGH).apply {
-                    setSound(sound, attrs)
-                    description = "تنبيهات مواقيت الصلاة"
-                    enableVibration(true)
+                NotificationChannel(channelId, "تعذّر تشغيل الأذان", NotificationManager.IMPORTANCE_LOW).apply {
+                    setSound(null, null)
+                    description = "إشعار صامت عند تعذّر تحميل ملف الأذان"
+                    enableVibration(false)
                 }
             )
         }
@@ -96,9 +96,9 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(com.example.R.drawable.ic_notification_adhan)
             .setContentTitle("حان وقت صلاة $prayerName")
-            .setContentText("تعذر تشغيل ملف الأذان، وتم تشغيل تنبيه بديل.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setContentText("تعذّر تشغيل ملف الأذان. تحقق من الاتصال بالإنترنت.")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setAutoCancel(true)
             .setContentIntent(openApp)
             .build()
