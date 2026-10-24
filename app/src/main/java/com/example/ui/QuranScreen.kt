@@ -719,9 +719,12 @@ fun SurahReader(
         context.getSharedPreferences("quran_reader", android.content.Context.MODE_PRIVATE)
     }
     var currentPage by remember(surah.id) {
+        val savedSurahPage = prefs.getInt("saved_page_${surah.id}", -1)
+        val savedPageBelongsToSurah = savedSurahPage in 1..604 &&
+            pages.getOrNull(savedSurahPage - 1).orEmpty().any { it.surah == surah.id }
         mutableIntStateOf(
-            prefs.getInt("saved_page", -1).takeIf { it in 1..604 }
-                ?: QuranPageMap.pageFor(context, surah.id, 1).coerceIn(1, 604)
+            (if (savedPageBelongsToSurah) savedSurahPage
+             else QuranPageMap.pageFor(context, surah.id, 1)).coerceIn(1, 604)
         )
     }
     var bookmarkPage by remember { mutableIntStateOf(prefs.getInt("bookmark_page", -1)) }
@@ -748,8 +751,13 @@ fun SurahReader(
     }
     LaunchedEffect(pagerState.currentPage) {
         currentPage = pagerState.currentPage + 1
-        prefs.edit().putInt("saved_page", currentPage).apply()
-        pages.getOrNull(pagerState.currentPage)?.firstOrNull()?.let { ref ->
+        val pageRefsForSave = pages.getOrNull(pagerState.currentPage).orEmpty()
+        val editor = prefs.edit().putInt("saved_page", currentPage)
+        pageRefsForSave.map { it.surah }.distinct().forEach { pageSurahId ->
+            editor.putInt("saved_page_${pageSurahId}", currentPage)
+        }
+        editor.apply()
+        pageRefsForSave.firstOrNull()?.let { ref ->
             val pageSurah = QuranData.surahs.firstOrNull { it.id == ref.surah }
             if (pageSurah != null) viewModel.saveLastReadSurah(ref.surah, ref.ayah, pageSurah.name)
         }
