@@ -312,7 +312,10 @@ fun AqimSalahApp(
                     else PaddingValues(0.dp)
                 )
         ) {
-            ThemeBackground(wallpaper = activeWallpaper)
+            // Never draw the decorative layer over the Quran/mushaf.
+            if (selectedTab != "QURAN" && !isQuranReaderOpen) {
+                ThemeBackground(wallpaper = activeWallpaper)
+            }
 
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
@@ -511,6 +514,38 @@ fun ThemeBackground(wallpaper: String, modifier: Modifier = Modifier) {
                             style = androidx.compose.ui.graphics.drawscope.Stroke(width = strokeWidth)
                         )
                     }
+                }
+            }
+        }
+
+        // Subtle Islamic geometric arabesque, concentrated at the edges for readability.
+        val patternColor = Color(0x1AD4AF37)
+        val spacing = 92f
+        val stroke = 1.1f
+        val edgeBand = width * 0.18f
+        for (row in -1..(height / spacing).toInt() + 1) {
+            val cy = row * spacing
+            for (col in -1..(width / spacing).toInt() + 1) {
+                val cx = col * spacing
+                if (cx < edgeBand || cx > width - edgeBand) {
+                    val half = spacing * 0.34f
+                    val center = androidx.compose.ui.geometry.Offset(cx, cy)
+                    val points = listOf(
+                        androidx.compose.ui.geometry.Offset(cx, cy - half),
+                        androidx.compose.ui.geometry.Offset(cx + half, cy),
+                        androidx.compose.ui.geometry.Offset(cx, cy + half),
+                        androidx.compose.ui.geometry.Offset(cx - half, cy),
+                        androidx.compose.ui.geometry.Offset(cx, cy - half)
+                    )
+                    for (i in 0 until points.lastIndex) {
+                        drawLine(patternColor, points[i], points[i + 1], strokeWidth = stroke)
+                    }
+                    drawCircle(
+                        color = patternColor,
+                        radius = half * 0.72f,
+                        center = center,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+                    )
                 }
             }
         }
