@@ -434,76 +434,66 @@ fun AqimSalahApp(
                 }
             }
 
-            // Decorative Islamic geometry is deliberately excluded from all Quran screens.
-            if (selectedTab != "QURAN" && activeDetailScreen != "QURAN_AUDIO") {
-                IslamicGeometricPatternOverlay()
-            }
-
         }
     }
 }
 
 @Composable
-fun IslamicGeometricPatternOverlay(modifier: Modifier = Modifier) {
-    androidx.compose.foundation.Canvas(modifier = modifier.fillMaxSize()) {
-        val spacing = 104.dp.toPx()
-        val outerRadius = 15.dp.toPx()
-        val innerRadius = 7.2.dp.toPx()
-        val green = Color(0xFF115E3F).copy(alpha = 0.105f)
-        val gold = Color(0xFFC5A059).copy(alpha = 0.12f)
-        val stroke = 0.8.dp.toPx()
-
-        var row = -1
-        var y = -spacing
-        while (y <= size.height + spacing) {
-            var col = -1
-            var x = -spacing
-            while (x <= size.width + spacing) {
-                val center = androidx.compose.ui.geometry.Offset(x, y)
-                val star = androidx.compose.ui.graphics.Path()
-                for (i in 0 until 16) {
-                    val angle = Math.PI * i / 8.0 - Math.PI / 2.0
-                    val radius = if (i % 2 == 0) outerRadius else innerRadius
-                    val px = x + kotlin.math.cos(angle).toFloat() * radius
-                    val py = y + kotlin.math.sin(angle).toFloat() * radius
-                    if (i == 0) star.moveTo(px, py) else star.lineTo(px, py)
-                }
-                star.close()
-                drawPath(
-                    path = star,
-                    color = if ((row + col) % 2 == 0) green else gold,
-                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
-                )
-                // Fine diamond links create a continuous, traditional geometric lattice.
-                drawLine(
-                    color = green.copy(alpha = 0.65f),
-                    start = androidx.compose.ui.geometry.Offset(x + outerRadius, y),
-                    end = androidx.compose.ui.geometry.Offset(x + spacing / 2f, y + spacing / 2f),
-                    strokeWidth = stroke * 0.7f
-                )
-                drawLine(
-                    color = gold.copy(alpha = 0.65f),
-                    start = androidx.compose.ui.geometry.Offset(x, y + outerRadius),
-                    end = androidx.compose.ui.geometry.Offset(x + spacing / 2f, y + spacing / 2f),
-                    strokeWidth = stroke * 0.7f
-                )
-                x += spacing
-                col++
-            }
-            y += spacing
-            row++
-        }
-    }
-}
-
-@Composable
-fun ThemeBackground(wallpaper: String, modifier: Modifier = Modifier) {
+fun ThemeBackground(
+    wallpaper: String,
+    modifier: Modifier = Modifier,
+    islamicPatternEnabled: Boolean = true
+) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val goldColor = Color(0x1AD4AF37)
-    
+
     androidx.compose.foundation.Canvas(modifier = modifier.fillMaxSize()) {
         val width = size.width
         val height = size.height
+
+        if (islamicPatternEnabled) {
+            // Warm ivory base and a low-alpha repeating eight-point star lattice.
+            drawRect(color = Color(0xFFFAF8F2))
+            val spacing = 112.dp.toPx()
+            val outerRadius = 15.dp.toPx()
+            val innerRadius = 6.2.dp.toPx()
+            val gold = Color(0xFFC5A059).copy(alpha = 0.055f)
+            val beige = Color(0xFF9A8058).copy(alpha = 0.035f)
+            val stroke = 0.75.dp.toPx()
+            var row = -1
+            var y = -spacing
+            while (y <= height + spacing) {
+                var col = -1
+                var x = -spacing
+                while (x <= width + spacing) {
+                    val star = androidx.compose.ui.graphics.Path()
+                    for (i in 0 until 16) {
+                        val angle = Math.PI * i / 8.0 - Math.PI / 2.0
+                        val radius = if (i % 2 == 0) outerRadius else innerRadius
+                        val px = x + kotlin.math.cos(angle).toFloat() * radius
+                        val py = y + kotlin.math.sin(angle).toFloat() * radius
+                        if (i == 0) star.moveTo(px, py) else star.lineTo(px, py)
+                    }
+                    star.close()
+                    drawPath(
+                        path = star,
+                        color = if ((row + col) % 2 == 0) gold else beige,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+                    )
+                    // Sparse diagonal connectors form a repeating Islamic geometric tile.
+                    drawLine(
+                        color = beige,
+                        start = androidx.compose.ui.geometry.Offset(x + outerRadius * 0.72f, y + outerRadius * 0.72f),
+                        end = androidx.compose.ui.geometry.Offset(x + spacing / 2f, y + spacing / 2f),
+                        strokeWidth = stroke
+                    )
+                    x += spacing
+                    col++
+                }
+                y += spacing
+                row++
+            }
+        }
         
         when (wallpaper) {
             "MOSQUE SILHOUETTE" -> {
