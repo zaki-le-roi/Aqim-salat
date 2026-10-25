@@ -312,11 +312,24 @@ fun AqimSalahApp(
                     else PaddingValues(0.dp)
                 )
         ) {
+            // One central background policy for every routed screen.
+            val showPattern = selectedTab != "QURAN" &&
+                activeDetailScreen !in setOf("QURAN_AUDIO", "HADITH", "ZAD_ALMUSLIM", "SCHOLARS_LIBRARY")
             ThemeBackground(
-                wallpaper = activeWallpaper,
-                islamicPatternEnabled = selectedTab != "QURAN" && activeDetailScreen != "QURAN_AUDIO"
+                wallpaper = if (showPattern) activeWallpaper else "NONE",
+                islamicPatternEnabled = showPattern
             )
 
+            // Screens that use MaterialTheme.colorScheme.background as their root
+            // surface must stay transparent so the shared pattern remains visible.
+            // Reading screens keep a plain ivory background for comfortable reading.
+            MaterialTheme(
+                colorScheme = MaterialTheme.colorScheme.copy(
+                    background = if (showPattern) Color.Transparent else Color(0xFFFAF8F5)
+                ),
+                typography = MaterialTheme.typography,
+                shapes = MaterialTheme.shapes
+            ) {
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
@@ -436,7 +449,7 @@ fun AqimSalahApp(
                     }
                 }
             }
-
+            }
         }
     }
 }
