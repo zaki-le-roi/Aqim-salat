@@ -437,7 +437,46 @@ fun AqimSalahApp(
                 }
             }
 
+            // Draw the ornament above opaque page backgrounds so it is actually visible.
+            // Quran/mushaf screens are explicitly excluded.
+            if (selectedTab != "QURAN" && !isQuranReaderOpen) {
+                IslamicPatternOverlay()
+            }
+        }
+    }
+}
 
+@Composable
+private fun IslamicPatternOverlay() {
+    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+        val spacing = 88.dp.toPx()
+        val stroke = 1.15.dp.toPx()
+        val edgeBand = size.width * 0.22f
+        val gold = Color(0x26C5A059)
+        val half = spacing * 0.31f
+        for (row in -1..(size.height / spacing).toInt() + 1) {
+            val cy = row * spacing
+            for (col in -1..(size.width / spacing).toInt() + 1) {
+                val cx = col * spacing
+                if (cx < edgeBand || cx > size.width - edgeBand) {
+                    val points = listOf(
+                        androidx.compose.ui.geometry.Offset(cx, cy - half),
+                        androidx.compose.ui.geometry.Offset(cx + half, cy),
+                        androidx.compose.ui.geometry.Offset(cx, cy + half),
+                        androidx.compose.ui.geometry.Offset(cx - half, cy),
+                        androidx.compose.ui.geometry.Offset(cx, cy - half)
+                    )
+                    for (i in 0 until points.lastIndex) {
+                        drawLine(gold, points[i], points[i + 1], strokeWidth = stroke)
+                    }
+                    drawCircle(
+                        color = gold,
+                        radius = half * 0.72f,
+                        center = androidx.compose.ui.geometry.Offset(cx, cy),
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
+                    )
+                }
+            }
         }
     }
 }
@@ -518,36 +557,5 @@ fun ThemeBackground(wallpaper: String, modifier: Modifier = Modifier) {
             }
         }
 
-        // Subtle Islamic geometric arabesque, concentrated at the edges for readability.
-        val patternColor = Color(0x1AD4AF37)
-        val spacing = 92f
-        val stroke = 1.1f
-        val edgeBand = width * 0.18f
-        for (row in -1..(height / spacing).toInt() + 1) {
-            val cy = row * spacing
-            for (col in -1..(width / spacing).toInt() + 1) {
-                val cx = col * spacing
-                if (cx < edgeBand || cx > width - edgeBand) {
-                    val half = spacing * 0.34f
-                    val center = androidx.compose.ui.geometry.Offset(cx, cy)
-                    val points = listOf(
-                        androidx.compose.ui.geometry.Offset(cx, cy - half),
-                        androidx.compose.ui.geometry.Offset(cx + half, cy),
-                        androidx.compose.ui.geometry.Offset(cx, cy + half),
-                        androidx.compose.ui.geometry.Offset(cx - half, cy),
-                        androidx.compose.ui.geometry.Offset(cx, cy - half)
-                    )
-                    for (i in 0 until points.lastIndex) {
-                        drawLine(patternColor, points[i], points[i + 1], strokeWidth = stroke)
-                    }
-                    drawCircle(
-                        color = patternColor,
-                        radius = half * 0.72f,
-                        center = center,
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
-                    )
-                }
-            }
-        }
     }
 }
