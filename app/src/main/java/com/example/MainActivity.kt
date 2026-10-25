@@ -230,6 +230,7 @@ fun AqimSalahApp(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = Color.Transparent,
         bottomBar = {
             // Floating, softly translucent pill navigation with five primary destinations.
             if (activeDetailScreen == null && !(selectedTab == "QURAN" && isQuranReaderOpen)) {
@@ -470,12 +471,12 @@ fun ThemeBackground(
         if (islamicPatternEnabled) {
             // Warm ivory base and a low-alpha repeating eight-point star lattice.
             drawRect(color = Color(0xFFFAF8F2))
-            val spacing = 112.dp.toPx()
-            val outerRadius = 15.dp.toPx()
+            val spacing = 96.dp.toPx()
+            val outerRadius = 17.dp.toPx()
             val innerRadius = 6.2.dp.toPx()
-            val gold = Color(0xFFC5A059).copy(alpha = 0.055f)
-            val beige = Color(0xFF9A8058).copy(alpha = 0.035f)
-            val stroke = 0.75.dp.toPx()
+            val gold = Color(0xFFC5A059).copy(alpha = 0.16f)
+            val beige = Color(0xFF9A8058).copy(alpha = 0.095f)
+            val stroke = 0.95.dp.toPx()
             var row = -1
             var y = -spacing
             while (y <= height + spacing) {
