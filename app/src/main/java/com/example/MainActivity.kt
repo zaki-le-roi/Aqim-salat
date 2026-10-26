@@ -73,8 +73,16 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = androidx.activity.SystemBarStyle.light(
                 android.graphics.Color.TRANSPARENT,
                 android.graphics.Color.TRANSPARENT
+            ),
+            navigationBarStyle = androidx.activity.SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
             )
         )
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+            window.isStatusBarContrastEnforced = false
+        }
         locationViewModel = ViewModelProvider(this)[AppViewModel::class.java]
         apkUpdateChecker = ApkUpdateChecker(this).also { it.checkForUpdate() }
         requestNotificationAndAlarmAccess()
@@ -312,7 +320,11 @@ fun AqimSalahApp(
         val activeWallpaper by viewModel.wallpaper.collectAsState()
         // Draw the wallpaper across the full window, including behind the transparent status bar.
         // Keep actual screen content in a separate container that respects the status-bar inset.
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(if (selectedTab == "QURAN") Color(0xFFFDFBF7) else Color.Transparent)
+        ) {
             val showPattern = selectedTab != "QURAN"
             ThemeBackground(
                 modifier = Modifier.fillMaxSize(),

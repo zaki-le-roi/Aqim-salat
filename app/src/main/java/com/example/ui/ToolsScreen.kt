@@ -630,35 +630,77 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
     DisposableEffect(context, latitude, longitude) {
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
         val rotationSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
-        sensorAvailable = rotationSensor != null
+        val accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val magneticSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        val canUseFallback = rotationSensor == null && accelerometer != null && magneticSensor != null
+        sensorAvailable = rotationSensor != null || canUseFallback
         sensorAccuracyGood = false
 
-        if (sensorManager == null || rotationSensor == null) {
+        if (sensorManager == null || (rotationSensor == null && !canUseFallback)) {
             onDispose { }
         } else {
-            val listener = object : SensorEventListener {
-                private val rotationMatrix = FloatArray(9)
-                private val orientation = FloatArray(3)
+            val rotationMatrix = FloatArray(9)
+            val orientation = FloatArray(3)
+            val gravityValues = FloatArray(3)
+            val magneticValues = FloatArray(3)
 
+            fun updateAzimuth() {
+                val matrixReady = SensorManager.getRotationMatrix(
+                    rotationMatrix,
+                    null,
+                    gravityValues,
+                    magneticValues
+                )
+                if (!matrixReady) return
+                SensorManager.getOrientation(rotationMatrix, orientation)
+                val magneticAzimuth = ((Math.toDegrees(orientation[0].toDouble()).toFloat() % 360f) + 360f) % 360f
+                val declination = GeomagneticField(
+                    latitude.toFloat(),
+                    longitude.toFloat(),
+                    0f,
+                    System.currentTimeMillis()
+                ).declination
+                deviceAzimuth = ((magneticAzimuth + declination) % 360f + 360f) % 360f
+            }
+
+            val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent) {
-                    if (event.values.size < 3) return
-                    SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-                    SensorManager.getOrientation(rotationMatrix, orientation)
-                    val magneticAzimuth = ((Math.toDegrees(orientation[0].toDouble()).toFloat() % 360f) + 360f) % 360f
-                    val declination = GeomagneticField(
-                        latitude.toFloat(),
-                        longitude.toFloat(),
-                        0f,
-                        System.currentTimeMillis()
-                    ).declination
-                    deviceAzimuth = ((magneticAzimuth + declination) % 360f + 360f) % 360f
+                    if (rotationSensor != null) {
+                        // Keep the existing TYPE_ROTATION_VECTOR calculation as the primary path.
+                        if (event.sensor.type != Sensor.TYPE_ROTATION_VECTOR || event.values.size < 3) return
+                        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                        SensorManager.getOrientation(rotationMatrix, orientation)
+                        val magneticAzimuth = ((Math.toDegrees(orientation[0].toDouble()).toFloat() % 360f) + 360f) % 360f
+                        val declination = GeomagneticField(
+                            latitude.toFloat(),
+                            longitude.toFloat(),
+                            0f,
+                            System.currentTimeMillis()
+                        ).declination
+                        deviceAzimuth = ((magneticAzimuth + declination) % 360f + 360f) % 360f
+                    } else {
+                        // Use accelerometer + magnetic field only when rotation vector is unavailable.
+                        if (event.values.size < 3) return
+                        when (event.sensor.type) {
+                            Sensor.TYPE_ACCELEROMETER -> event.values.copyInto(gravityValues)
+                            Sensor.TYPE_MAGNETIC_FIELD -> event.values.copyInto(magneticValues)
+                            else -> return
+                        }
+                        updateAzimuth()
+                    }
                 }
 
                 override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
                     sensorAccuracyGood = accuracy >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM
                 }
             }
-            sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+
+            if (rotationSensor != null) {
+                sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+            } else {
+                sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)
+                sensorManager.registerListener(listener, magneticSensor, SensorManager.SENSOR_DELAY_UI)
+            }
             onDispose { sensorManager.unregisterListener(listener) }
         }
     }

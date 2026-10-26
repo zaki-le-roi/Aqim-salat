@@ -1,6 +1,10 @@
 package com.example.ui
 
+import android.provider.Settings
+import androidx.compose.ui.platform.LocalContext
+
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.horizontalScroll
@@ -21,6 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -38,6 +45,24 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import java.text.SimpleDateFormat
 import java.util.*
+
+
+@Composable
+private fun HomeServiceCard(
+    modifier: Modifier = Modifier,
+    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(16.dp),
+    colors: CardColors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier,
+        shape = shape,
+        colors = colors,
+        elevation = elevation,
+        content = content
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,17 +85,6 @@ fun HomeScreen(
     var appMenuExpanded by remember { mutableStateOf(false) }
     var appMenuSection by remember { mutableStateOf("SERVICES") }
 
-    // Clock state
-    var liveClockTime by remember { mutableStateOf("") }
-    LaunchedEffect(Unit) {
-        while (true) {
-            val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            liveClockTime = sdf.format(Date())
-            kotlinx.coroutines.delay(1000)
-        }
-    }
-
-
 
     androidx.compose.runtime.CompositionLocalProvider(
         LocalTextStyle provides LocalTextStyle.current.copy(fontFamily = FontFamily.Serif)
@@ -84,7 +98,6 @@ fun HomeScreen(
     ) {
         // --- 1. DYNAMIC SKY HEADER WITH NEXT PRAYER COUNTDOWN ---
         item {
-            val hour = liveClockTime.take(2).toIntOrNull() ?: java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
             val nextPrayerArabic = when (nextName.lowercase()) {
                 "fajr" -> "الفجر"
                 "dhuhr" -> "الظهر"
@@ -93,41 +106,35 @@ fun HomeScreen(
                 "isha" -> "العشاء"
                 else -> "الصلاة القادمة"
             }
+            var skyPeriod by remember { mutableStateOf(SkyPeriod.NIGHT) }
+            LaunchedEffect(times) {
+                val prayerTimes = times ?: return@LaunchedEffect
+                fun seconds(clock: String): Int {
+                    val parts = clock.split(":")
+                    return if (parts.size >= 2) parts[0].toIntOrNull()?.times(3600)?.plus(parts[1].toIntOrNull()?.times(60) ?: 0) ?: 0 else 0
+                }
+                val fajr = seconds(prayerTimes.fajr)
+                val sunrise = seconds(prayerTimes.sunrise)
+                val dhuhr = seconds(prayerTimes.dhuhr)
+                val asr = seconds(prayerTimes.asr)
+                val maghrib = seconds(prayerTimes.maghrib)
+                val isha = seconds(prayerTimes.isha)
+                while (true) {
+                    val now = java.util.Calendar.getInstance()
+                    val nowSeconds = now.get(java.util.Calendar.HOUR_OF_DAY) * 3600 +
+                        now.get(java.util.Calendar.MINUTE) * 60 + now.get(java.util.Calendar.SECOND)
+                    val boundaries = listOf(fajr, sunrise, dhuhr, asr, maghrib, isha)
+                    val nextBoundary = boundaries.firstOrNull { it > nowSeconds } ?: (fajr + 86400)
+                    skyPeriod = skyPeriodFor(nowSeconds, fajr, sunrise, dhuhr, asr, maghrib, isha)
+                    kotlinx.coroutines.delay(((nextBoundary - nowSeconds) * 1000L).coerceAtLeast(1000L))
+                }
+            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(390.dp)
-                    .background(Brush.verticalGradient(listOf(Color(0xFF172B3A), Color(0xFF16483D), Color(0xFF071F1B))))
             ) {
-                // Drawn night sky, crescent and mosque silhouette; existing icons remain unchanged.
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val w = size.width
-                    val h = size.height
-                    val sky = Color(0xFF172B3A)
-                    drawCircle(Color(0xFFFFE7A3), radius = w * 0.065f, center = androidx.compose.ui.geometry.Offset(w * 0.80f, h * 0.18f))
-                    drawCircle(sky, radius = w * 0.058f, center = androidx.compose.ui.geometry.Offset(w * 0.825f, h * 0.15f))
-                    listOf(
-                        androidx.compose.ui.geometry.Offset(w * 0.16f, h * 0.13f),
-                        androidx.compose.ui.geometry.Offset(w * 0.30f, h * 0.22f),
-                        androidx.compose.ui.geometry.Offset(w * 0.57f, h * 0.11f),
-                        androidx.compose.ui.geometry.Offset(w * 0.91f, h * 0.30f),
-                        androidx.compose.ui.geometry.Offset(w * 0.10f, h * 0.34f)
-                    ).forEach { drawCircle(Color(0xFFFFE7A3).copy(alpha = 0.8f), radius = 1.8.dp.toPx(), center = it) }
-                    val mosque = Color(0xFF041713).copy(alpha = 0.86f)
-                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(0f, h * 0.82f), size = androidx.compose.ui.geometry.Size(w, h * 0.18f))
-                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(w * 0.13f, h * 0.52f), size = androidx.compose.ui.geometry.Size(w * 0.045f, h * 0.39f))
-                    drawCircle(mosque, radius = w * 0.024f, center = androidx.compose.ui.geometry.Offset(w * 0.153f, h * 0.51f))
-                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(w * 0.82f, h * 0.47f), size = androidx.compose.ui.geometry.Size(w * 0.05f, h * 0.44f))
-                    drawCircle(mosque, radius = w * 0.026f, center = androidx.compose.ui.geometry.Offset(w * 0.845f, h * 0.46f))
-                    val dome = androidx.compose.ui.graphics.Path().apply {
-                        moveTo(w * 0.20f, h * 0.81f)
-                        quadraticTo(w * 0.50f, h * 0.40f, w * 0.80f, h * 0.81f)
-                        close()
-                    }
-                    drawPath(dome, mosque)
-                    drawRect(mosque, topLeft = androidx.compose.ui.geometry.Offset(w * 0.20f, h * 0.80f), size = androidx.compose.ui.geometry.Size(w * 0.60f, h * 0.20f))
-                    drawLine(Color(0xFFD4AF37).copy(alpha = 0.55f), androidx.compose.ui.geometry.Offset(0f, h * 0.96f), androidx.compose.ui.geometry.Offset(w, h * 0.96f), strokeWidth = 1.dp.toPx())
-                }
+                PrayerSkyBackground(period = skyPeriod)
                 // Dark overlay preserves text contrast.
                 Box(
                     modifier = Modifier
@@ -641,7 +648,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 132.dp)
@@ -652,15 +659,15 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 10.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(46.dp).clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha = 0.08f)),
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                IslamicServiceIcon(type = "TASBIH", modifier = Modifier.size(38.dp))
+                                IslamicServiceIcon(type = "TASBIH", modifier = Modifier.size(30.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "السبحة الإلكترونية" else "Digital Tasbih",
@@ -681,7 +688,7 @@ fun HomeScreen(
                         }
                     }
 
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 132.dp)
@@ -692,15 +699,15 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 10.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Box(
-                                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.Spa, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(22.dp))
+                                Icon(Icons.Filled.Spa, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(30.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "الأذكار اليومية" else "Daily Adhkar",
@@ -727,7 +734,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 132.dp)
@@ -738,7 +745,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 6.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -746,7 +753,7 @@ fun HomeScreen(
                                 modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                IslamicServiceIcon(type = "QIBLA", modifier = Modifier.size(36.dp))
+                                IslamicServiceIcon(type = "QIBLA", modifier = Modifier.size(30.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "القبلة" else "Qibla",
@@ -767,7 +774,7 @@ fun HomeScreen(
                         }
                     }
 
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 132.dp)
@@ -778,7 +785,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 6.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -786,7 +793,7 @@ fun HomeScreen(
                                 modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                IslamicServiceIcon(type = "HISN", modifier = Modifier.size(36.dp))
+                                IslamicServiceIcon(type = "HISN", modifier = Modifier.size(30.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "حصن المسلم" else "Hisn Muslim",
@@ -807,7 +814,7 @@ fun HomeScreen(
                         }
                     }
 
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(min = 132.dp)
@@ -818,7 +825,7 @@ fun HomeScreen(
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 6.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -826,7 +833,7 @@ fun HomeScreen(
                                 modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                IslamicServiceIcon(type = "HADITH", modifier = Modifier.size(36.dp))
+                                IslamicServiceIcon(type = "HADITH", modifier = Modifier.size(30.dp))
                             }
                             Text(
                                 text = if (lang == "ar") "كتب الحديث" else "Hadith Books",
@@ -948,5 +955,103 @@ fun CircularGridItem(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+enum class SkyPeriod { NIGHT, DAWN, MORNING, MIDDAY, AFTERNOON, SUNSET }
+
+/** Pure time-of-day classifier. All arguments are seconds after local midnight. */
+fun skyPeriodFor(
+    nowSeconds: Int,
+    fajrSeconds: Int,
+    sunriseSeconds: Int,
+    dhuhrSeconds: Int,
+    asrSeconds: Int,
+    maghribSeconds: Int,
+    ishaSeconds: Int
+): SkyPeriod {
+    val now = ((nowSeconds % 86400) + 86400) % 86400
+    return when {
+        now < fajrSeconds || now >= ishaSeconds -> SkyPeriod.NIGHT
+        now < sunriseSeconds -> SkyPeriod.DAWN
+        now < dhuhrSeconds -> SkyPeriod.MORNING
+        now < asrSeconds -> SkyPeriod.MIDDAY
+        now < maghribSeconds -> SkyPeriod.AFTERNOON
+        else -> SkyPeriod.SUNSET
+    }
+}
+
+@Composable
+fun PrayerSkyBackground(period: SkyPeriod, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val animationDurationScale = remember(context) {
+        runCatching {
+            Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        }.getOrDefault(1f)
+    }
+    val transitionDuration = if (animationDurationScale <= 0f) 0 else 900
+    val colors = when (period) {
+        SkyPeriod.NIGHT -> listOf(Color(0xFF102C3B), Color(0xFF17483F), Color(0xFF071F1B))
+        SkyPeriod.DAWN -> listOf(Color(0xFF4D7F8A), Color(0xFF6E9B91), Color(0xFF294F45))
+        SkyPeriod.MORNING -> listOf(Color(0xFF72B9C1), Color(0xFF9CCDBB), Color(0xFF3F8171))
+        SkyPeriod.MIDDAY -> listOf(Color(0xFF5BA8C0), Color(0xFF9BD0D0), Color(0xFF438D78))
+        SkyPeriod.AFTERNOON -> listOf(Color(0xFFB9A06B), Color(0xFFD8A06C), Color(0xFF7C6850))
+        SkyPeriod.SUNSET -> listOf(Color(0xFFC85A3C), Color(0xFFE78350), Color(0xFF603C36))
+    }
+    val top by animateColorAsState(colors[0], animationSpec = tween(transitionDuration), label = "sky-top")
+    val middle by animateColorAsState(colors[1], animationSpec = tween(transitionDuration), label = "sky-middle")
+    val bottom by animateColorAsState(colors[2], animationSpec = tween(transitionDuration), label = "sky-bottom")
+    Box(modifier = modifier.background(Brush.verticalGradient(listOf(top, middle, bottom)))) {
+        Canvas(Modifier.fillMaxSize()) {
+            val w = size.width
+            val h = size.height
+            val gold = Color(0xFFFFE7A3)
+            val nightAlpha = when (period) {
+                SkyPeriod.NIGHT -> 0.95f
+                SkyPeriod.DAWN -> 0.32f
+                else -> 0f
+            }
+            val sunAlpha = when (period) {
+                SkyPeriod.MORNING, SkyPeriod.MIDDAY, SkyPeriod.AFTERNOON, SkyPeriod.SUNSET -> 1f
+                else -> 0f
+            }
+            val sunY = when (period) {
+                SkyPeriod.MORNING -> 0.22f
+                SkyPeriod.MIDDAY -> 0.18f
+                SkyPeriod.AFTERNOON -> 0.27f
+                SkyPeriod.SUNSET -> 0.39f
+                else -> 0.18f
+            }
+            if (sunAlpha > 0f) {
+                drawCircle(Color(0xFFFFC36B).copy(alpha = 0.14f), radius = w * 0.12f, center = Offset(w * 0.76f, h * sunY))
+                drawCircle(Color(0xFFFFD18A).copy(alpha = 0.28f), radius = w * 0.085f, center = Offset(w * 0.76f, h * sunY))
+                drawCircle(Color(0xFFFFE2A0).copy(alpha = sunAlpha), radius = w * 0.052f, center = Offset(w * 0.76f, h * sunY))
+            }
+            if (nightAlpha > 0f) {
+                drawCircle(gold.copy(alpha = nightAlpha), radius = w * 0.064f, center = Offset(w * 0.80f, h * 0.18f))
+                drawCircle(colors[0].copy(alpha = nightAlpha), radius = w * 0.058f, center = Offset(w * 0.825f, h * 0.15f))
+                listOf(
+                    Offset(w * 0.16f, h * 0.13f),
+                    Offset(w * 0.30f, h * 0.22f),
+                    Offset(w * 0.57f, h * 0.11f),
+                    Offset(w * 0.91f, h * 0.30f),
+                    Offset(w * 0.10f, h * 0.34f)
+                ).forEach { drawCircle(gold.copy(alpha = 0.8f * nightAlpha), radius = 1.8.dp.toPx(), center = it) }
+            }
+            val mosque = Color(0xFF041713).copy(alpha = 0.86f)
+            drawRect(mosque, topLeft = Offset(0f, h * 0.82f), size = Size(w, h * 0.18f))
+            drawRect(mosque, topLeft = Offset(w * 0.13f, h * 0.52f), size = Size(w * 0.045f, h * 0.39f))
+            drawCircle(mosque, radius = w * 0.024f, center = Offset(w * 0.153f, h * 0.51f))
+            drawRect(mosque, topLeft = Offset(w * 0.82f, h * 0.47f), size = Size(w * 0.05f, h * 0.44f))
+            drawCircle(mosque, radius = w * 0.026f, center = Offset(w * 0.845f, h * 0.46f))
+            val dome = Path().apply {
+                moveTo(w * 0.20f, h * 0.81f)
+                quadraticTo(w * 0.50f, h * 0.40f, w * 0.80f, h * 0.81f)
+                close()
+            }
+            drawPath(dome, mosque)
+            drawRect(mosque, topLeft = Offset(w * 0.20f, h * 0.80f), size = Size(w * 0.60f, h * 0.20f))
+            drawLine(Color(0xFFD4AF37).copy(alpha = 0.55f), Offset(0f, h * 0.96f), Offset(w, h * 0.96f), strokeWidth = 1.dp.toPx())
+        }
     }
 }

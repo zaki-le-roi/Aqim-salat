@@ -997,11 +997,15 @@ fun SurahReader(
 
         if (showIndex) {
             MaterialTheme(
-                colorScheme = lightColorScheme(
+                colorScheme = MaterialTheme.colorScheme.copy(
                     primary = Color(0xFF115E3F),
-                    surface = Color(0xFFFAF8F5),
-                    onSurface = Color(0xFF1A1A1A),
-                    background = Color(0xFFFAF8F5)
+                    surface = Color(0xFFF1EBDD),
+                    onSurface = Color(0xFF1A3D2E),
+                    background = Color(0xFFFDFBF7),
+                    secondaryContainer = Color(0xFFDCEBE2),
+                    onSecondaryContainer = Color(0xFF1A3D2E),
+                    surfaceVariant = Color(0xFFF1EBDD),
+                    onSurfaceVariant = Color(0xFF1A3D2E)
                 )
             ) {
                 AlertDialog(
@@ -1082,11 +1086,15 @@ fun SurahReader(
 
         if (showJuzIndex) {
             MaterialTheme(
-                colorScheme = lightColorScheme(
+                colorScheme = MaterialTheme.colorScheme.copy(
                     primary = Color(0xFF115E3F),
-                    surface = Color(0xFFFAF8F5),
-                    onSurface = Color(0xFF1A1A1A),
-                    background = Color(0xFFFAF8F5)
+                    surface = Color(0xFFF1EBDD),
+                    onSurface = Color(0xFF1A3D2E),
+                    background = Color(0xFFFDFBF7),
+                    secondaryContainer = Color(0xFFDCEBE2),
+                    onSecondaryContainer = Color(0xFF1A3D2E),
+                    surfaceVariant = Color(0xFFF1EBDD),
+                    onSurfaceVariant = Color(0xFF1A3D2E)
                 )
             ) {
                 AlertDialog(
