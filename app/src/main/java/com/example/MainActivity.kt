@@ -69,7 +69,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = androidx.activity.SystemBarStyle.light(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT
+            )
+        )
         locationViewModel = ViewModelProvider(this)[AppViewModel::class.java]
         apkUpdateChecker = ApkUpdateChecker(this).also { it.checkForUpdate() }
         requestNotificationAndAlarmAccess()
@@ -305,25 +310,25 @@ fun AqimSalahApp(
         }
     ) { innerPadding ->
         val activeWallpaper by viewModel.wallpaper.collectAsState()
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                // Keep app content below the Android status bar (clock, SIM/network and battery).
-                .statusBarsPadding()
-                .padding(
-                    if (activeDetailScreen == null && !(selectedTab == "QURAN" && isQuranReaderOpen)) innerPadding
-                    else PaddingValues(0.dp)
-                )
-        ) {
-            // One central background policy for every routed screen.
-            // Keep the Islamic geometric background on all non-Quran pages.
-            // Quran pages remain untouched; reading screens retain their own paper surface.
+        // Draw the wallpaper across the full window, including behind the transparent status bar.
+        // Keep actual screen content in a separate container that respects the status-bar inset.
+        Box(modifier = Modifier.fillMaxSize()) {
             val showPattern = selectedTab != "QURAN"
             ThemeBackground(
+                modifier = Modifier.fillMaxSize(),
                 wallpaper = if (showPattern) activeWallpaper else "NONE",
                 islamicPatternEnabled = showPattern
             )
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(
+                        if (activeDetailScreen == null && !(selectedTab == "QURAN" && isQuranReaderOpen)) innerPadding
+                        else PaddingValues(0.dp)
+                    )
+            ) {
             // Screens that use MaterialTheme.colorScheme.background as their root
             // surface must stay transparent so the shared pattern remains visible.
             // Reading screens keep a plain ivory background for comfortable reading.
@@ -586,6 +591,7 @@ fun ThemeBackground(
                     }
                 }
             }
+        }
         }
     }
 }
