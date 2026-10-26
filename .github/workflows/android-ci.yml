@@ -89,31 +89,31 @@ jobs:
                   with Image.open(io.BytesIO(data)) as image:
                       image.verify()
                   total_bytes += len(data)
-            text_parts = sorted(
-                name for name in archive.namelist()
-                if re.fullmatch(r"assets/quran_uthmani_part_\d{2}\.json", name)
-            )
-            if len(text_parts) != 15:
-                raise SystemExit(f"Expected 15 bundled Quran text parts in APK, found {len(text_parts)}")
-            surahs = {}
-            for name in text_parts:
-                payload = json.loads(archive.read(name).decode("utf-8"))
-                for surah in payload.get("surahs", []):
-                    sid = int(surah["id"])
-                    if sid in surahs:
-                        raise SystemExit(f"Duplicate Quran surah in APK: {sid}")
-                    surahs[sid] = surah
-            ayah_count = sum(len(surah.get("verses", [])) for surah in surahs.values())
-            if len(surahs) != 114 or ayah_count != 6236:
-                raise SystemExit(f"APK Quran text mismatch: {len(surahs)} surahs, {ayah_count} ayahs")
-            adhan_files = sorted(
-                name for name in archive.namelist()
-                if re.fullmatch(r"res/raw/adhan_[a-z0-9_]+\.mp3", name)
-            )
-            if len(adhan_files) < 4:
-                raise SystemExit(f"Expected at least 4 bundled adhan MP3 resources in APK, found {len(adhan_files)}")
-            print(f"Verified APK: 604 Quran page images, {len(surahs)} surahs, {ayah_count} ayahs, {len(adhan_files)} adhan MP3 resources.")
-            print(f"Verified all 604 readable Quran page images inside APK ({total_bytes / (1024 * 1024):.1f} MiB).")
+              text_parts = sorted(
+                  name for name in archive.namelist()
+                  if re.fullmatch(r"assets/quran_uthmani_part_\d{2}\.json", name)
+              )
+              if len(text_parts) != 15:
+                  raise SystemExit(f"Expected 15 bundled Quran text parts in APK, found {len(text_parts)}")
+              surahs = {}
+              for name in text_parts:
+                  payload = json.loads(archive.read(name).decode("utf-8"))
+                  for surah in payload.get("surahs", []):
+                      sid = int(surah["id"])
+                      if sid in surahs:
+                          raise SystemExit(f"Duplicate Quran surah in APK: {sid}")
+                      surahs[sid] = surah
+              ayah_count = sum(len(surah.get("verses", [])) for surah in surahs.values())
+              if len(surahs) != 114 or ayah_count != 6236:
+                  raise SystemExit(f"APK Quran text mismatch: {len(surahs)} surahs, {ayah_count} ayahs")
+              adhan_files = sorted(
+                  name for name in archive.namelist()
+                  if re.fullmatch(r"res/raw/adhan_[a-z0-9_]+\.mp3", name)
+              )
+              if len(adhan_files) < 4:
+                  raise SystemExit(f"Expected at least 4 bundled adhan MP3 resources in APK, found {len(adhan_files)}")
+              print(f"Verified APK: 604 Quran page images, {len(surahs)} surahs, {ayah_count} ayahs, {len(adhan_files)} adhan MP3 resources.")
+              print(f"Verified all 604 readable Quran page images inside APK ({total_bytes / (1024 * 1024):.1f} MiB).")
           PY
 
       - name: Upload Debug APK
