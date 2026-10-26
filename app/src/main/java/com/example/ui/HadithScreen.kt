@@ -119,7 +119,7 @@ fun HadithScreen(
 
     if (selectedBook != null) {
         // --- Dedicated Book Screen ---
-        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
             if (isLoadingFullBook) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Text(
@@ -381,8 +381,8 @@ fun HadithScreen(
 
             // Main Content: Last Reading Resume Banner + 10 Books Grid
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 100.dp),
+                modifier = Modifier.fillMaxSize().navigationBarsPadding(),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // Last Reading Resume Banner
@@ -552,7 +552,7 @@ fun BookCardItem(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = if (book.isFullyBundled) "متن كامل (42 حديث)" else "${book.chapters.size} أبواب موثقة",
+                            text = if (book.isFullyBundled) "متن كامل" else "${book.chapters.size} أبواب متاحة في هذه النسخة",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(book.primaryColorHex)
@@ -693,7 +693,7 @@ fun BookCoverCanvas(
 
             // Bottom authenticity stamp
             Text(
-                text = "نسخة محققة ومعتمدة",
+                text = if (book.isFullyBundled) "متن كامل" else "نصوص مختارة",
                 fontSize = if (isLarge) 10.sp else 8.sp,
                 color = goldColor.copy(alpha = 0.75f),
                 fontWeight = FontWeight.Normal,
@@ -768,8 +768,9 @@ fun HadithBookDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .navigationBarsPadding()
                 .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(bottom = 100.dp),
+            contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // --- 1. HERO HEADER: BOOK COVER & METADATA ---

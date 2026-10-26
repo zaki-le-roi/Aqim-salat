@@ -54,18 +54,37 @@ fun CalendarScreen(
     val daysInCurrentHijriMonth = (1..currentHijriMonthLength).toList()
 
     // Events are keyed by Hijri month/day and resolved to the next Gregorian date.
-    val islamicEvents = listOf(
+    val islamicEvents = remember { listOf(
         Triple("بداية شهر رمضان", "بداية صيام شهر رمضان المبارك", 9 to 1),
-        Triple("ليلة القدر", "ليلة القدر في العشر الأواخر (تاريخها المتوقع ٢٧ رمضان)", 9 to 27),
+        Triple("ليلة القدر", "ليلة القدر في العشر الأواخر (تاريخها المتوقع 27 رمضان)", 9 to 27),
         Triple("عيد الفطر", "أول شوال؛ يتأكد الموعد رسميًا برؤية الهلال", 10 to 1),
-        Triple("يوم عرفة", "٩ ذو الحجة", 12 to 9),
-        Triple("عيد الأضحى", "١٠ ذو الحجة؛ يتأكد الموعد رسميًا برؤية الهلال", 12 to 10),
-        Triple("رأس السنة الهجرية", "١ محرم", 1 to 1),
-        Triple("عاشوراء", "١٠ محرم", 1 to 10),
-        Triple("المولد النبوي الشريف", "١٢ ربيع الأول", 3 to 12),
-        Triple("الإسراء والمعراج", "٢٧ رجب (التاريخ المتداول)", 7 to 27),
-        Triple("منتصف شعبان", "١٥ شعبان", 8 to 15)
-    )
+        Triple("يوم عرفة", "9 ذو الحجة", 12 to 9),
+        Triple("عيد الأضحى", "10 ذو الحجة؛ يتأكد الموعد رسميًا برؤية الهلال", 12 to 10),
+        Triple("رأس السنة الهجرية", "1 محرم", 1 to 1),
+        Triple("عاشوراء", "10 محرم", 1 to 10),
+        Triple("المولد النبوي الشريف", "12 ربيع الأول", 3 to 12),
+        Triple("الإسراء والمعراج", "27 رجب (التاريخ المتداول)", 7 to 27),
+        Triple("منتصف شعبان", "15 شعبان", 8 to 15)
+    ) }
+
+    val sortedIslamicEvents = remember(today) {
+        islamicEvents.mapNotNull { event ->
+            val hijriDate = event.third
+            val startOfToday = Calendar.getInstance().apply {
+                time = today
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val nextDate = (0..400).firstNotNullOfOrNull { offset ->
+                val candidate = (startOfToday.clone() as Calendar).apply { add(Calendar.DAY_OF_MONTH, offset) }
+                val hijri = PrayerCalculator.getHijriDate(candidate.time, "ar")
+                if (hijri.month == hijriDate.first && hijri.day == hijriDate.second) candidate.time to offset else null
+            }
+            nextDate?.let { event to it }
+        }.sortedBy { it.second.first }
+    }
 
     fun performConversion() {
         val d = gregDay.toIntOrNull() ?: 1
@@ -133,7 +152,7 @@ fun CalendarScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "${currentHijri.day} ${currentHijri.monthName} ${currentHijri.year} هـ",
+                        text = DisplayNumberFormatter.westernDigits("${currentHijri.day} ${currentHijri.monthName} ${currentHijri.year} هـ"),
                         modifier = Modifier.fillMaxWidth(),
                         fontSize = 22.sp,
                         lineHeight = 30.sp,
@@ -144,7 +163,7 @@ fun CalendarScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = SimpleDateFormat("EEEE، dd MMMM yyyy", Locale("ar")).format(Date()),
+                        text = DisplayNumberFormatter.westernDigits(SimpleDateFormat("EEEE، dd MMMM yyyy", Locale("ar")).format(Date())),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -185,7 +204,7 @@ fun CalendarScreen(
                     }
                 }
             }
-            val monthLabel = SimpleDateFormat("MMMM yyyy", Locale("ar")).format(monthCalendar.time)
+            val monthLabel = DisplayNumberFormatter.westernDigits(SimpleDateFormat("MMMM yyyy", Locale("ar")).format(monthCalendar.time))
             Card(
                 modifier = Modifier.fillMaxWidth().testTag("calendar_dual_date_grid"),
                 shape = RoundedCornerShape(24.dp),
@@ -251,8 +270,8 @@ fun CalendarScreen(
                                             .padding(vertical = 5.dp, horizontal = 1.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        Text(cellCalendar.get(Calendar.DAY_OF_MONTH).toString(), fontSize = 14.sp, fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.SemiBold, color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
-                                        Text("${hijri.day}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f))
+                                        Text(DisplayNumberFormatter.westernDigits(cellCalendar.get(Calendar.DAY_OF_MONTH).toString()), fontSize = 14.sp, fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.SemiBold, color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+                                        Text(DisplayNumberFormatter.westernDigits("${hijri.day}"), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f))
                                         if (eventLabel != null) Text(eventLabel, fontSize = 8.sp, lineHeight = 10.sp, textAlign = TextAlign.Center, color = Color(0xFF9A6B08), fontWeight = FontWeight.Bold, maxLines = 2)
                                     }
                                 }
@@ -333,7 +352,7 @@ fun CalendarScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = convertedHijriResult,
+                                text = DisplayNumberFormatter.westernDigits(convertedHijriResult),
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.fillMaxWidth(),
                                 fontSize = 18.sp,
@@ -364,25 +383,8 @@ fun CalendarScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    islamicEvents.forEach { (title, description, hijriDate) ->
-                        val nextEvent = remember(today, hijriDate) {
-                            val startOfToday = Calendar.getInstance().apply {
-                                time = today
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                                set(Calendar.MILLISECOND, 0)
-                            }
-                            (0..400).firstNotNullOfOrNull { offset ->
-                                val candidate = (startOfToday.clone() as Calendar).apply {
-                                    add(Calendar.DAY_OF_MONTH, offset)
-                                }
-                                val hijri = PrayerCalculator.getHijriDate(candidate.time, "ar")
-                                if (hijri.month == hijriDate.first && hijri.day == hijriDate.second) {
-                                    candidate.time to offset
-                                } else null
-                            }
-                        }
+                    sortedIslamicEvents.forEach { (event, nextEvent) ->
+                        val (title, description, hijriDate) = event
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -406,23 +408,23 @@ fun CalendarScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = "${hijriDate.second} ${when (hijriDate.first) {
+                                        text = DisplayNumberFormatter.westernDigits("${hijriDate.second} ${when (hijriDate.first) {
                                             1 -> "محرم"; 2 -> "صفر"; 3 -> "ربيع الأول"; 4 -> "ربيع الآخر"
                                             5 -> "جمادى الأولى"; 6 -> "جمادى الآخرة"; 7 -> "رجب"; 8 -> "شعبان"
                                             9 -> "رمضان"; 10 -> "شوال"; 11 -> "ذو القعدة"; else -> "ذو الحجة"
-                                        }}",
+                                        }}"),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF76570C)
                                     )
                                     Text(
-                                        text = nextEvent?.first?.let { SimpleDateFormat("d MMM yyyy", Locale("ar")).format(it) } ?: "—",
+                                        text = DisplayNumberFormatter.westernDigits(SimpleDateFormat("d MMM yyyy", Locale("ar")).format(nextEvent.first)),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF76570C)
                                     )
                                     Text(
-                                        text = nextEvent?.second?.let { if (it == 0) "اليوم" else "باقي $it يومًا" } ?: "—",
+                                        text = DisplayNumberFormatter.westernDigits(if (nextEvent.second == 0) "اليوم" else "باقي ${nextEvent.second} يومًا"),
                                         fontSize = 10.sp,
                                         color = Color(0xFF76570C)
                                     )

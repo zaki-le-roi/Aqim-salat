@@ -189,6 +189,15 @@ fun QuranScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("ALL") } // ALL, MECCAN, MEDINAN, BOOKMARKS
     var selectedSurah by remember { mutableStateOf<QuranData.Surah?>(null) }
+    var offlineAvailableSurahIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
+    LaunchedEffect(context) {
+        offlineAvailableSurahIds = withContext(Dispatchers.IO) {
+            QuranData.surahs.mapNotNull { item ->
+                val ayahs = QuranOfflineData.loadSurah(context, item.id)
+                if (!ayahs.isNullOrEmpty() && ayahs.all { it.arabicText.isNotBlank() }) item.id else null
+            }.toSet()
+        }
+    }
 
     LaunchedEffect(selectedSurah) {
         onReadingModeChange(selectedSurah != null)
@@ -597,7 +606,7 @@ fun QuranScreen(
                                         }
 
                                         // Offline availability indicator
-                                        val isOffline = surah.id in QuranData.localAyahs.keys
+                                        val isOffline = surah.id in offlineAvailableSurahIds
                                         if (isOffline) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
@@ -988,11 +997,15 @@ fun SurahReader(
 
         if (showIndex) {
             MaterialTheme(
-                colorScheme = lightColorScheme(
+                colorScheme = MaterialTheme.colorScheme.copy(
                     primary = Color(0xFF115E3F),
-                    surface = Color(0xFFFAF8F5),
-                    onSurface = Color(0xFF1A1A1A),
-                    background = Color(0xFFFAF8F5)
+                    surface = Color(0xFFF1EBDD),
+                    onSurface = Color(0xFF1A3D2E),
+                    background = Color(0xFFFDFBF7),
+                    secondaryContainer = Color(0xFFDCEBE2),
+                    onSecondaryContainer = Color(0xFF1A3D2E),
+                    surfaceVariant = Color(0xFFF1EBDD),
+                    onSurfaceVariant = Color(0xFF1A3D2E)
                 )
             ) {
                 AlertDialog(
@@ -1073,11 +1086,15 @@ fun SurahReader(
 
         if (showJuzIndex) {
             MaterialTheme(
-                colorScheme = lightColorScheme(
+                colorScheme = MaterialTheme.colorScheme.copy(
                     primary = Color(0xFF115E3F),
-                    surface = Color(0xFFFAF8F5),
-                    onSurface = Color(0xFF1A1A1A),
-                    background = Color(0xFFFAF8F5)
+                    surface = Color(0xFFF1EBDD),
+                    onSurface = Color(0xFF1A3D2E),
+                    background = Color(0xFFFDFBF7),
+                    secondaryContainer = Color(0xFFDCEBE2),
+                    onSecondaryContainer = Color(0xFF1A3D2E),
+                    surfaceVariant = Color(0xFFF1EBDD),
+                    onSurfaceVariant = Color(0xFF1A3D2E)
                 )
             ) {
                 AlertDialog(
