@@ -19,15 +19,27 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Install ffprobe
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          ffprobe -version | head -n 1
+
       - name: Download and validate all four adhan files
         shell: bash
         run: |
           set -euo pipefail
           SOURCE="app/src/main/java/com/example/adhan/AdhanPlaybackService.kt"
+          DEST="app/src/main/res/raw"
           test -f "$SOURCE"
-          mkdir -p app/src/main/res/raw
+          mkdir -p "$DEST"
           TMP="$(mktemp -d)"
           trap 'rm -rf "$TMP"' EXIT
+          : > "$TMP/manifest.tsv"
 
           get_url() {
             local name="$1"
@@ -35,41 +47,111 @@ jobs:
           }
 
           download_and_check() {
-            local constant="$1"
-            local output="$2"
-            local url
-            url="$(get_url "$constant")"
-            if [[ -z "$url" || "$url" != https://* ]]; then
-              echo "::error::Could not read HTTPS URL for $constant from $SOURCE"
-              exit 1
+            local constant="$1" stem="$2" url="$3"
+            local path="$TMP/$stem.download" size first_bytes file_result headers content_type probe_result duration formats codec extension
+            echo
+            echo "========== $stem =========="
+            echo "URL constant: $constant"
+            echo "URL: $url"
+
+            headers="$(curl -sSIL --max-time 45 --retry 2 "$url" || true)"
+            echo "--- curl -sIL response headers ---"
+            printf '%s\n' "$headers"
+            content_type="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-type:/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/\r/, ""); value=$0} END{print value}')"
+            echo "Content-Type (last reported): ${content_type:-not reported}"
+
+            curl --location --fail --silent --show-error --retry 3 --max-time 180 "$url" --output "$path"
+            size="$(wc -c < "$path" | tr -d ' ')"
+            first_bytes="$(xxd -l 16 "$path" 2>&1 || true)"
+            file_result="$(file -b "$path" 2>&1 || true)"
+            echo "Size: $size bytes"
+            echo "First 16 bytes (xxd -l 16):"
+            printf '%s\n' "$first_bytes"
+            echo "file result: $file_result"
+
+            if (( size < 102400 )); then
+              echo "::error::$stem rejected: file is smaller than 100 KiB ($size bytes)"
+              return 1
             fi
-            echo "Downloading $constant -> $output"
-            curl --location --fail --silent --show-error --retry 3 "$url" --output "$TMP/$output"
-            local size
-            size="$(wc -c < "$TMP/$output")"
-            if (( size <= 102400 )); then
-              echo "::error::$output is only $size bytes; expected more than 100 KiB"
-              exit 1
+            if head -c 1024 "$path" | LC_ALL=C grep -Eaiq '<html|<!doctype'; then
+              echo "::error::$stem rejected: HTML/DOCTYPE detected in the first 1 KiB"
+              return 1
             fi
-            local description
-            description="$(file -b "$TMP/$output")"
-            echo "$output: $size bytes; file reports: $description"
-            if ! printf '%s' "$description" | grep -Eiq 'audio|mpeg|mp3'; then
-              echo "::error::$output does not appear to be an audio/MP3 file"
-              exit 1
+
+            echo "--- ffprobe result ---"
+            if ! probe_result="$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name,duration:format=format_name,duration -of default=noprint_wrappers=1 "$path" 2>&1)"; then
+              printf '%s\n' "$probe_result"
+              echo "::error::$stem rejected: ffprobe failed"
+              return 1
             fi
+            printf '%s\n' "$probe_result"
+            duration="$(printf '%s\n' "$probe_result" | awk -F= '$1=="duration" && $2!="N/A" {if ($2+0>max) max=$2+0} END {if (max>0) print max}')"
+            formats="$(printf '%s\n' "$probe_result" | awk -F= '$1=="format_name" {print $2; exit}')"
+            codec="$(printf '%s\n' "$probe_result" | awk -F= '$1=="codec_name" {print $2; exit}')"
+            if [[ -z "${duration:-}" ]] || ! awk -v d="$duration" 'BEGIN {exit !(d > 5)}'; then
+              echo "::error::$stem rejected: audio duration must be greater than 5 seconds (duration=${duration:-unknown})"
+              return 1
+            fi
+            if [[ -z "${codec:-}" ]]; then
+              echo "::error::$stem rejected: ffprobe found no audio stream"
+              return 1
+            fi
+
+            case ",${formats:-}," in
+              *,mp3,*) extension="mp3" ;;
+              *,wav,*) extension="wav" ;;
+              *,ogg,*) extension="ogg" ;;
+              *,flac,*) extension="flac" ;;
+              *,aac,*) extension="aac" ;;
+              *,m4a,*|*,mov,*|*,mp4,*) extension="m4a" ;;
+              *,webm,*) extension="webm" ;;
+              *,matroska,*) extension="mka" ;;
+              *)
+                case "$codec" in
+                  mp3) extension="mp3" ;;
+                  aac) extension="aac" ;;
+                  flac) extension="flac" ;;
+                  vorbis|opus) extension="ogg" ;;
+                  pcm_*) extension="wav" ;;
+                  *) echo "::error::$stem unsupported audio format: formats=${formats:-unknown}, codec=$codec"; return 1 ;;
+                esac
+                ;;
+            esac
+
+            echo "Validation: PASS"
+            echo "Audio codec: $codec"
+            echo "Container format: ${formats:-unknown}"
+            echo "Duration: ${duration}s"
+            echo "Detected extension: .$extension"
+            printf '%s\t%s\n' "$stem" "$extension" >> "$TMP/manifest.tsv"
+            cp "$path" "$TMP/$stem.$extension"
           }
 
-          download_and_check MAKKAH_ATHAN_URL adhan_makkah.mp3
-          download_and_check MADINAH_ATHAN_URL adhan_madinah.mp3
-          download_and_check ALAFASY_ATHAN_URL adhan_alafasy.mp3
-          download_and_check FAJR_ATHAN_URL adhan_fajr.mp3
+          MAKKAH_URL="$(get_url MAKKAH_ATHAN_URL)"
+          MADINAH_URL="$(get_url MADINAH_ATHAN_URL)"
+          ALAFASY_URL="$(get_url ALAFASY_ATHAN_URL)"
+          FAJR_URL="$(get_url FAJR_ATHAN_URL)"
+          for pair in "MAKKAH_ATHAN_URL:$MAKKAH_URL" "MADINAH_ATHAN_URL:$MADINAH_URL" "ALAFASY_ATHAN_URL:$ALAFASY_URL" "FAJR_ATHAN_URL:$FAJR_URL"; do
+            url="${pair#*:}"
+            if [[ -z "$url" || "$url" != https://* ]]; then
+              echo "::error::Could not read HTTPS URL from $SOURCE for ${pair%%:*}"
+              exit 1
+            fi
+          done
 
-          # Copy only after every download has passed validation.
-          install -m 0644 "$TMP/adhan_makkah.mp3" app/src/main/res/raw/adhan_makkah.mp3
-          install -m 0644 "$TMP/adhan_madinah.mp3" app/src/main/res/raw/adhan_madinah.mp3
-          install -m 0644 "$TMP/adhan_alafasy.mp3" app/src/main/res/raw/adhan_alafasy.mp3
-          install -m 0644 "$TMP/adhan_fajr.mp3" app/src/main/res/raw/adhan_fajr.mp3
+          # Every file must validate before any repository resource is changed.
+          download_and_check MAKKAH_ATHAN_URL adhan_makkah "$MAKKAH_URL"
+          download_and_check MADINAH_ATHAN_URL adhan_madinah "$MADINAH_URL"
+          download_and_check ALAFASY_ATHAN_URL adhan_alafasy "$ALAFASY_URL"
+          download_and_check FAJR_ATHAN_URL adhan_fajr "$FAJR_URL"
+
+          echo
+          echo "All four files passed validation. Installing validated files."
+          while IFS=$'\t' read -r stem extension; do
+            install -m 0644 "$TMP/$stem.$extension" "$DEST/$stem.$extension"
+            find "$DEST" -maxdepth 1 -type f -name "$stem.*" ! -name "$stem.$extension" -delete
+            echo "Installed: $DEST/$stem.$extension"
+          done < "$TMP/manifest.tsv"
 
       - name: Commit and push audio files to main
         shell: bash
@@ -77,7 +159,10 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/res/raw/adhan_makkah.mp3 app/src/main/res/raw/adhan_madinah.mp3 app/src/main/res/raw/adhan_alafasy.mp3 app/src/main/res/raw/adhan_fajr.mp3
-          git diff --cached --quiet && { echo "All four validated audio files are already up to date."; exit 0; }
+          git add -A app/src/main/res/raw/
+          if git diff --cached --quiet; then
+            echo "All four validated audio files are already up to date; nothing to push."
+            exit 0
+          fi
           git commit -m "Add validated offline adhan audio files"
           git push origin HEAD:main
