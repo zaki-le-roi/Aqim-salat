@@ -460,6 +460,7 @@ fun AqimSalahApp(
             }
             }
         }
+        }
     }
 }
 
@@ -591,7 +592,6 @@ fun ThemeBackground(
                     }
                 }
             }
-        }
         }
     }
 }
