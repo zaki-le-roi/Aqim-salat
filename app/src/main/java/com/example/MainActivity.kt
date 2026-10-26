@@ -308,14 +308,17 @@ fun AqimSalahApp(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                // Keep app content below the Android status bar (clock, SIM/network and battery).
+                .statusBarsPadding()
                 .padding(
                     if (activeDetailScreen == null && !(selectedTab == "QURAN" && isQuranReaderOpen)) innerPadding
                     else PaddingValues(0.dp)
                 )
         ) {
             // One central background policy for every routed screen.
-            val showPattern = selectedTab != "QURAN" &&
-                activeDetailScreen !in setOf("QURAN_AUDIO", "HADITH", "ZAD_ALMUSLIM", "SCHOLARS_LIBRARY")
+            // Keep the Islamic geometric background on all non-Quran pages.
+            // Quran pages remain untouched; reading screens retain their own paper surface.
+            val showPattern = selectedTab != "QURAN"
             ThemeBackground(
                 wallpaper = if (showPattern) activeWallpaper else "NONE",
                 islamicPatternEnabled = showPattern
@@ -469,41 +472,47 @@ fun ThemeBackground(
         val height = size.height
 
         if (islamicPatternEnabled) {
-            // Warm ivory base and a low-alpha repeating eight-point star lattice.
+            // Continuous Islamic geometric tiling: linked octagons and squares, not isolated stars.
             drawRect(color = Color(0xFFFAF8F2))
-            val spacing = 96.dp.toPx()
-            val outerRadius = 17.dp.toPx()
-            val innerRadius = 6.2.dp.toPx()
-            val gold = Color(0xFFC5A059).copy(alpha = 0.16f)
-            val beige = Color(0xFF9A8058).copy(alpha = 0.095f)
-            val stroke = 0.95.dp.toPx()
+            val spacing = 104.dp.toPx()
+            val outerRadius = 27.dp.toPx()
+            val innerRadius = 16.dp.toPx()
+            val stroke = 1.05.dp.toPx()
+            val gold = Color(0xFFC5A059).copy(alpha = 0.19f)
+            val sand = Color(0xFF9A8058).copy(alpha = 0.12f)
             var row = -1
             var y = -spacing
             while (y <= height + spacing) {
                 var col = -1
                 var x = -spacing
                 while (x <= width + spacing) {
-                    val star = androidx.compose.ui.graphics.Path()
-                    for (i in 0 until 16) {
-                        val angle = Math.PI * i / 8.0 - Math.PI / 2.0
-                        val radius = if (i % 2 == 0) outerRadius else innerRadius
-                        val px = x + kotlin.math.cos(angle).toFloat() * radius
-                        val py = y + kotlin.math.sin(angle).toFloat() * radius
-                        if (i == 0) star.moveTo(px, py) else star.lineTo(px, py)
+                    val octagon = androidx.compose.ui.graphics.Path()
+                    for (i in 0 until 8) {
+                        val angle = Math.PI * i / 4.0 - Math.PI / 8.0
+                        val px = x + kotlin.math.cos(angle).toFloat() * outerRadius
+                        val py = y + kotlin.math.sin(angle).toFloat() * outerRadius
+                        if (i == 0) octagon.moveTo(px, py) else octagon.lineTo(px, py)
                     }
-                    star.close()
-                    drawPath(
-                        path = star,
-                        color = if ((row + col) % 2 == 0) gold else beige,
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke)
-                    )
-                    // Sparse diagonal connectors form a repeating Islamic geometric tile.
-                    drawLine(
-                        color = beige,
-                        start = androidx.compose.ui.geometry.Offset(x + outerRadius * 0.72f, y + outerRadius * 0.72f),
-                        end = androidx.compose.ui.geometry.Offset(x + spacing / 2f, y + spacing / 2f),
-                        strokeWidth = stroke
-                    )
+                    octagon.close()
+                    drawPath(path = octagon, color = if ((row + col) % 2 == 0) gold else sand,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke))
+                    val square = androidx.compose.ui.graphics.Path().apply {
+                        moveTo(x - innerRadius, y - innerRadius)
+                        lineTo(x + innerRadius, y - innerRadius)
+                        lineTo(x + innerRadius, y + innerRadius)
+                        lineTo(x - innerRadius, y + innerRadius)
+                        close()
+                    }
+                    drawPath(path = square, color = sand,
+                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = stroke))
+                    drawLine(color = sand,
+                        start = androidx.compose.ui.geometry.Offset(x + outerRadius * 0.72f, y),
+                        end = androidx.compose.ui.geometry.Offset(x + spacing - outerRadius * 0.72f, y),
+                        strokeWidth = stroke)
+                    drawLine(color = sand,
+                        start = androidx.compose.ui.geometry.Offset(x, y + outerRadius * 0.72f),
+                        end = androidx.compose.ui.geometry.Offset(x, y + spacing - outerRadius * 0.72f),
+                        strokeWidth = stroke)
                     x += spacing
                     col++
                 }
@@ -511,7 +520,7 @@ fun ThemeBackground(
                 row++
             }
         }
-        
+
         when (wallpaper) {
             "MOSQUE SILHOUETTE" -> {
                 val path = androidx.compose.ui.graphics.Path().apply {
