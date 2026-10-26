@@ -58,7 +58,7 @@ jobs:
             echo "--- curl -sIL response headers ---"
             printf '%s\n' "$headers"
             content_type="$(printf '%s\n' "$headers" | awk 'BEGIN{IGNORECASE=1} /^content-type:/ {sub(/^[^:]*:[[:space:]]*/, ""); gsub(/\r/, ""); value=$0} END{print value}')"
-            echo "Content-Type (last reported): ${content_type:-not reported}"
+            echo "Content-Type (last reported by curl -sIL): ${content_type:-not reported}"
 
             curl --location --fail --silent --show-error --retry 3 --max-time 180 "$url" --output "$path"
             size="$(wc -c < "$path" | tr -d ' ')"
@@ -77,8 +77,9 @@ jobs:
               echo "::error::$stem rejected: HTML/DOCTYPE detected in the first 1 KiB"
               return 1
             fi
+            echo "HTML/DOCTYPE check (first 1 KiB): PASS"
 
-            echo "--- ffprobe result ---"
+            echo "--- ffprobe result (must exit successfully and identify an audio stream longer than 5 seconds) ---"
             if ! probe_result="$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name,duration:format=format_name,duration -of default=noprint_wrappers=1 "$path" 2>&1)"; then
               printf '%s\n' "$probe_result"
               echo "::error::$stem rejected: ffprobe failed"
