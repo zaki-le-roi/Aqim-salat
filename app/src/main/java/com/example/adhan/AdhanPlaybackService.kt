@@ -29,7 +29,7 @@ class AdhanPlaybackService : Service() {
         prayerName = intent?.getStringExtra(EXTRA_PRAYER_NAME) ?: "الصلاة"
         prayerKey = intent?.getStringExtra(EXTRA_PRAYER_KEY) ?: ""
         muadhinOverride = intent?.getStringExtra(EXTRA_MUADHIN_OVERRIDE)
-        Log.e(TAG, "start prayer=$prayerName key=$prayerKey muadhin=" + selectedMuadhinCode() + " override=" + (muadhinOverride ?: "none"))
+        Log.e(TAG, "start prayer=$prayerName key=$prayerKey muadhin=" + selectedMuadhinCode() + " name=" + selectedMuadhinName() + " override=" + (muadhinOverride ?: "none"))
         attempt = 0
         fallbackShown = false
         createPlaybackChannel()
@@ -88,6 +88,13 @@ class AdhanPlaybackService : Service() {
         if (muadhinOverride != null) return muadhinOverride!!
         val prefs = getSharedPreferences("audio_preferences", Context.MODE_PRIVATE)
         return prefs.getString("muadhin_${prayerKey}", prefs.getString("default_muadhin", "MAKKAH")) ?: "MAKKAH"
+    }
+
+    private fun selectedMuadhinName(): String = when (selectedMuadhinCode()) {
+        "MADINAH" -> "أذان المدينة المنورة"
+        "ALAFASY" -> "أذان مشاري العفاسي"
+        "FAJR_SPECIAL" -> "أذان الفجر الخاص"
+        else -> "أذان مكة المكرمة"
     }
 
     private fun selectedExternalUrl(): String {
