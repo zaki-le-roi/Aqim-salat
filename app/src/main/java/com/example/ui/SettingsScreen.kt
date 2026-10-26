@@ -580,51 +580,23 @@ fun SettingsScreen(
         var selectedPrayer by remember { mutableStateOf("Fajr") }
         var selectedMuadhin by remember { mutableStateOf(audioPrefs.getString("muadhin_Fajr", defaultMuadhinVal) ?: defaultMuadhinVal) }
         var previewingCode by remember { mutableStateOf<String?>(null) }
-        val previewPlayer = remember { arrayOfNulls<MediaPlayer>(1) }
-        DisposableEffect(Unit) {
-            onDispose {
-                previewPlayer[0]?.runCatching { stop() }
-                previewPlayer[0]?.release()
-                previewPlayer[0] = null
-            }
-        }
         fun stopAdhanPreview() {
-            previewPlayer[0]?.runCatching { stop() }
-            previewPlayer[0]?.release()
-            previewPlayer[0] = null
+            context.stopService(Intent(context, com.example.adhan.AdhanPlaybackService::class.java))
             previewingCode = null
         }
         fun previewAdhan(code: String) {
             stopAdhanPreview()
-            val url = when (code) {
-                "MADINAH" -> "https://www.islamcan.com/audio/adhan/azan2.mp3"
-                "ALAFASY" -> "https://www.islamcan.com/audio/adhan/azan8.mp3"
-                "FAJR_SPECIAL" -> "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
-                else -> "https://www.islamcan.com/audio/adhan/azan1.mp3"
-            }
             previewingCode = code
-            runCatching {
-                MediaPlayer().apply {
-                    previewPlayer[0] = this
-                    setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
-                    setDataSource(url)
-                    setOnPreparedListener { player -> if (previewPlayer[0] === player) player.start() }
-                    setOnCompletionListener { player ->
-                        player.release()
-                        if (previewPlayer[0] === player) { previewPlayer[0] = null; previewingCode = null }
-                    }
-                    setOnErrorListener { player, _, _ ->
-                        player.release()
-                        if (previewPlayer[0] === player) { previewPlayer[0] = null; previewingCode = null }
-                        Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
-                        true
-                    }
-                    prepareAsync()
-                }
-            }.onFailure {
-                stopAdhanPreview()
-                Toast.makeText(context, if (lang == "ar") "تعذر تشغيل المعاينة. تحقق من الإنترنت." else "Preview failed. Check your internet connection.", Toast.LENGTH_LONG).show()
+            val serviceIntent = Intent(context, com.example.adhan.AdhanPlaybackService::class.java).apply {
+                putExtra(com.example.adhan.AdhanPlaybackService.EXTRA_PRAYER_NAME, selectedPrayer)
+                putExtra(com.example.adhan.AdhanPlaybackService.EXTRA_PRAYER_KEY, selectedPrayer)
+                putExtra(com.example.adhan.AdhanPlaybackService.EXTRA_MUADHIN_OVERRIDE, code)
             }
+            runCatching { ContextCompat.startForegroundService(context, serviceIntent) }
+                .onFailure {
+                    previewingCode = null
+                    Toast.makeText(context, "تعذر بدء تجربة الأذان: " + (it.message ?: "خطأ غير معروف"), Toast.LENGTH_LONG).show()
+                }
         }
         AlertDialog(
             onDismissRequest = { stopAdhanPreview(); activeDialog = null },
