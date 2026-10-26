@@ -30,7 +30,9 @@ jobs:
             echo "::error::sdkmanager was not found under $ANDROID_HOME/cmdline-tools"
             exit 1
           fi
+          set +o pipefail
           yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
           "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
