@@ -1,0 +1,61 @@
+name: Clean Madinah adhan audio
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/clean-madinah-audio.yml
+
+permissions:
+  contents: write
+
+jobs:
+  clean-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Lossless repack and validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          input="app/src/main/res/raw/adhan_madinah.mp3"
+          output="$RUNNER_TEMP/adhan_madinah_clean.mp3"
+          test -s "$input"
+          echo "Input size: $(stat -c%s "$input") bytes"
+          echo "Input first 16 bytes:"
+          xxd -l 16 "$input"
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$input"
+          ffmpeg -hide_banner -v error -i "$input" -c copy -map_metadata -1 "$output"
+          test "$(stat -c%s "$output")" -gt 102400
+          echo "Output size: $(stat -c%s "$output") bytes"
+          echo "Output first 16 bytes:"
+          xxd -l 16 "$output"
+          header="$(xxd -p -l 3 "$output" | tr '[:lower:]' '[:upper:]')"
+          if [[ "$header" != "494433" && "$(xxd -p -l 2 "$output" | tr '[:lower:]' '[:upper:]')" != "FFFB" ]]; then
+            echo "::error::Cleaned file header is neither ID3 nor MPEG frame sync"
+            exit 1
+          fi
+          duration="$(ffprobe -v error -select_streams a:0 -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$output")"
+          echo "ffprobe duration: $duration seconds"
+          awk -v d="$duration" 'BEGIN { if (d < 185 || d > 187) exit 1 }' || { echo "::error::Duration is not near 186 seconds"; exit 1; }
+          ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "$output" | grep -qx mp3
+          cp "$output" "$input"
+
+      - name: Commit only after validation
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/res/raw/adhan_madinah.mp3
+          git commit -m "Clean Madinah adhan MP3 container without re-encoding"
+          git push origin HEAD:main
