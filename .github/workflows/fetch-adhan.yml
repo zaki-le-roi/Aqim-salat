@@ -1,0 +1,83 @@
+name: Fetch Adhan Audio
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/fetch-adhan.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download and validate all four adhan files
+        shell: bash
+        run: |
+          set -euo pipefail
+          SOURCE="app/src/main/java/com/example/adhan/AdhanPlaybackService.kt"
+          test -f "$SOURCE"
+          mkdir -p app/src/main/res/raw
+          TMP="$(mktemp -d)"
+          trap 'rm -rf "$TMP"' EXIT
+
+          get_url() {
+            local name="$1"
+            sed -nE "s/.*private const val ${name} = \"([^\"]+)\".*/\\1/p" "$SOURCE" | head -n 1
+          }
+
+          download_and_check() {
+            local constant="$1"
+            local output="$2"
+            local url
+            url="$(get_url "$constant")"
+            if [[ -z "$url" || "$url" != https://* ]]; then
+              echo "::error::Could not read HTTPS URL for $constant from $SOURCE"
+              exit 1
+            fi
+            echo "Downloading $constant -> $output"
+            curl --location --fail --silent --show-error --retry 3 "$url" --output "$TMP/$output"
+            local size
+            size="$(wc -c < "$TMP/$output")"
+            if (( size <= 102400 )); then
+              echo "::error::$output is only $size bytes; expected more than 100 KiB"
+              exit 1
+            fi
+            local description
+            description="$(file -b "$TMP/$output")"
+            echo "$output: $size bytes; file reports: $description"
+            if ! printf '%s' "$description" | grep -Eiq 'audio|mpeg|mp3'; then
+              echo "::error::$output does not appear to be an audio/MP3 file"
+              exit 1
+            fi
+          }
+
+          download_and_check MAKKAH_ATHAN_URL adhan_makkah.mp3
+          download_and_check MADINAH_ATHAN_URL adhan_madinah.mp3
+          download_and_check ALAFASY_ATHAN_URL adhan_alafasy.mp3
+          download_and_check FAJR_ATHAN_URL adhan_fajr.mp3
+
+          # Copy only after every download has passed validation.
+          install -m 0644 "$TMP/adhan_makkah.mp3" app/src/main/res/raw/adhan_makkah.mp3
+          install -m 0644 "$TMP/adhan_madinah.mp3" app/src/main/res/raw/adhan_madinah.mp3
+          install -m 0644 "$TMP/adhan_alafasy.mp3" app/src/main/res/raw/adhan_alafasy.mp3
+          install -m 0644 "$TMP/adhan_fajr.mp3" app/src/main/res/raw/adhan_fajr.mp3
+
+      - name: Commit and push audio files to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/res/raw/adhan_makkah.mp3 app/src/main/res/raw/adhan_madinah.mp3 app/src/main/res/raw/adhan_alafasy.mp3 app/src/main/res/raw/adhan_fajr.mp3
+          git diff --cached --quiet && { echo "All four validated audio files are already up to date."; exit 0; }
+          git commit -m "Add validated offline adhan audio files"
+          git push origin HEAD:main
