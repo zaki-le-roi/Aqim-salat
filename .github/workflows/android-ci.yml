@@ -36,60 +36,18 @@ jobs:
           gradle-version: "9.7.1"
           validate-wrappers: false
 
+      - name: Cache offline Quran page images
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/assets/quran_pages
+          key: quran-pages-${{ runner.os }}-${{ hashFiles('scripts/prepare_quran_pages.py') }}
+
       - name: Prepare offline Quran page images
         env:
           PYTHONUNBUFFERED: "1"
         run: |
           python3 -m pip install --user --break-system-packages Pillow
-          python3 - <<'PY'
-          import concurrent.futures
-          import io
-          import os
-          import time
-          import urllib.request
-          from pathlib import Path
-          from PIL import Image
-
-          output = Path("app/src/main/assets/quran_pages")
-          output.mkdir(parents=True, exist_ok=True)
-          base = "https://raw.githubusercontent.com/akram-seid/quran-hd-images/main/images"
-
-          def prepare(page):
-              name = f"{page:03d}"
-              target = output / f"{name}.webp"
-              if target.exists() and target.stat().st_size > 1000:
-                  return page, target.stat().st_size
-              request = urllib.request.Request(
-                  f"{base}/{name}.jpg",
-                  headers={"User-Agent": "Aqim-Salat-Offline-Quran/1.0"}
-              )
-              last_error = None
-              for attempt in range(4):
-                  try:
-                      with urllib.request.urlopen(request, timeout=45) as response:
-                          data = response.read()
-                      with Image.open(io.BytesIO(data)) as image:
-                          image = image.convert("RGB")
-                          if image.width > 1080:
-                              height = round(image.height * 1080 / image.width)
-                              image = image.resize((1080, height), Image.Resampling.LANCZOS)
-                          image.save(target, "WEBP", quality=82, method=6)
-                      if target.stat().st_size < 1000:
-                          raise RuntimeError("Converted page is unexpectedly small")
-                      return page, target.stat().st_size
-                  except Exception as exc:
-                      last_error = exc
-                      time.sleep(attempt + 1)
-              raise RuntimeError(f"Page {name} failed: {last_error}")
-
-          total = 0
-          with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
-              for page, size in sorted(pool.map(prepare, range(1, 605))):
-                  total += size
-                  if page % 50 == 0 or page == 604:
-                      print(f"Prepared Quran pages: {page}/604")
-          print(f"Offline Quran pages ready: 604 files, {total / (1024 * 1024):.1f} MiB")
-          PY
+          python3 scripts/prepare_quran_pages.py
 
       - name: Validate bundled Quran text
         run: python3 scripts/validate_quran_assets.py

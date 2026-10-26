@@ -5,6 +5,8 @@ on:
   push:
     branches: ["main"]
     tags: ["v*"]
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: write
@@ -15,7 +17,7 @@ concurrency:
 
 jobs:
   publish:
-    if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -89,6 +91,19 @@ jobs:
           path.write_text(content)
           PY
 
+      - name: Cache offline Quran page images
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/assets/quran_pages
+          key: quran-pages-${{ runner.os }}-${{ hashFiles('scripts/prepare_quran_pages.py') }}
+
+      - name: Prepare offline Quran page images
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python3 -m pip install --user --break-system-packages Pillow
+          python3 scripts/prepare_quran_pages.py
+
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
@@ -110,6 +125,43 @@ jobs:
           test -n "$APKSIGNER"
           "$APKSIGNER" verify --verbose Aqim-Salat.apk
 
+      - name: Verify all Quran page images are bundled in release APK
+        run: |
+          python3 - <<'PY'
+          import io
+          import zipfile
+          from pathlib import Path
+          from PIL import Image
+
+          apk = Path("Aqim-Salat.apk")
+          if not apk.is_file():
+              raise SystemExit("Release APK was not created")
+          expected = [f"assets/quran_pages/{page:03d}.webp" for page in range(1, 605)]
+          with zipfile.ZipFile(apk) as archive:
+              names = archive.namelist()
+              actual = sorted(
+                  name for name in names
+                  if name.startswith("assets/quran_pages/") and not name.endswith("/")
+              )
+              if actual != expected:
+                  missing = sorted(set(expected) - set(actual))
+                  extra = sorted(set(actual) - set(expected))
+                  raise SystemExit(
+                      f"Release Quran verification failed: expected exactly 604 pages; "
+                      f"found {len(actual)} files. Missing: {missing[:10]}; extra: {extra[:10]}"
+                  )
+              total_bytes = 0
+              for name in expected:
+                  data = archive.read(name)
+                  with Image.open(io.BytesIO(data)) as image:
+                      image.verify()
+                  total_bytes += len(data)
+          print(
+              f"Verified exactly 604 valid Quran page images in release APK "
+              f"({total_bytes / (1024 * 1024):.1f} MiB)."
+          )
+          PY
+
       - name: Upload signed APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -119,6 +171,7 @@ jobs:
           retention-days: 7
 
       - name: Publish latest signed APK
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
