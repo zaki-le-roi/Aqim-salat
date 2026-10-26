@@ -10,6 +10,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.example.MainActivity
@@ -21,10 +22,14 @@ class AdhanPlaybackService : Service() {
     private var prayerKey: String = ""
     private var attempt = 0
     private var fallbackShown = false
+    private var muadhinOverride: String? = null
+    private var lastFailureReason: String = "سبب غير معروف"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         prayerName = intent?.getStringExtra(EXTRA_PRAYER_NAME) ?: "الصلاة"
         prayerKey = intent?.getStringExtra(EXTRA_PRAYER_KEY) ?: ""
+        muadhinOverride = intent?.getStringExtra(EXTRA_MUADHIN_OVERRIDE)
+        Log.e(TAG, "start prayer=$prayerName key=$prayerKey muadhin=" + selectedMuadhinCode() + " override=" + (muadhinOverride ?: "none"))
         attempt = 0
         fallbackShown = false
         createPlaybackChannel()
@@ -70,10 +75,7 @@ class AdhanPlaybackService : Service() {
 
     private fun selectedResourceId(): Int {
         val prefs = getSharedPreferences("audio_preferences", Context.MODE_PRIVATE)
-        val selected = prefs.getString(
-            "muadhin_${prayerKey}",
-            prefs.getString("default_muadhin", "MAKKAH")
-        ) ?: "MAKKAH"
+        val selected = selectedMuadhinCode()
         return when (selected) {
             "MADINAH" -> R.raw.adhan_madinah
             "ALAFASY" -> R.raw.adhan_alafasy
@@ -82,12 +84,14 @@ class AdhanPlaybackService : Service() {
         }
     }
 
-    private fun selectedExternalUrl(): String {
+    private fun selectedMuadhinCode(): String {
+        if (muadhinOverride != null) return muadhinOverride!!
         val prefs = getSharedPreferences("audio_preferences", Context.MODE_PRIVATE)
-        val selected = prefs.getString(
-            "muadhin_${prayerKey}",
-            prefs.getString("default_muadhin", "MAKKAH")
-        ) ?: "MAKKAH"
+        return prefs.getString("muadhin_${prayerKey}", prefs.getString("default_muadhin", "MAKKAH")) ?: "MAKKAH"
+    }
+
+    private fun selectedExternalUrl(): String {
+        val selected = selectedMuadhinCode()
         return when (selected) {
             "MADINAH" -> MADINAH_ATHAN_URL
             "ALAFASY" -> ALAFASY_ATHAN_URL
@@ -126,7 +130,9 @@ class AdhanPlaybackService : Service() {
                     stopSelf()
                 }
             }
-            next.setOnErrorListener { mp, _, _ ->
+            next.setOnErrorListener { mp, what, extra ->
+                lastFailureReason = "MediaPlayer what=$what extra=$extra"
+                Log.e(TAG, "MediaPlayer onError what=$what extra=$extra attempt=" + this.attempt + " muadhin=" + selectedMuadhinCode() + " resourceId=" + (resourceId?.toString() ?: "none") + " url=" + (externalUrl ?: "local"))
                 if (player === mp) {
                     releasePlayer()
                     when (this.attempt) {
@@ -143,7 +149,9 @@ class AdhanPlaybackService : Service() {
                 true
             }
             next.prepareAsync()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            lastFailureReason = (e.message ?: e.javaClass.simpleName).take(140)
+            Log.e(TAG, "playback exception attempt=$attempt muadhin=" + selectedMuadhinCode() + " resourceId=" + (resourceId?.toString() ?: "none") + " reason=" + lastFailureReason, e)
             releasePlayer()
             when (attempt) {
                 0 -> startPlayback(attempt = 1, resourceId = R.raw.adhan_makkah)
@@ -168,7 +176,7 @@ class AdhanPlaybackService : Service() {
     private fun showFallbackOnce() {
         if (fallbackShown) return
         fallbackShown = true
-        AdhanAlarmReceiver().showFallbackForService(this, prayerName)
+        AdhanAlarmReceiver().showFallbackForService(this, prayerName, lastFailureReason)
     }
 
     override fun onDestroy() {
@@ -187,5 +195,7 @@ class AdhanPlaybackService : Service() {
         private const val FAJR_ATHAN_URL = "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
         const val EXTRA_PRAYER_NAME = "prayer_name"
         const val EXTRA_PRAYER_KEY = "prayer_key"
+        const val EXTRA_MUADHIN_OVERRIDE = "muadhin_override"
+        private const val TAG = "AdhanDiag"
     }
 }

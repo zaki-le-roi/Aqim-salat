@@ -19,12 +19,14 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
       - name: Install Android SDK packages
         shell: bash
         run: |
           set -euo pipefail
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          find "$ANDROID_HOME" -maxdepth 5 -type f -name sdkmanager -print || true
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
           if [[ -z "$SDKMANAGER" ]]; then
             echo "::error::sdkmanager was not found under $ANDROID_HOME/cmdline-tools"
@@ -34,10 +36,8 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null
           set -o pipefail
           "$SDKMANAGER" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-      - name: Make Gradle wrapper executable
-        run: chmod +x ./gradlew
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace
       - name: Upload debug APK
         if: always() && hashFiles('app/build/outputs/apk/debug/*.apk') != ''
         uses: actions/upload-artifact@v4
