@@ -202,7 +202,8 @@ fun HomeScreen(
                                         Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
                                         Triple("ZAD_ALMUSLIM", "زاد المسلم", Icons.Filled.MenuBook),
                                         Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
-                                        Triple("QIBLA", "القبلة", Icons.Filled.Explore)
+                                        Triple("QIBLA", "القبلة", Icons.Filled.Explore),
+                                        Triple("CALENDAR", "التقويم الهجري", Icons.Filled.DateRange)
                                     )
                                 } else {
                                     listOf(

@@ -682,7 +682,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 18.dp),
+            .padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 120.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -808,14 +808,14 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = String.format(Locale.US, "%,.1f km", distance),
+                    text = DisplayNumberFormatter.westernDigits(String.format(Locale.US, if (lang == "ar") "%,.1f كم" else "%,.1f km", distance)),
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 if (sensorAvailable) {
                     Text(
-                        text = String.format(Locale.US, "%.1f° · %s", qiblaAngle, directionName),
+                        text = DisplayNumberFormatter.westernDigits(String.format(Locale.US, "%.1f° · %s", qiblaAngle, directionName)),
                         fontSize = 14.sp,
                         color = Color(0xFFD4AF37),
                         fontWeight = FontWeight.Bold

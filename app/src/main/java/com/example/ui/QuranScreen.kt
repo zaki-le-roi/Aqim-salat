@@ -189,6 +189,15 @@ fun QuranScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("ALL") } // ALL, MECCAN, MEDINAN, BOOKMARKS
     var selectedSurah by remember { mutableStateOf<QuranData.Surah?>(null) }
+    var offlineAvailableSurahIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
+    LaunchedEffect(context) {
+        offlineAvailableSurahIds = withContext(Dispatchers.IO) {
+            QuranData.surahs.mapNotNull { item ->
+                val ayahs = QuranOfflineData.loadSurah(context, item.id)
+                if (!ayahs.isNullOrEmpty() && ayahs.all { it.arabicText.isNotBlank() }) item.id else null
+            }.toSet()
+        }
+    }
 
     LaunchedEffect(selectedSurah) {
         onReadingModeChange(selectedSurah != null)
@@ -597,7 +606,7 @@ fun QuranScreen(
                                         }
 
                                         // Offline availability indicator
-                                        val isOffline = surah.id in QuranData.localAyahs.keys
+                                        val isOffline = surah.id in offlineAvailableSurahIds
                                         if (isOffline) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Text(
