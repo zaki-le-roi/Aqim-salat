@@ -56,7 +56,7 @@ private fun HomeServiceCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.islamicOrnament(),
         shape = shape,
         colors = colors,
         elevation = elevation,
@@ -276,7 +276,7 @@ fun HomeScreen(
                             .clip(RoundedCornerShape(22.dp))
                             .background(Color(0xFF0D4F3A))
                             .border(2.dp, Color(0xFFB89A52), RoundedCornerShape(22.dp))
-                            .padding(horizontal = 26.dp, vertical = 12.dp),
+                            .padding(horizontal = 26.dp, vertical = 12.dp).islamicOrnament(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text("الوقت المتبقي", color = Color(0xFFE8D7A8), fontSize = 12.sp)
@@ -318,7 +318,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .offset(y = (-10).dp), // Slight overlap for depth
+                    .offset(y = (-10).dp).islamicOrnament(), // Slight overlap for depth
                 shape = RoundedCornerShape(30.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -408,7 +408,8 @@ fun HomeScreen(
                                     if (isNext) Modifier.border(2.dp, Color(0xFFB99A55), RoundedCornerShape(18.dp))
                                     else Modifier
                                 )
-                                .testTag("prayer_time_$key"),
+                                .testTag("prayer_time_$key")
+                                .islamicOrnament(),
                             shape = RoundedCornerShape(18.dp),
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isNext) Color(0xFFF4EBDD) else MaterialTheme.colorScheme.surface
@@ -473,7 +474,8 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .heightIn(min = 104.dp)
                         .clickable { onNavigateToFeature("MISHKAT") }
-                        .testTag("home_service_mishkat"),
+                        .testTag("home_service_mishkat")
+                        .islamicOrnament(),
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -535,7 +537,8 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(132.dp)
                         .clickable { onNavigateToFeature("QURAN") }
-                        .testTag("home_service_quran"),
+                        .testTag("home_service_quran")
+                        .islamicOrnament(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF123D35)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -604,7 +607,8 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
-                        .testTag("home_service_zad_al_muslim"),
+                        .testTag("home_service_zad_al_muslim")
+                        .islamicOrnament(),
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -653,7 +657,8 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
-                            .testTag("home_service_tasbih"),
+                            .testTag("home_service_tasbih")
+                        .islamicOrnament(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -693,7 +698,8 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
-                            .testTag("home_service_adhkar"),
+                            .testTag("home_service_adhkar")
+                        .islamicOrnament(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -739,7 +745,8 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
-                            .testTag("home_service_qibla"),
+                            .testTag("home_service_qibla")
+                        .islamicOrnament(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -779,7 +786,8 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
-                            .testTag("home_service_hisn"),
+                            .testTag("home_service_hisn")
+                        .islamicOrnament(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -819,7 +827,8 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
-                            .testTag("home_service_hadith"),
+                            .testTag("home_service_hadith")
+                        .islamicOrnament(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)

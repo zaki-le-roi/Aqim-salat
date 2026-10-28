@@ -153,7 +153,7 @@ fun PrayerTimesScreen(
             // --- Qaza (Missed) Prayer Tracker Ledger ---
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().islamicOrnament(),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
@@ -243,7 +243,7 @@ fun PrayerTimesScreen(
             // --- Monthly Prayer Times Calendar Grid ---
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().islamicOrnament(),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
