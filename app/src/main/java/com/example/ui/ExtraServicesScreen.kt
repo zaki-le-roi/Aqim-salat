@@ -97,7 +97,7 @@ private fun ExtraNumberField(label: String, value: String, onValueChange: (Strin
 
 @Composable
 private fun ResultCard(label: String, value: String) {
-    Card(Modifier.fillMaxWidth().islamicOrnament(), shape = RoundedCornerShape(12.dp)) {
+    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
         Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(label, fontWeight = FontWeight.SemiBold)
             Text(value, fontWeight = FontWeight.Bold)

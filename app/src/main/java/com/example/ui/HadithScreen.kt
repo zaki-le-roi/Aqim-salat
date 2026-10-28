@@ -506,7 +506,7 @@ fun BookCardItem(
             .fillMaxWidth()
             .clickable { onClick() }
             .testTag("book_card_${book.id}")
-            .islamicOrnament(),
+            ,
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp, pressedElevation = 2.dp),

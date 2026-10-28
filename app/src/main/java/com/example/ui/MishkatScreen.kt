@@ -225,7 +225,7 @@ fun MishkatScreen(onBack: () -> Unit) {
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                modifier = Modifier.islamicOrnament(),
+                modifier = Modifier,
                 title = {
                     Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
                         Text("مِشكاة", fontWeight = FontWeight.Bold, fontSize = 20.sp)

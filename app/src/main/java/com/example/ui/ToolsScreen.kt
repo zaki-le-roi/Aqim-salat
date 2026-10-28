@@ -120,7 +120,7 @@ fun ToolsScreen(
                             .fillMaxWidth()
                             .clickable { activeTool = toolKey }
                             .testTag("tool_card_$toolKey")
-                            .islamicOrnament(),
+                            ,
                         shape = RoundedCornerShape(20.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {

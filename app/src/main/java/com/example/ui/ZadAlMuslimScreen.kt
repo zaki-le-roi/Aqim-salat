@@ -87,7 +87,7 @@ private fun ZadBookCover(title:String, author:String, bookId:String, modifier:Mo
         bookId.contains("hadith") || title.contains("رياض") || title.contains("شرح") -> listOf(Color(0xFF725329), Color(0xFF3E2C18))
         else -> listOf(Color(0xFF3C6650), Color(0xFF193A2D))
     }
-    Box(modifier.clip(RoundedCornerShape(10.dp)).background(Brush.verticalGradient(palette)).border(1.dp,Color(0xFFD6B66A).copy(alpha=.75f),RoundedCornerShape(10.dp)).islamicOrnament(),contentAlignment=Alignment.Center) {
+    Box(modifier.clip(RoundedCornerShape(10.dp)).background(Brush.verticalGradient(palette)).border(1.dp,Color(0xFFD6B66A).copy(alpha=.75f),RoundedCornerShape(10.dp)),contentAlignment=Alignment.Center) {
         Column(Modifier.fillMaxSize().padding(6.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.SpaceBetween) {
             Icon(Icons.Filled.AutoStories,null,tint=Color(0xFFE7CA80),modifier=Modifier.size(25.dp))
             Text(title,color=Color.White,fontSize=10.sp,fontWeight=FontWeight.Bold,lineHeight=13.sp,maxLines=4,overflow=TextOverflow.Ellipsis,textAlign=androidx.compose.ui.text.style.TextAlign.Center)

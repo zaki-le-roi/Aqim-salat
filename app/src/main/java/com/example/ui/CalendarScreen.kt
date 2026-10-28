@@ -136,7 +136,7 @@ fun CalendarScreen(
         // Current Date Hero Card
         item {
             Card(
-                modifier = Modifier.fillMaxWidth().islamicOrnament(),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
             ) {
