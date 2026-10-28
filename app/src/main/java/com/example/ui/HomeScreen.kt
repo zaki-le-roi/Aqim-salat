@@ -318,7 +318,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .offset(y = (-10).dp).islamicVineOrnament(mirrored = false), // Slight overlap for depth
+                    .offset(y = (-10).dp), // Slight overlap for depth
                 shape = RoundedCornerShape(30.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -326,6 +326,7 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .islamicVineOrnament(mirrored = false)
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -537,9 +538,7 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(132.dp)
                         .clickable { onNavigateToFeature("QURAN") }
-                        .testTag("home_service_quran")
-                        .islamicVineOrnament(mirrored = false)
-                        ,
+                        .testTag("home_service_quran"),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF123D35)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -552,6 +551,7 @@ fun HomeScreen(
                                     listOf(Color(0xFF123D35), Color(0xFF1D6250), Color(0xFF2D7660))
                                 )
                             )
+                            .islamicVineOrnament(mirrored = false)
                             .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
                         Box(
@@ -608,9 +608,7 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
-                        .testTag("home_service_zad_al_muslim")
-                        .islamicVineOrnament(mirrored = true)
-                        ,
+                        .testTag("home_service_zad_al_muslim"),
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -618,6 +616,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier.fillMaxWidth()
                             .background(Brush.horizontalGradient(listOf(Color(0xFF0B2F26), Color(0xFF17634A), Color(0xFF234B3A))))
+                            .islamicVineOrnament(mirrored = true)
                     ) {
                         Box(
                             modifier = Modifier.align(Alignment.CenterEnd).size(150.dp)
@@ -659,15 +658,13 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
-                            .testTag("home_service_tasbih")
-                        .islamicVineOrnament(mirrored = false)
-                        ,
+                            .testTag("home_service_tasbih"),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().islamicVineOrnament(mirrored = false).padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -701,15 +698,13 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
-                            .testTag("home_service_adhkar")
-                        .islamicVineOrnament(mirrored = true)
-                        ,
+                            .testTag("home_service_adhkar"),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().islamicVineOrnament(mirrored = true).padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -749,15 +744,13 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
-                            .testTag("home_service_qibla")
-                        .islamicVineOrnament(mirrored = false)
-                        ,
+                            .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().islamicVineOrnament(mirrored = false).padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -791,15 +784,13 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
-                            .testTag("home_service_hisn")
-                        .islamicVineOrnament(mirrored = true)
-                        ,
+                            .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().islamicVineOrnament(mirrored = true).padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -833,15 +824,13 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
-                            .testTag("home_service_hadith")
-                        .islamicVineOrnament(mirrored = false)
-                        ,
+                            .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().islamicVineOrnament(mirrored = false).padding(horizontal = 8.dp, vertical = 12.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
