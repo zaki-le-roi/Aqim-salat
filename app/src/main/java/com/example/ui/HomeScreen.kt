@@ -539,6 +539,8 @@ fun HomeScreen(
                         .height(132.dp)
                         .clickable { onNavigateToFeature("QURAN") }
                         .testTag("home_service_quran")
+                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF123D35)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -608,6 +610,8 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
                         .testTag("home_service_zad_al_muslim")
+                            .shadow(8.dp, RoundedCornerShape(22.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(22.dp)),
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -657,6 +661,8 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
                             .testTag("home_service_tasbih")
+                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -697,6 +703,8 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
                             .testTag("home_service_adhkar")
+                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -743,6 +751,8 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla")
+                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -783,6 +793,8 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn")
+                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -823,6 +835,8 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith")
+                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
+                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
