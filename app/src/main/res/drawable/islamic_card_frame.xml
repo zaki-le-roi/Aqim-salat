@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="180dp"
+    android:viewportWidth="360"
+    android:viewportHeight="180">
+    <!-- Emerald inset: occupies the card interior; outer canvas remains transparent. -->
+    <path android:fillColor="#073D32" android:pathData="M28,15 C47,15 54,25 67,25 L293,25 C306,25 313,15 332,15 L344,27 L344,153 L332,165 C313,165 306,155 293,155 L67,155 C54,155 47,165 28,165 L16,153 L16,27 Z"/>
+    <!-- Deep cast shadow and layered bevel -->
+    <path android:fillColor="#00000000" android:strokeColor="#35200A" android:strokeWidth="10" android:pathData="M28,15 C47,15 54,25 67,25 L293,25 C306,25 313,15 332,15 L344,27 L344,153 L332,165 C313,165 306,155 293,155 L67,155 C54,155 47,165 28,165 L16,153 L16,27 Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#8B5B12" android:strokeWidth="7" android:pathData="M28,15 C47,15 54,25 67,25 L293,25 C306,25 313,15 332,15 L344,27 L344,153 L332,165 C313,165 306,155 293,155 L67,155 C54,155 47,165 28,165 L16,153 L16,27 Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#D5A83B" android:strokeWidth="4" android:pathData="M28,15 C47,15 54,25 67,25 L293,25 C306,25 313,15 332,15 L344,27 L344,153 L332,165 C313,165 306,155 293,155 L67,155 C54,155 47,165 28,165 L16,153 L16,27 Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#FFF0A0" android:strokeWidth="1.4" android:pathData="M28,19 C47,19 55,29 68,29 L292,29 C305,29 313,19 332,19 L340,28 L340,152 L332,161 C313,161 305,151 292,151 L68,151 C55,151 47,161 28,161 L20,152 L20,28 Z"/>
+    <!-- Inner gold lip -->
+    <path android:fillColor="#00000000" android:strokeColor="#57360C" android:strokeWidth="4" android:pathData="M34,34 C51,34 57,42 72,42 L288,42 C303,42 309,34 326,34 L326,146 C309,146 303,138 288,138 L72,138 C57,138 51,146 34,146 Z"/>
+    <path android:fillColor="#00000000" android:strokeColor="#E8C45B" android:strokeWidth="1.7" android:pathData="M34,31 C51,31 57,39 72,39 L288,39 C303,39 309,31 326,31 L326,143 C309,143 303,135 288,135 L72,135 C57,135 51,143 34,143 Z"/>
+    <!-- Ornate corner arabesques, deliberately confined to the frame -->
+    <path android:fillColor="#00000000" android:strokeColor="#FFF0A0" android:strokeWidth="2.4" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M22,29 C31,9 52,13 55,29 C57,41 42,46 36,37 C31,29 41,23 47,29 C51,33 45,38 42,34 M22,29 C13,42 18,57 32,56 C45,55 47,43 38,41 C31,39 28,48 34,50 M22,29 C39,31 46,18 39,12 M22,29 C29,47 16,54 12,45 M338,29 C329,9 308,13 305,29 C303,41 318,46 324,37 C329,29 319,23 313,29 C309,33 315,38 318,34 M338,29 C347,42 342,57 328,56 C315,55 313,43 322,41 C329,39 332,48 326,50 M338,29 C321,31 314,18 321,12 M338,29 C331,47 344,54 348,45 M22,151 C31,171 52,167 55,151 C57,139 42,134 36,143 C31,151 41,157 47,151 C51,147 45,142 42,146 M22,151 C13,138 18,123 32,124 C45,125 47,137 38,139 C31,141 28,132 34,130 M338,151 C329,171 308,167 305,151 C303,139 318,134 324,143 C329,151 319,157 313,151 C309,147 315,142 318,146 M338,151 C347,138 342,123 328,124 C315,125 313,137 322,139 C329,141 332,132 326,130"/>
+    <path android:fillColor="#00000000" android:strokeColor="#A97620" android:strokeWidth="1.3" android:strokeLineCap="round"
+        android:pathData="M25,30 C36,21 46,31 39,38 C34,43 28,37 33,33 C37,30 40,34 37,36 M335,30 C324,21 314,31 321,38 C326,43 332,37 327,33 C323,30 320,34 323,36 M25,150 C36,159 46,149 39,142 C34,137 28,143 33,147 C37,150 40,146 37,144 M335,150 C324,159 314,149 321,142 C326,137 332,143 327,147 C323,150 320,146 323,144"/>
+    <!-- Beveled corner leaves -->
+    <path android:fillColor="#0A4B3B" android:strokeColor="#D5A83B" android:strokeWidth="1.6"
+        android:pathData="M26,44 C39,42 43,32 43,24 C32,28 26,35 26,44 Z M26,44 C37,48 43,54 43,63 C32,59 27,52 26,44 Z M334,44 C321,42 317,32 317,24 C328,28 334,35 334,44 Z M334,44 C323,48 317,54 317,63 C328,59 333,52 334,44 Z M26,136 C39,138 43,148 43,156 C32,152 26,145 26,136 Z M26,136 C37,132 43,126 43,117 C32,121 27,128 26,136 Z M334,136 C321,138 317,148 317,156 C328,152 334,145 334,136 Z M334,136 C323,132 317,126 317,117 C328,121 333,128 334,136 Z"/>
+</vector>
