@@ -711,7 +711,7 @@ fun HomeScreen(
                             .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
                             .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -760,7 +760,7 @@ fun HomeScreen(
                             .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
                             .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -803,7 +803,7 @@ fun HomeScreen(
                             .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
                             .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -846,7 +846,7 @@ fun HomeScreen(
                             .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
                             .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
