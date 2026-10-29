@@ -24,17 +24,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.LocalTextStyle
@@ -539,12 +535,9 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(132.dp)
                         .clickable { onNavigateToFeature("QURAN") }
-                        .testTag("home_service_quran")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
+                        .testTag("home_service_quran"),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF123D35)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                 ) {
                     Box(
@@ -611,10 +604,7 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
-                        .testTag("home_service_zad_al_muslim")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(22.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(22.dp)),
+                        .testTag("home_service_zad_al_muslim"),
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -663,12 +653,9 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
-                            .testTag("home_service_tasbih")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
+                            .testTag("home_service_tasbih"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -706,12 +693,9 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
-                            .testTag("home_service_adhkar")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
+                            .testTag("home_service_adhkar"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -755,12 +739,9 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
-                            .testTag("home_service_qibla")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
+                            .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -798,12 +779,9 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
-                            .testTag("home_service_hisn")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
+                            .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
@@ -841,12 +819,9 @@ fun HomeScreen(
                             .weight(1f)
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
-                            .testTag("home_service_hadith")
-                            .paint(painterResource(R.drawable.islamic_gold_frame), contentScale = ContentScale.FillBounds)
-                            .shadow(8.dp, RoundedCornerShape(16.dp), clip = false, ambientColor = Color(0xFF241500), spotColor = Color(0xFFB8860B))
-                            .border(2.dp, Brush.linearGradient(listOf(Color(0xFFFFF0A8), Color(0xFFB8860B), Color(0xFFFFD95A), Color(0xFF6F4A08))), RoundedCornerShape(16.dp)),
+                            .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
                         Column(
