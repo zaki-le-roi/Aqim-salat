@@ -24,12 +24,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -49,66 +47,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-/**
- * Gold-and-emerald mihrab frame inspired by the user's reference image.
- * Drawn over the card content with the central reading area kept clear.
- */
-private fun Modifier.mihrabGoldFrame(mirrored: Boolean = false): Modifier = drawWithContent {
-    drawContent()
-    val w = size.width
-    val h = size.height
-    if (w <= 0f || h <= 0f) return@drawWithContent
-    val gold = Color(0xFFD4AF37)
-    val teal = Color(0xFF062F2D)
-    val inset = (w * 0.045f).coerceAtMost(9.dp.toPx())
-    fun px(x: Float) = if (mirrored) w - x else x
-    val frame = Path().apply {
-        moveTo(px(inset), h * 0.24f)
-        cubicTo(px(inset), h * 0.15f, px(w * 0.16f), h * 0.13f, px(w * 0.25f), h * 0.13f)
-        cubicTo(px(w * 0.35f), h * 0.13f, px(w * 0.40f), h * 0.045f, px(w * 0.50f), inset * 0.45f)
-        cubicTo(px(w * 0.60f), h * 0.045f, px(w * 0.65f), h * 0.13f, px(w * 0.75f), h * 0.13f)
-        cubicTo(px(w * 0.84f), h * 0.13f, px(w - inset), h * 0.15f, px(w - inset), h * 0.24f)
-        lineTo(px(w - inset), h * 0.76f)
-        cubicTo(px(w - inset), h * 0.85f, px(w * 0.84f), h * 0.87f, px(w * 0.75f), h * 0.87f)
-        cubicTo(px(w * 0.65f), h * 0.87f, px(w * 0.60f), h * 0.955f, px(w * 0.50f), h - inset * 0.45f)
-        cubicTo(px(w * 0.40f), h * 0.955f, px(w * 0.35f), h * 0.87f, px(w * 0.25f), h * 0.87f)
-        cubicTo(px(w * 0.16f), h * 0.87f, px(inset), h * 0.85f, px(inset), h * 0.76f)
-        close()
-    }
-    val line = (w.coerceAtMost(h) * 0.009f).coerceIn(0.8.dp.toPx(), 1.6.dp.toPx())
-    drawPath(frame, gold.copy(alpha = 0.95f), style = Stroke(width = line))
-    drawPath(frame, gold.copy(alpha = 0.26f), style = Stroke(width = line * 3.2f))
-    // Repeating curved leaf-like flourishes along the top and bottom, no stars or straight-line grids.
-    val vines = Path().apply {
-        for (i in 0..8) {
-            val x = w * (0.20f + i * 0.075f)
-            val yTop = h * 0.115f
-            moveTo(px(x - w * 0.018f), yTop)
-            cubicTo(px(x - w * 0.012f), yTop - h * 0.035f, px(x + w * 0.012f), yTop - h * 0.035f, px(x + w * 0.018f), yTop)
-            moveTo(px(x), yTop)
-            cubicTo(px(x - w * 0.012f), yTop + h * 0.008f, px(x - w * 0.015f), yTop + h * 0.025f, px(x - w * 0.026f), yTop + h * 0.027f)
-            cubicTo(px(x - w * 0.012f), yTop + h * 0.045f, px(x + w * 0.004f), yTop + h * 0.022f, px(x), yTop)
-            val yBottom = h - yTop
-            moveTo(px(x), yBottom)
-            cubicTo(px(x - w * 0.012f), yBottom - h * 0.008f, px(x - w * 0.015f), yBottom - h * 0.025f, px(x - w * 0.026f), yBottom - h * 0.027f)
-            cubicTo(px(x - w * 0.012f), yBottom - h * 0.045f, px(x + w * 0.004f), yBottom - h * 0.022f, px(x), yBottom)
-        }
-    }
-    drawPath(vines, gold.copy(alpha = 0.60f), style = Stroke(width = line * 0.65f))
-    // Minaret-like side accents, kept close to the outer edge so content stays readable.
-    val sideDetails = Path().apply {
-        for (sideX in listOf(w * 0.075f, w * 0.925f)) {
-            moveTo(px(sideX), h * 0.29f)
-            cubicTo(px(sideX - w * 0.025f), h * 0.35f, px(sideX + w * 0.025f), h * 0.40f, px(sideX), h * 0.46f)
-            cubicTo(px(sideX - w * 0.025f), h * 0.52f, px(sideX + w * 0.025f), h * 0.57f, px(sideX), h * 0.63f)
-            moveTo(px(sideX - w * 0.018f), h * 0.39f)
-            cubicTo(px(sideX), h * 0.36f, px(sideX + w * 0.018f), h * 0.39f, px(sideX), h * 0.42f)
-            moveTo(px(sideX - w * 0.018f), h * 0.53f)
-            cubicTo(px(sideX), h * 0.50f, px(sideX + w * 0.018f), h * 0.53f, px(sideX), h * 0.56f)
-        }
-    }
-    drawPath(sideDetails, gold.copy(alpha = 0.72f), style = Stroke(width = line * 0.8f))
-}
 
 @Composable
 private fun HomeServiceCard(
@@ -389,8 +327,7 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                                                .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -602,7 +539,6 @@ fun HomeScreen(
                         .height(132.dp)
                         .clickable { onNavigateToFeature("QURAN") }
                         .testTag("home_service_quran")
-                        .mihrabGoldFrame(mirrored = false),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF123D35)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
@@ -615,8 +551,7 @@ fun HomeScreen(
                                     listOf(Color(0xFF123D35), Color(0xFF1D6250), Color(0xFF2D7660))
                                 )
                             )
-                            
-                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                                                        .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
                         Box(
                             modifier = Modifier
@@ -673,7 +608,6 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth().heightIn(min = 118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
                         .testTag("home_service_zad_al_muslim")
-                        .mihrabGoldFrame(mirrored = true),
                     shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -681,7 +615,6 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier.fillMaxWidth()
                             .background(Brush.horizontalGradient(listOf(Color(0xFF0B2F26), Color(0xFF17634A), Color(0xFF234B3A))))
-                            
                     ) {
                         Box(
                             modifier = Modifier.align(Alignment.CenterEnd).size(150.dp)
@@ -724,7 +657,6 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
                             .testTag("home_service_tasbih")
-                        .mihrabGoldFrame(mirrored = false),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -765,7 +697,6 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
                             .testTag("home_service_adhkar")
-                        .mihrabGoldFrame(mirrored = true),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -812,7 +743,6 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla")
-                        .mihrabGoldFrame(mirrored = false),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -853,7 +783,6 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn")
-                        .mihrabGoldFrame(mirrored = true),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -894,7 +823,6 @@ fun HomeScreen(
                             .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith")
-                        .mihrabGoldFrame(mirrored = false),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
