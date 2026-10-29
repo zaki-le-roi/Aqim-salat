@@ -475,7 +475,7 @@ fun HomeScreen(
                         .testTag("home_service_mishkat")
                         ,
                     shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                 ) {
                     Row(
@@ -606,7 +606,7 @@ fun HomeScreen(
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
                         .testTag("home_service_zad_al_muslim"),
                     shape = RoundedCornerShape(22.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Box(
