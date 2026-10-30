@@ -136,7 +136,7 @@ class ApkUpdateChecker(private val activity: Activity) {
         val content = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(dp(24), dp(22), dp(24), dp(8))
+            setPadding(dp(24), dp(22), dp(24), dp(16))
             background = GradientDrawable().apply {
                 setColor(Color.rgb(250, 248, 245))
                 cornerRadius = dp(24).toFloat()
@@ -167,24 +167,68 @@ class ApkUpdateChecker(private val activity: Activity) {
             LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
         ))
 
+        // High-contrast, fully opaque action buttons with visible symbols.
+        val actions = LinearLayout(activity).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(0, dp(20), 0, dp(8))
+        }
+
+        val laterButton = TextView(activity).apply {
+            text = "◷  لاحقًا"
+            setTextColor(Color.rgb(15, 76, 58))
+            textSize = 15f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            includeFontPadding = true
+            minHeight = dp(48)
+            setPadding(dp(10), dp(10), dp(10), dp(10))
+            background = GradientDrawable().apply {
+                setColor(Color.rgb(250, 248, 245))
+                cornerRadius = dp(14).toFloat()
+                setStroke(dp(1), GOLD)
+            }
+            isClickable = true
+            isFocusable = true
+            contentDescription = "تأجيل التحديث"
+        }
+        val updateButton = TextView(activity).apply {
+            text = "⬇  تحديث الآن"
+            setTextColor(Color.WHITE)
+            textSize = 15f
+            typeface = Typeface.DEFAULT_BOLD
+            gravity = Gravity.CENTER
+            includeFontPadding = true
+            minHeight = dp(48)
+            setPadding(dp(10), dp(10), dp(10), dp(10))
+            background = GradientDrawable().apply {
+                setColor(EMERALD)
+                cornerRadius = dp(14).toFloat()
+                setStroke(dp(1), Color.rgb(9, 78, 51))
+            }
+            isClickable = true
+            isFocusable = true
+            contentDescription = "تنزيل التحديث الآن"
+        }
+        actions.addView(laterButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+            marginEnd = dp(8)
+        })
+        actions.addView(updateButton, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        content.addView(actions, LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        ))
+
         val dialog = AlertDialog.Builder(activity)
             .setView(content)
-            .setNegativeButton("لاحقًا", null)
-            .setPositiveButton("تحديث الآن", null)
             .create()
 
-        dialog.setOnShowListener {
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setOnClickListener {
-                preferences.edit().putString(KEY_DISMISSED_VERSION, versionName).apply()
-                dialog.dismiss()
-            }
-            dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
-            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.rgb(120, 88, 20))
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setOnClickListener {
-                dialog.dismiss()
-                startDownload(versionCode, versionName, downloadUrl)
-            }
+        laterButton.setOnClickListener {
+            preferences.edit().putString(KEY_DISMISSED_VERSION, versionName).apply()
+            dialog.dismiss()
+        }
+        updateButton.setOnClickListener {
+            dialog.dismiss()
+            startDownload(versionCode, versionName, downloadUrl)
         }
         dialog.show()
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -192,8 +236,6 @@ class ApkUpdateChecker(private val activity: Activity) {
             (activity.resources.displayMetrics.widthPixels * 0.90f).toInt(),
             android.view.WindowManager.LayoutParams.WRAP_CONTENT
         )
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(EMERALD)
-        dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(Color.rgb(120, 88, 20))
     }
 
     private fun compareVersions(first: String, second: String): Int {
