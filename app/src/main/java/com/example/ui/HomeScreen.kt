@@ -24,6 +24,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
@@ -39,18 +43,155 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.layout.ContentScale
 import com.example.R
 import java.text.SimpleDateFormat
 import java.util.*
+
+/**
+ * Luxurious Moroccan Islamic Arch Frame & Arabesque Corner Background.
+ * Faithfully replicates the dark green & beveled gold multi-lobed arch style from the reference image.
+ * Purely decorative background modifier — never modifies, alters, or stretches card dimensions.
+ */
+private fun Modifier.moroccanArchCardStyle(): Modifier = this.drawWithCache {
+    val w = size.width
+    val h = size.height
+
+    if (w <= 20f || h <= 20f) {
+        return@drawWithCache onDrawBehind {}
+    }
+
+    val padX = (w * 0.05f).coerceIn(6.dp.toPx(), 12.dp.toPx())
+    val padY = (h * 0.05f).coerceIn(6.dp.toPx(), 12.dp.toPx())
+    val left = padX
+    val right = w - padX
+    val top = padY
+    val bottom = h - padY
+    val midX = w / 2f
+    val frameW = right - left
+    val frameH = bottom - top
+
+    // Multi-lobed Moroccan Arch Path
+    fun createArchPath(inset: Float, offX: Float = 0f, offY: Float = 0f): Path = Path().apply {
+        val l = left + inset + offX
+        val r = right - inset + offX
+        val t = top + inset + offY
+        val b = bottom - inset + offY
+        val fw = r - l
+        val fh = b - t
+        val mx = (l + r) / 2f
+
+        moveTo(mx, t)
+
+        // Right side:
+        quadraticBezierTo(mx + fw * 0.24f, t + fh * 0.03f, r - fw * 0.14f, t + fh * 0.15f)
+        quadraticBezierTo(r - fw * 0.10f, t + fh * 0.20f, r - fw * 0.05f, t + fh * 0.26f)
+        quadraticBezierTo(r + fw * 0.02f, t + fh * 0.38f, r - fw * 0.04f, t + fh * 0.50f)
+        quadraticBezierTo(r + fw * 0.02f, t + fh * 0.62f, r - fw * 0.05f, t + fh * 0.74f)
+        quadraticBezierTo(r - fw * 0.10f, b - fh * 0.20f, r - fw * 0.14f, b - fh * 0.15f)
+        quadraticBezierTo(mx + fw * 0.24f, b - fh * 0.03f, mx, b)
+
+        // Left side (symmetrical):
+        quadraticBezierTo(mx - fw * 0.24f, b - fh * 0.03f, l + fw * 0.14f, b - fh * 0.15f)
+        quadraticBezierTo(l + fw * 0.10f, b - fh * 0.20f, l + fw * 0.05f, t + fh * 0.74f)
+        quadraticBezierTo(l - fw * 0.02f, t + fh * 0.62f, l + fw * 0.04f, t + fh * 0.50f)
+        quadraticBezierTo(l - fw * 0.02f, t + fh * 0.38f, l + fw * 0.05f, t + fh * 0.26f)
+        quadraticBezierTo(l + fw * 0.10f, t + fh * 0.20f, l + fw * 0.14f, t + fh * 0.15f)
+        quadraticBezierTo(mx - fw * 0.24f, t + fh * 0.03f, mx, t)
+        close()
+    }
+
+    val shadowOffset = Offset(1.3.dp.toPx(), 1.6.dp.toPx())
+    val highlightOffset = Offset(-0.8.dp.toPx(), -0.8.dp.toPx())
+    val strokeOuter = 2.0.dp.toPx()
+    val strokeInner = 0.9.dp.toPx()
+
+    val outerArch = createArchPath(0f)
+    val innerArch = createArchPath(3.dp.toPx())
+    val shadowArch = createArchPath(0f, shadowOffset.x, shadowOffset.y)
+    val ridgeArch = createArchPath(0f, 0.6.dp.toPx(), 0.6.dp.toPx())
+    val highlightArch = createArchPath(0f, highlightOffset.x, highlightOffset.y)
+
+    val rosetteRadius = (kotlin.math.min(w, h) * 0.16f).coerceIn(14.dp.toPx(), 26.dp.toPx())
+
+    val darkBaseColor = Color(0xFF08261B)
+    val innerArchColor = Color(0xFF0D3B2B)
+    val shadowColor = Color(0x75000000)
+    val goldRidgeColor = Color(0xFF75510E)
+    val goldHighlightColor = Color(0xFFFFFCEB).copy(alpha = 0.85f)
+    val filigreeGold = Color(0xFFD4AF37).copy(alpha = 0.25f)
+    val filigreeGoldBright = Color(0xFFE8C868).copy(alpha = 0.35f)
+
+    val goldBrush = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFFFBE492),
+            Color(0xFFD4AF37),
+            Color(0xFF9E7418),
+            Color(0xFFE8C868),
+            Color(0xFFD4AF37)
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(w, h)
+    )
+
+    onDrawBehind {
+        // 1. Dark Green Base Background
+        drawRect(darkBaseColor)
+
+        // 2. Corner Circular Geometric Rosettes (Outside Arch)
+        val cornerCenters = listOf(
+            Offset(0f, 0f),
+            Offset(w, 0f),
+            Offset(w, h),
+            Offset(0f, h)
+        )
+        for (c in cornerCenters) {
+            drawCircle(filigreeGold, radius = rosetteRadius, center = c, style = Stroke(0.8.dp.toPx()))
+            drawCircle(filigreeGoldBright, radius = rosetteRadius * 0.65f, center = c, style = Stroke(0.8.dp.toPx()))
+            drawCircle(filigreeGold, radius = rosetteRadius * 0.35f, center = c, style = Stroke(0.8.dp.toPx()))
+            for (i in 0 until 8) {
+                val angle = (i * Math.PI / 4.0).toFloat()
+                val end = c + Offset(kotlin.math.cos(angle) * rosetteRadius, kotlin.math.sin(angle) * rosetteRadius)
+                drawLine(filigreeGold, start = c, end = end, strokeWidth = 0.7.dp.toPx())
+            }
+        }
+
+        // 3. Recessed Arch Interior
+        drawPath(outerArch, innerArchColor)
+
+        // 4. Drop Shadow under the Gold Frame
+        drawPath(shadowArch, shadowColor, style = Stroke(strokeOuter + 1.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+        // 5. Beveled Under-Ridge (Deep Bronze Gold)
+        drawPath(ridgeArch, goldRidgeColor, style = Stroke(strokeOuter, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+        // 6. Main 3D Gold Moroccan Arch Frame
+        drawPath(outerArch, brush = goldBrush, style = Stroke(strokeOuter, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+        // 7. Inner Accent Hairline Frame
+        drawPath(innerArch, brush = goldBrush, style = Stroke(strokeInner, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+        // 8. Specular Highlight Crest (Bevel Glint on Upper Edges)
+        drawPath(highlightArch, goldHighlightColor, style = Stroke(strokeOuter * 0.55f, cap = StrokeCap.Round, join = StrokeJoin.Round))
+
+        // 9. Tiny 3D Gold Dome Finials at Arch Peaks
+        val topPeak = Offset(midX, top)
+        val bottomPeak = Offset(midX, bottom)
+        val finialR = 2.4.dp.toPx()
+        for (p in listOf(topPeak, bottomPeak)) {
+            drawCircle(shadowColor, radius = finialR, center = p + shadowOffset)
+            drawCircle(goldRidgeColor, radius = finialR, center = p + Offset(0.5.dp.toPx(), 0.5.dp.toPx()))
+            drawCircle(brush = goldBrush, radius = finialR, center = p)
+            drawCircle(Color.White.copy(alpha = 0.9f), radius = finialR * 0.35f, center = p - Offset(finialR * 0.35f, finialR * 0.35f))
+        }
+    }
+}
 
 @Composable
 private fun HomeServiceCard(
     modifier: Modifier = Modifier,
     shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(16.dp),
-    colors: CardColors = CardDefaults.cardColors(containerColor = Color(0xFF0A3626)),
-    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    colors: CardColors = CardDefaults.cardColors(containerColor = Color(0xFF08261B)),
+    elevation: CardElevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -60,16 +201,12 @@ private fun HomeServiceCard(
         elevation = elevation
     ) {
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .moroccanArchCardStyle()
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.bg_islamic_card_moroccan),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxWidth(),
                 content = content
             )
         }
