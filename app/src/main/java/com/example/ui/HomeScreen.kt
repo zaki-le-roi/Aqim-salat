@@ -43,8 +43,6 @@ import com.example.R
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-
 @Composable
 private fun HomeServiceCard(
     modifier: Modifier = Modifier,
@@ -57,9 +55,19 @@ private fun HomeServiceCard(
         modifier = modifier,
         shape = shape,
         colors = colors,
-        elevation = elevation,
-        content = content
-    )
+        elevation = elevation
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .islamic3DCardOrnament(isDarkBackground = true, insetDp = 5f)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                content = content
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -324,7 +332,8 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                        .islamic3DCardOrnament(isDarkBackground = false, insetDp = 4f)
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -414,30 +423,36 @@ fun HomeScreen(
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = if (isNext) 4.dp else 1.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(7.dp)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .islamic3DCardOrnament(isDarkBackground = false, insetDp = 4.5f)
                             ) {
-                                if (isNext) {
-                                    Text("القادمة", color = Color(0xFF755B25), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                } else {
-                                    Spacer(modifier = Modifier.height(14.dp))
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(7.dp)
+                                ) {
+                                    if (isNext) {
+                                        Text("القادمة", color = Color(0xFF755B25), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    } else {
+                                        Spacer(modifier = Modifier.height(14.dp))
+                                    }
+                                    Icon(
+                                        imageVector = when (key) {
+                                            "fajr" -> Icons.Filled.NightsStay
+                                            "dhuhr" -> Icons.Filled.WbSunny
+                                            "asr" -> Icons.Filled.WbCloudy
+                                            "maghrib" -> Icons.Filled.WbTwilight
+                                            else -> Icons.Filled.NightsStay
+                                        },
+                                        contentDescription = title,
+                                        tint = if (isNext) Color(0xFF755B25) else MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                    Text(title, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                                    Text(timeText, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                 }
-                                Icon(
-                                    imageVector = when (key) {
-                                        "fajr" -> Icons.Filled.NightsStay
-                                        "dhuhr" -> Icons.Filled.WbSunny
-                                        "asr" -> Icons.Filled.WbCloudy
-                                        "maghrib" -> Icons.Filled.WbTwilight
-                                        else -> Icons.Filled.NightsStay
-                                    },
-                                    contentDescription = title,
-                                    tint = if (isNext) Color(0xFF755B25) else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(22.dp)
-                                )
-                                Text(title, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                                Text(timeText, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
                     }
@@ -486,6 +501,7 @@ fun HomeScreen(
                                     listOf(Color(0xFF0B2F26), Color(0xFF17634A), Color(0xFF234B3A))
                                 )
                             )
+                            .islamic3DCardOrnament(isDarkBackground = true, insetDp = 6f)
                             .padding(horizontal = 18.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -548,7 +564,8 @@ fun HomeScreen(
                                     listOf(Color(0xFF123D35), Color(0xFF1D6250), Color(0xFF2D7660))
                                 )
                             )
-                                                        .padding(horizontal = 20.dp, vertical = 16.dp)
+                            .islamic3DCardOrnament(isDarkBackground = true, insetDp = 6f)
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
                     ) {
                         Box(
                             modifier = Modifier
@@ -612,6 +629,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier.fillMaxWidth()
                             .background(Brush.horizontalGradient(listOf(Color(0xFF0B2F26), Color(0xFF17634A), Color(0xFF234B3A))))
+                            .islamic3DCardOrnament(isDarkBackground = true, insetDp = 6f)
                     ) {
                         Box(
                             modifier = Modifier.align(Alignment.CenterEnd).size(150.dp)
