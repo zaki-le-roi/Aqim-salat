@@ -738,58 +738,124 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .aspectRatio(1f)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.card_qibla),
-                            contentDescription = if (lang == "ar") "القبلة" else "Qibla",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                IslamicServiceIcon(type = "QIBLA", modifier = Modifier.size(30.dp))
+                            }
+                            Text(
+                                text = if (lang == "ar") "القبلة" else "Qibla",
+                                color = Color(0xFFD4AF37),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = if (lang == "ar") "بوصلة دقيقة" else "Compass",
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
 
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .aspectRatio(1f)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.card_hisn),
-                            contentDescription = if (lang == "ar") "حصن المسلم" else "Hisn Muslim",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                IslamicServiceIcon(type = "HISN", modifier = Modifier.size(30.dp))
+                            }
+                            Text(
+                                text = if (lang == "ar") "حصن المسلم" else "Hisn Muslim",
+                                color = Color(0xFFD4AF37),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = if (lang == "ar") "أدعية جامعة" else "Fortress",
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
 
-                    Card(
+                    HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .aspectRatio(1f)
+                            .heightIn(min = 132.dp)
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF115E3F)),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.card_hadith),
-                            contentDescription = if (lang == "ar") "كتب الحديث" else "Hadith Books",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth().wrapContentHeight().padding(horizontal = 8.dp, vertical = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(Color.White.copy(alpha = 0.08f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                IslamicServiceIcon(type = "HADITH", modifier = Modifier.size(30.dp))
+                            }
+                            Text(
+                                text = if (lang == "ar") "كتب الحديث" else "Hadith Books",
+                                color = Color(0xFFD4AF37),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = if (lang == "ar") "أمهات الكتب" else "Hadith",
+                                color = Color(0xFFE6C687),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
 
