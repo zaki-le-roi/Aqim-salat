@@ -478,13 +478,13 @@ fun HomeScreen(
         // --- 4. BENTO SERVICES GRID ---
         item {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -500,6 +500,7 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                         .height(108.dp)
                         .clickable { onNavigateToFeature("MISHKAT") }
                         .testTag("home_service_mishkat"),
@@ -524,6 +525,7 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                         .height(132.dp)
                         .clickable { onNavigateToFeature("QURAN") }
                         .testTag("home_service_quran"),
@@ -548,6 +550,7 @@ fun HomeScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
                         .height(118.dp)
                         .clickable { onNavigateToFeature("ZAD_ALMUSLIM") }
                         .testTag("home_service_zad_al_muslim"),
@@ -572,7 +575,7 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = (-6).dp),
+                        .padding(horizontal = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     HomeServiceCard(
@@ -624,7 +627,9 @@ fun HomeScreen(
 
                 // Row 2: Qibla, Hisn al-Muslim, Hadith Books
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     HomeServiceCard(
