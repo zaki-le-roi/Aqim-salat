@@ -403,45 +403,71 @@ fun HomeScreen(
                 ) {
                     prayerCards.forEach { (key, title, timeText) ->
                         val isNext = key == nextKey
+                        val prayerDrawable = when (key) {
+                            "fajr" -> R.drawable.prayer_card_fajr
+                            "dhuhr" -> R.drawable.prayer_card_dhuhr
+                            "asr" -> R.drawable.prayer_card_asr
+                            "maghrib" -> R.drawable.prayer_card_maghrib
+                            else -> R.drawable.prayer_card_isha
+                        }
                         Card(
                             modifier = Modifier
                                 .width(100.dp)
+                                .height(128.dp)
                                 .then(
-                                    if (isNext) Modifier.border(2.dp, Color(0xFFB99A55), RoundedCornerShape(18.dp))
+                                    if (isNext) Modifier.border(2.dp, Color(0xFFD4AF37), RoundedCornerShape(18.dp))
                                     else Modifier
                                 )
-                                .testTag("prayer_time_$key")
-                                ,
+                                .testTag("prayer_time_$key"),
                             shape = RoundedCornerShape(18.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = if (isNext) Color(0xFFF4EBDD) else MaterialTheme.colorScheme.surface
+                                containerColor = if (isNext) Color(0xFF134233) else Color(0xFF0F362A)
                             ),
                             elevation = CardDefaults.cardElevation(defaultElevation = if (isNext) 4.dp else 1.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(7.dp)
+                            Box(
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                if (isNext) {
-                                    Text("القادمة", color = Color(0xFF755B25), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                } else {
-                                    Spacer(modifier = Modifier.height(14.dp))
-                                }
-                                Icon(
-                                    imageVector = when (key) {
-                                        "fajr" -> Icons.Filled.NightsStay
-                                        "dhuhr" -> Icons.Filled.WbSunny
-                                        "asr" -> Icons.Filled.WbCloudy
-                                        "maghrib" -> Icons.Filled.WbTwilight
-                                        else -> Icons.Filled.NightsStay
-                                    },
+                                Image(
+                                    painter = painterResource(id = prayerDrawable),
                                     contentDescription = title,
-                                    tint = if (isNext) Color(0xFF755B25) else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(22.dp)
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Fit
                                 )
-                                Text(title, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                                Text(timeText, color = if (isNext) Color(0xFF4D3C1B) else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                if (isNext) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopCenter)
+                                            .padding(top = 4.dp)
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(Color(0xFFD4AF37))
+                                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                                    ) {
+                                        Text(
+                                            text = "القادمة",
+                                            color = Color(0xFF0E3125),
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.ExtraBold
+                                        )
+                                    }
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .padding(bottom = 16.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color.Black.copy(alpha = 0.38f))
+                                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = timeText,
+                                        color = Color(0xFFFFD979),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
                             }
                         }
                     }
@@ -544,7 +570,9 @@ fun HomeScreen(
 
                 // Row 1: Tasbih and Adhkar
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = (-6).dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     HomeServiceCard(
@@ -602,7 +630,7 @@ fun HomeScreen(
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(132.dp)
+                            .height(150.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
@@ -625,7 +653,7 @@ fun HomeScreen(
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(132.dp)
+                            .height(150.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
@@ -648,7 +676,7 @@ fun HomeScreen(
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(132.dp)
+                            .height(150.dp)
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
