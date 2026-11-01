@@ -273,22 +273,75 @@ fun HomeScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(14.dp))
-                    Column(
+                    Box(
                         modifier = Modifier
+                            .shadow(10.dp, RoundedCornerShape(22.dp))
                             .clip(RoundedCornerShape(22.dp))
-                            .background(Color(0xFF0D4F3A))
-                            .border(2.dp, Color(0xFFB89A52), RoundedCornerShape(22.dp))
-                            .padding(horizontal = 26.dp, vertical = 12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color(0xFF176447), Color(0xFF0B3B2D), Color(0xFF062B22))
+                                )
+                            )
+                            .border(1.5.dp, Color(0xFFD4AF37), RoundedCornerShape(22.dp))
+                            .drawWithCache {
+                                val gold = Color(0xFFD4AF37)
+                                val highlight = Color(0xFFFFE8A0)
+                                onDrawBehind {
+                                    val inset = 5.dp.toPx()
+                                    val corner = 13.dp.toPx()
+                                    // Double engraved frame with a subtle raised-gold highlight.
+                                    drawRoundRect(
+                                        color = gold.copy(alpha = 0.82f),
+                                        topLeft = Offset(inset, inset),
+                                        size = Size(size.width - inset * 2, size.height - inset * 2),
+                                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(corner, corner),
+                                        style = Stroke(width = 0.8.dp.toPx())
+                                    )
+                                    drawLine(highlight.copy(alpha = 0.75f), Offset(inset + corner, inset), Offset(size.width - inset - corner, inset), 1.dp.toPx())
+                                    // Restrained Islamic-inspired arabesque corner flourishes.
+                                    val arm = 9.dp.toPx()
+                                    val points = listOf(
+                                        Offset(inset + corner, inset + corner),
+                                        Offset(size.width - inset - corner, inset + corner),
+                                        Offset(inset + corner, size.height - inset - corner),
+                                        Offset(size.width - inset - corner, size.height - inset - corner)
+                                    )
+                                    points.forEachIndexed { index, p ->
+                                        val sx = if (index % 2 == 0) 1f else -1f
+                                        val sy = if (index < 2) 1f else -1f
+                                        drawLine(gold, p, Offset(p.x + arm * sx, p.y), 1.2.dp.toPx())
+                                        drawLine(gold, p, Offset(p.x, p.y + arm * sy), 1.2.dp.toPx())
+                                        drawLine(highlight.copy(alpha = 0.8f), Offset(p.x + arm * sx * 0.45f, p.y), Offset(p.x, p.y + arm * sy * 0.45f), 1.dp.toPx())
+                                    }
+                                }
+                            }
+                            .padding(horizontal = 28.dp, vertical = 11.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("الوقت المتبقي", color = Color(0xFFE8D7A8), fontSize = 12.sp)
-                        Text(
-                            countdown,
-                            color = Color.White,
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                "۞ الْوَقْتُ الْمُتَبَقِّي ۞",
+                                color = Color(0xFFFFE7A3),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.2.sp
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                countdown,
+                                color = Color(0xFFFFD76A),
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 2.sp
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .padding(top = 4.dp)
+                                    .width(54.dp)
+                                    .height(1.dp)
+                                    .background(Brush.horizontalGradient(listOf(Color.Transparent, Color(0xFFFFE7A3), Color.Transparent)))
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     Row(
