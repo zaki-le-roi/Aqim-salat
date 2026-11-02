@@ -26,6 +26,13 @@ class AdhanPlaybackService : Service() {
     private var lastFailureReason: String = "سبب غير معروف"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP_ADHAN) {
+            Log.i(TAG, "User requested adhan stop")
+            releasePlayer()
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelfResult(startId)
+            return START_NOT_STICKY
+        }
         prayerName = intent?.getStringExtra(EXTRA_PRAYER_NAME) ?: "الصلاة"
         prayerKey = intent?.getStringExtra(EXTRA_PRAYER_KEY) ?: ""
         muadhinOverride = intent?.getStringExtra(EXTRA_MUADHIN_OVERRIDE)
@@ -40,6 +47,16 @@ class AdhanPlaybackService : Service() {
             .setContentText("حان وقت الصلاة")
             .setOngoing(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
+            .addAction(
+                0,
+                "إيقاف الأذان",
+                android.app.PendingIntent.getService(
+                    this,
+                    9402,
+                    Intent(this, AdhanPlaybackService::class.java).setAction(ACTION_STOP_ADHAN),
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+                )
+            )
             .setContentIntent(
                 android.app.PendingIntent.getActivity(
                     this, 0, Intent(this, MainActivity::class.java),
@@ -200,6 +217,7 @@ class AdhanPlaybackService : Service() {
         private const val MADINAH_ATHAN_URL = "https://www.islamcan.com/audio/adhan/azan2.mp3"
         private const val ALAFASY_ATHAN_URL = "https://www.islamcan.com/audio/adhan/azan8.mp3"
         private const val FAJR_ATHAN_URL = "https://download.tvquran.com/download/selections/180/58b0dac02106f.mp3"
+        const val ACTION_STOP_ADHAN = "com.example.adhan.action.STOP_ADHAN"
         const val EXTRA_PRAYER_NAME = "prayer_name"
         const val EXTRA_PRAYER_KEY = "prayer_key"
         const val EXTRA_MUADHIN_OVERRIDE = "muadhin_override"

@@ -444,7 +444,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Filled.DateRange,
                             contentDescription = if (lang == "ar") "التقويم" else "Calendar",
-                            tint = Color(0xFFB89A52),
+                            tint = Color(0xFFFFE8A0),
                             modifier = Modifier
                                 .size(20.dp)
                                 .clickable { onNavigateToFeature("CALENDAR") }
@@ -456,7 +456,7 @@ fun HomeScreen(
                         text = hijriDate,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = Color(0xFFFFE8A0),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
@@ -464,7 +464,7 @@ fun HomeScreen(
                     Icon(
                         imageVector = Icons.Filled.Share,
                         contentDescription = if (lang == "ar") "مشاركة" else "Share",
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = Color(0xFFD4AF37),
                         modifier = Modifier
                             .size(20.dp)
                             .clickable {
