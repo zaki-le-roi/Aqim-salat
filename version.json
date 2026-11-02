@@ -1,6 +1,6 @@
 {
-  "versionCode": 1004053,
-  "versionName": "1.4.53",
+  "versionCode": 1004107,
+  "versionName": "1.4.107",
   "downloadUrl": "https://github.com/zaki-le-roi/Aqim-salat/releases/latest/download/Aqim-Salat.apk",
-  "releaseNotes": "إضافة حذف المحادثة والانتقال إلى آخر الرسائل، وتحسين التمرير إلى نهاية الردود الطويلة."
+  "releaseNotes": "إصلاح نظام ترقيم الإصدارات والتحديث، وتحسين بطاقة الوقت المتبقي."
 }

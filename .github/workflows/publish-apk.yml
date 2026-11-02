@@ -61,7 +61,7 @@ jobs:
           if [ "$REF_TYPE" = "tag" ]; then
             VERSION="${REF_NAME#v}"
           elif [ "$REF_TYPE" = "branch" ]; then
-            LAST_PATCH="$(gh release list --limit 100 --json tagName --jq '[.[] | .tagName | select(test("^v1\\.4\\.[0-9]+$")) | ltrimstr("v") | split(".")[2] | tonumber] | max // 7')"
+            LAST_PATCH="$(gh release list --limit 100 --json tagName --jq '[.[] | .tagName | select(test("^v1[.]4[.][0-9]+$")) | split(".")[2] | tonumber] | max // 7')"
             NEXT_PATCH=$((LAST_PATCH + 1))
             VERSION="1.4.$NEXT_PATCH"
           else
@@ -74,8 +74,8 @@ jobs:
           fi
           IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
           CODE=$((MAJOR * 1000000 + MINOR * 1000 + PATCH))
-          if [ "$CODE" -le 1004007 ]; then
-            echo "Refusing to publish a versionCode that is not newer than 1.4.7"
+          if [ "$CODE" -le 1004106 ]; then
+            echo "Refusing to publish a versionCode that is not newer than 1.4.106"
             exit 1
           fi
           echo "RELEASE_VERSION=$VERSION" >> "$GITHUB_ENV"
@@ -89,6 +89,14 @@ jobs:
           content = re.sub(r'versionCode = \d+', f"versionCode = {sys.argv[2]}", content, count=1)
           content = re.sub(r'versionName = "[^"]+"', f'versionName = "{sys.argv[1]}"', content, count=1)
           path.write_text(content)
+          version_json = {
+              "versionCode": int(sys.argv[2]),
+              "versionName": sys.argv[1],
+              "downloadUrl": "https://github.com/zaki-le-roi/Aqim-salat/releases/latest/download/Aqim-Salat.apk",
+              "releaseNotes": "تحديث رسمي لتطبيق أقم صلاتك، مع إصلاحات وتحسينات عامة."
+          }
+          import json
+          Path("version.json").write_text(json.dumps(version_json, ensure_ascii=False, indent=2))
           PY
 
       - name: Cache offline Quran page images
