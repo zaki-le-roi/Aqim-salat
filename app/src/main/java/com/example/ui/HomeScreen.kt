@@ -67,6 +67,59 @@ private fun HomeServiceCard(
     )
 }
 
+
+/** Reuses the countdown card's restrained emerald-and-raised-gold frame on compact home cards. */
+private fun Modifier.premiumIslamicFrame(shape: RoundedCornerShape): Modifier =
+    this
+        .shadow(8.dp, shape)
+        .clip(shape)
+        .background(
+            Brush.verticalGradient(
+                listOf(Color(0xFF176447), Color(0xFF0B3B2D), Color(0xFF062B22))
+            )
+        )
+        .border(1.5.dp, Color(0xFFD4AF37), shape)
+        .drawWithCache {
+            val gold = Color(0xFFD4AF37)
+            val highlight = Color(0xFFFFE8A0)
+            onDrawBehind {
+                val inset = 5.dp.toPx()
+                val corner = 13.dp.toPx()
+                drawRoundRect(
+                    color = gold.copy(alpha = 0.82f),
+                    topLeft = Offset(inset, inset),
+                    size = Size(size.width - inset * 2, size.height - inset * 2),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(corner, corner),
+                    style = Stroke(width = 0.8.dp.toPx())
+                )
+                drawLine(
+                    highlight.copy(alpha = 0.75f),
+                    Offset(inset + corner, inset),
+                    Offset(size.width - inset - corner, inset),
+                    1.dp.toPx()
+                )
+                val arm = 9.dp.toPx()
+                val points = listOf(
+                    Offset(inset + corner, inset + corner),
+                    Offset(size.width - inset - corner, inset + corner),
+                    Offset(inset + corner, size.height - inset - corner),
+                    Offset(size.width - inset - corner, size.height - inset - corner)
+                )
+                points.forEachIndexed { index, point ->
+                    val sx = if (index % 2 == 0) 1f else -1f
+                    val sy = if (index < 2) 1f else -1f
+                    drawLine(gold, point, Offset(point.x + arm * sx, point.y), 1.2.dp.toPx())
+                    drawLine(gold, point, Offset(point.x, point.y + arm * sy), 1.2.dp.toPx())
+                    drawLine(
+                        highlight.copy(alpha = 0.8f),
+                        Offset(point.x + arm * sx * 0.45f, point.y),
+                        Offset(point.x, point.y + arm * sy * 0.45f),
+                        1.dp.toPx()
+                    )
+                }
+            }
+        }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -348,8 +401,7 @@ fun HomeScreen(
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(18.dp))
-                            .background(Color(0xFF0D4F3A))
-                            .border(1.dp, Color(0xFFB89A52), RoundedCornerShape(18.dp))
+                            .premiumIslamicFrame(RoundedCornerShape(18.dp))
                             .clickable { onNavigateToFeature("PRAYER_TIMES") }
                             .padding(horizontal = 13.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -374,10 +426,12 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .offset(y = (-10).dp), // Slight overlap for depth
+                    .offset(y = (-10).dp) // Slight overlap for depth
+                    .premiumIslamicFrame(RoundedCornerShape(30.dp))
+                    .testTag("home_hijri_date_card"),
                 shape = RoundedCornerShape(30.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -533,7 +587,7 @@ fun HomeScreen(
         item {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -630,12 +684,12 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(132.dp)
+                            .height(140.dp)
                             .clickable { onNavigateToFeature("TASBIH") }
                             .testTag("home_service_tasbih"),
                         shape = RoundedCornerShape(16.dp),
@@ -658,7 +712,7 @@ fun HomeScreen(
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(132.dp)
+                            .height(140.dp)
                             .clickable { onNavigateToFeature("ADHKAR") }
                             .testTag("home_service_adhkar"),
                         shape = RoundedCornerShape(16.dp),
@@ -684,12 +738,12 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(150.dp)
+                            .height(158.dp)
                             .clickable { onNavigateToFeature("QIBLA") }
                             .testTag("home_service_qibla"),
                         shape = RoundedCornerShape(16.dp),
@@ -712,7 +766,7 @@ fun HomeScreen(
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(150.dp)
+                            .height(158.dp)
                             .clickable { onNavigateToFeature("HISN_AL_MUSLIM") }
                             .testTag("home_service_hisn"),
                         shape = RoundedCornerShape(16.dp),
@@ -735,7 +789,7 @@ fun HomeScreen(
                     HomeServiceCard(
                         modifier = Modifier
                             .weight(1f)
-                            .height(150.dp)
+                            .height(158.dp)
                             .clickable { onNavigateToFeature("HADITH") }
                             .testTag("home_service_hadith"),
                         shape = RoundedCornerShape(16.dp),
