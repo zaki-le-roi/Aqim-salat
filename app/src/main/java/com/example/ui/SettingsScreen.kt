@@ -53,6 +53,7 @@ private fun SettingsCategoryContent(
     val fontScaleVal by viewModel.fontScale.collectAsState()
 
     var floatingAdhkarEnabled by remember { mutableStateOf(context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE).getBoolean("enabled", false)) }
+    var awaitingOverlayPermission by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -60,11 +61,18 @@ private fun SettingsCategoryContent(
                 val prefs = context.getSharedPreferences("floating_adhkar", android.content.Context.MODE_PRIVATE)
                 val enabled = prefs.getBoolean("enabled", false)
                 floatingAdhkarEnabled = enabled
-                if (enabled && AndroidSettings.canDrawOverlays(context)) {
-                    ContextCompat.startForegroundService(
-                        context,
-                        Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_SHOW)
-                    )
+                // Resume only starts the overlay after the user returns from the permission screen.
+                if (awaitingOverlayPermission) {
+                    awaitingOverlayPermission = false
+                    if (enabled && AndroidSettings.canDrawOverlays(context)) {
+                        ContextCompat.startForegroundService(
+                            context,
+                            Intent(context, com.example.AdhkarOverlayService::class.java).setAction(com.example.AdhkarOverlayService.ACTION_SHOW)
+                        )
+                    } else if (enabled) {
+                        prefs.edit().putBoolean("enabled", false).apply()
+                        floatingAdhkarEnabled = false
+                    }
                 }
             }
         }
@@ -166,6 +174,7 @@ private fun SettingsCategoryContent(
                                 // ON_RESUME will start the overlay as soon as permission is granted.
                                 prefs.edit().putBoolean("enabled", true).commit()
                                 floatingAdhkarEnabled = true
+                                awaitingOverlayPermission = true
                                 Toast.makeText(context, "اسمح بالظهور فوق التطبيقات الأخرى، ثم ارجع إلى التطبيق.", Toast.LENGTH_LONG).show()
                                 context.startActivity(
                                     Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.packageName))
