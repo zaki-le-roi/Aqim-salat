@@ -34,6 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -120,6 +122,12 @@ class MainActivity : ComponentActivity() {
             }
 
             MyApplicationTheme(themeMode = activeThemeMode, nextPrayer = nextPrayerName) {
+                val isLightTheme = MaterialTheme.colorScheme.background.luminance() > 0.5f
+                SideEffect {
+                    val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = isLightTheme
+                    insetsController.isAppearanceLightNavigationBars = isLightTheme
+                }
                 val layoutDirection = if (Translations.isRtl(activeLanguage)) {
                     LayoutDirection.Rtl
                 } else {
@@ -244,14 +252,14 @@ fun AqimSalahApp(
                         .testTag("floating_navigation_container")
                 ) {
                     NavigationBar(
-                        containerColor = Color(0xFFFAF8F5),
+                        containerColor = MaterialTheme.colorScheme.surface,
                         tonalElevation = 0.dp,
                         windowInsets = androidx.compose.foundation.layout.WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(70.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFAF8F5))
+                            .background(MaterialTheme.colorScheme.surface)
                             .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.16f), CircleShape)
                             .shadow(12.dp, CircleShape)
                             .testTag("app_navigation_bar")
@@ -275,7 +283,7 @@ fun AqimSalahApp(
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = label,
-                                        tint = Color(0xFFD4AF37),
+                                        tint = Color.Unspecified,
                                         modifier = Modifier.size(22.dp)
                                     )
                                 },
@@ -287,16 +295,16 @@ fun AqimSalahApp(
                                         maxLines = 1,
                                         softWrap = false,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFFD4AF37)
+                                        color = Color.Unspecified
                                     )
                                 },
                                 alwaysShowLabel = true,
                                 colors = NavigationBarItemDefaults.colors(
-                                     indicatorColor = Color(0xFF115E3F),
-                                     selectedIconColor = Color(0xFFD4AF37),
-                                     selectedTextColor = Color(0xFFD4AF37),
-                                     unselectedIconColor = Color(0xFF115E3F),
-                                     unselectedTextColor = Color(0xFF115E3F)
+                                     indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                                     selectedIconColor = MaterialTheme.colorScheme.primary,
+                                     selectedTextColor = MaterialTheme.colorScheme.primary,
+                                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                                  ),
                                 modifier = Modifier.testTag("nav_item_" + route)
                             )
@@ -312,7 +320,7 @@ fun AqimSalahApp(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(if (selectedTab == "QURAN") Color(0xFFFDFBF7) else Color.Transparent)
+                .background(if (selectedTab == "QURAN") MaterialTheme.colorScheme.background else Color.Transparent)
         ) {
             val showPattern = selectedTab != "QURAN"
             ThemeBackground(
@@ -335,7 +343,7 @@ fun AqimSalahApp(
             // Reading screens keep a plain ivory background for comfortable reading.
             MaterialTheme(
                 colorScheme = MaterialTheme.colorScheme.copy(
-                    background = if (showPattern) Color.Transparent else Color(0xFFFAF8F5)
+                    background = if (showPattern) Color.Transparent else MaterialTheme.colorScheme.background
                 ),
                 typography = MaterialTheme.typography,
                 shapes = MaterialTheme.shapes
@@ -459,6 +467,7 @@ fun ThemeBackground(
     islamicPatternEnabled: Boolean = true
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
+    val backgroundColor = MaterialTheme.colorScheme.background
     val goldColor = Color(0x1AD4AF37)
 
     androidx.compose.foundation.Canvas(modifier = modifier.fillMaxSize()) {
@@ -467,7 +476,7 @@ fun ThemeBackground(
 
         if (islamicPatternEnabled) {
             // Continuous Islamic geometric tiling: linked octagons and squares, not isolated stars.
-            drawRect(color = Color(0xFFFAF8F2))
+            drawRect(color = backgroundColor)
             val spacing = 104.dp.toPx()
             val outerRadius = 27.dp.toPx()
             val innerRadius = 16.dp.toPx()
