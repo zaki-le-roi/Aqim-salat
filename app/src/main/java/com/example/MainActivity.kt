@@ -177,7 +177,6 @@ fun AqimSalahApp(
     var activeDetailScreen by remember { mutableStateOf<String?>(null) }
     var initialToolParam by remember { mutableStateOf<String?>(null) }
     var initialSurahIdParam by remember { mutableStateOf<Int?>(null) }
-    var initialSettingsDialog by remember { mutableStateOf<String?>(null) }
 
     // Dynamic routing callback across all dashboard grid cards
     val handleFeatureNavigation: (String) -> Unit = { routeKey ->
@@ -203,17 +202,6 @@ fun AqimSalahApp(
                 selectedTab = "QIBLA"
                 activeDetailScreen = null
             }
-            "SETTING_THEME", "SETTING_CALC", "SETTING_AUDIO", "SETTING_BACKUP", "SETTING_PRIVACY", "SETTING_ACCESSIBILITY" -> {
-                initialSettingsDialog = when (routeKey) {
-                    "SETTING_THEME" -> "THEME"
-                    "SETTING_CALC" -> "CALC"
-                    "SETTING_AUDIO" -> "AUDIO"
-                    "SETTING_BACKUP" -> "BACKUP"
-                    "SETTING_PRIVACY" -> "PRIVACY"
-                    else -> "ACCESSIBILITY"
-                }
-                activeDetailScreen = "SETTINGS"
-            }
             "TOOLS_MENU", "TOOLS" -> {
                 activeDetailScreen = "TOOLS"
                 initialToolParam = null
@@ -226,7 +214,7 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = "MOSQUES"
             }
-            "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SETTINGS", "SEERAH",
+            "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SEERAH",
             "SCHOLARS_LIBRARY", "ZAD_ALMUSLIM", "MISHKAT" -> {
                 activeDetailScreen = routeKey
             }
@@ -381,20 +369,6 @@ fun AqimSalahApp(
                     )
                     "QURAN_AUDIO" -> QuranAudioScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "HADITH" -> HadithScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
-                    "SETTINGS" -> Scaffold(
-                        topBar = {
-                            TopAppBar(
-                                title = { Text(if (lang == "ar") "الإعدادات" else "Settings", fontWeight = FontWeight.Bold) },
-                                navigationIcon = {
-                                    IconButton(onClick = { activeDetailScreen = null }) {
-                                        Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
-                                    }
-                                }
-                            )
-                        }
-                    ) { p ->
-                        SettingsScreen(viewModel = viewModel, lang = lang, modifier = Modifier.padding(p), initialDialog = initialSettingsDialog)
-                    }
                     "SEERAH" -> SeerahScreen(lang = lang, onBack = { activeDetailScreen = null })
                     "SCHOLARS_LIBRARY" -> ScholarsLibraryScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "ZAD_ALMUSLIM" -> ZadAlMuslimScreen(onBack = { activeDetailScreen = null })

@@ -5,8 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings as AndroidSettings
 import androidx.core.content.ContextCompat
-import android.media.AudioAttributes
-import android.media.MediaPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -48,7 +46,6 @@ fun SettingsScreen(
     val preAlertMinutes by viewModel.prePrayerAlertMinutes.collectAsState()
     val autoSilentEnabled by viewModel.autoSilentEnabled.collectAsState()
     val activeThemeVal by viewModel.themeMode.collectAsState()
-    val defaultReciterVal by viewModel.defaultReciter.collectAsState()
     val defaultMuadhinVal by viewModel.defaultMuadhin.collectAsState()
     val hapticsVal by viewModel.hapticsEnabled.collectAsState()
     val fontScaleVal by viewModel.fontScale.collectAsState()
@@ -87,7 +84,6 @@ fun SettingsScreen(
     )
     val methods = listOf("ALGERIA", "UMM_AL_QURA", "EGYPT", "MWL", "KARACHI", "ISNA", "TURKEY", "AWQAF")
     val madhabs = listOf("STANDARD", "HANAFI")
-    val recitersList = listOf("مشاري العفاسي", "عبد الباسط عبد الصمد", "سعد الغامدي")
     val muadhinOptions = listOf(
         "MAKKAH" to "أذان مكة المكرمة",
         "MADINAH" to "أذان المدينة المنورة",
@@ -415,28 +411,6 @@ fun SettingsScreen(
             )
         }
 
-        // 5. Audio Playback (Default Reciter stream)
-        item {
-            SettingsItemCard(
-                icon = Icons.Filled.RecordVoiceOver,
-                title = if (lang == "ar") "قارئ القرآن الافتراضي" else "Audio Settings",
-                subtitle = if (lang == "ar") "اختر إعدادات الاستماع إلى التلاوة" else "Choose recitation audio preferences",
-                tag = "setting_audio",
-                onClick = { activeDialog = "AUDIO" }
-            )
-        }
-
-        // 6. Data Backup & Cloud Sync
-        item {
-            SettingsItemCard(
-                icon = Icons.Filled.Backup,
-                title = if (lang == "ar") "النسخ الاحتياطي والمزامنة" else "Backup & Sync",
-                subtitle = if (lang == "ar") "حماية الإحصاءات والسجلات والمحفوظات" else "Secure local statistics, logs & bookmarks",
-                tag = "setting_backup",
-                onClick = { activeDialog = "BACKUP" }
-            )
-        }
-
         // 8. Privacy & Device Permissions
         item {
             SettingsItemCard(
@@ -647,75 +621,6 @@ fun SettingsScreen(
                 }
             },
             dismissButton = { TextButton(onClick = { stopAdhanPreview(); activeDialog = null }) { Text(if (lang == "ar") "إغلاق" else "Close") } }
-        )
-    }
-
-    // E. Audio Reciter Settings Dialog
-    if (activeDialog == "AUDIO") {
-        var selectedReciter by remember(defaultReciterVal) { mutableStateOf(defaultReciterVal) }
-
-        AlertDialog(
-            onDismissRequest = { activeDialog = null },
-            title = { Text(if (lang == "ar") "إعدادات الصوت والمقرئ" else "Recitation Voice Preferences", fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    recitersList.forEach { rec ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { selectedReciter = rec }
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(selected = rec == selectedReciter, onClick = { selectedReciter = rec })
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(rec, fontSize = 15.sp)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.setDefaultReciter(selectedReciter)
-                        activeDialog = null
-                        Toast.makeText(context, if (lang == "ar") "تم حفظ المقرئ الافتراضي: $selectedReciter" else "Default reciter saved: $selectedReciter", Toast.LENGTH_SHORT).show()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(if (lang == "ar") "موافق" else "OK")
-                }
-            }
-        )
-    }
-
-    // E. Backup Dialog
-    if (activeDialog == "BACKUP") {
-        AlertDialog(
-            onDismissRequest = { activeDialog = null },
-            title = { Text(if (lang == "ar") "النسخ الاحتياطي والمزامنة" else "Backup & Sync", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        if (lang == "ar") "الحالة: البيانات المحلية محفوظة على هذا الجهاز"
-                        else "Status: Data is stored locally on this device",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        if (lang == "ar") "النسخ الاحتياطي السحابي غير مفعّل حاليًا. لا يدّعي التطبيق تنفيذ مزامنة خارج الجهاز."
-                        else "Cloud backup is not currently connected. The app does not claim to synchronize data outside this device.",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { activeDialog = null }) {
-                    Text(if (lang == "ar") "إغلاق" else "Close")
-                }
-            }
         )
     }
 

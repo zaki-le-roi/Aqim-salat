@@ -139,7 +139,7 @@ fun HomeScreen(
     val locationConfigured by viewModel.locationConfigured.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
     var appMenuExpanded by remember { mutableStateOf(false) }
-    var appMenuSection by remember { mutableStateOf("SERVICES") }
+    var settingsMenuExpanded by remember { mutableStateOf(false) }
 
 
     androidx.compose.runtime.CompositionLocalProvider(
@@ -234,56 +234,26 @@ fun HomeScreen(
                                     .background(MaterialTheme.colorScheme.surface)
                             ) {
                                 Text(
-                                    text = "القائمة الرئيسية",
+                                    text = "الخدمات",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                                 )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    FilterChip(
-                                        selected = appMenuSection == "SERVICES",
-                                        onClick = { appMenuSection = "SERVICES" },
-                                        label = { Text("الخدمات", maxLines = 1) },
-                                        leadingIcon = { Icon(Icons.Filled.Apps, contentDescription = null) }
-                                    )
-                                    FilterChip(
-                                        selected = appMenuSection == "SETTINGS",
-                                        onClick = { appMenuSection = "SETTINGS" },
-                                        label = { Text("خصائص التطبيق", maxLines = 1) },
-                                        leadingIcon = { Icon(Icons.Filled.Tune, contentDescription = null) }
-                                    )
-                                }
                                 HorizontalDivider()
-                                val menuItems = if (appMenuSection == "SERVICES") {
-                                    listOf(
-                                        Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
-                                        Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
-                                        Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
-                                        Triple("ZAD_ALMUSLIM", "زاد المسلم", Icons.Filled.MenuBook),
-                                        Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
-                                        Triple("QIBLA", "القبلة", Icons.Filled.Explore),
-                                        Triple("CALENDAR", "التقويم الهجري", Icons.Filled.DateRange)
-                                    )
-                                } else {
-                                    listOf(
-                                        Triple("SETTING_THEME", "سمة التطبيق", Icons.Filled.Palette),
-                                        Triple("SETTING_CALC", "حساب مواقيت الصلاة والمذهب", Icons.Filled.AccessTime),
-                                        Triple("SETTING_AUDIO", "القارئ والصوت", Icons.Filled.VolumeUp),
-                                        Triple("SETTING_BACKUP", "النسخ الاحتياطي والمزامنة", Icons.Filled.Cloud),
-                                        Triple("SETTING_PRIVACY", "الخصوصية وأذونات الموقع", Icons.Filled.Security),
-                                        Triple("SETTING_ACCESSIBILITY", "حجم الخط والاهتزاز", Icons.Filled.Accessibility)
-                                    )
-                                }
+                                val menuItems = listOf(
+                                    Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
+                                    Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
+                                    Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
+                                    Triple("ZAD_ALMUSLIM", "زاد المسلم", Icons.Filled.MenuBook),
+                                    Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
+                                    Triple("QIBLA", "القبلة", Icons.Filled.Explore),
+                                    Triple("CALENDAR", "التقويم الهجري", Icons.Filled.DateRange)
+                                )
                                 menuItems.forEach { (route, title, icon) ->
                                     DropdownMenuItem(
                                         text = { Text(title, fontWeight = FontWeight.Medium, maxLines = 2) },
-                                        leadingIcon = {
-                                            Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34))
-                                        },
+                                        leadingIcon = { Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34)) },
                                         onClick = {
                                             appMenuExpanded = false
                                             onNavigateToFeature(route)
@@ -297,15 +267,32 @@ fun HomeScreen(
                             Text("أقم صلاتك", color = Color(0xFFFFE7A3), fontSize = 19.sp, fontWeight = FontWeight.Bold)
                             Text(locationName, color = Color.White.copy(alpha = 0.86f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.18f))
-                                .clickable { onNavigateToFeature("SETTINGS") },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Filled.Settings, contentDescription = "الإعدادات", tint = Color(0xFFFFE7A3))
+                        Box {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.18f))
+                                    .clickable { settingsMenuExpanded = true }
+                                    .testTag("home_settings_menu_button"),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.Menu, contentDescription = "الإعدادات والخصائص", tint = Color(0xFFFFE7A3))
+                            }
+                            DropdownMenu(
+                                expanded = settingsMenuExpanded,
+                                onDismissRequest = { settingsMenuExpanded = false },
+                                modifier = Modifier
+                                    .widthIn(min = 280.dp, max = 340.dp)
+                                    .heightIn(max = 620.dp)
+                                    .background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                SettingsScreen(
+                                    viewModel = viewModel,
+                                    lang = lang,
+                                    modifier = Modifier.width(320.dp).height(600.dp)
+                                )
+                            }
                         }
                     }
 
