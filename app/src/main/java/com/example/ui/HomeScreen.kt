@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +50,8 @@ import androidx.compose.ui.layout.ContentScale
 import com.example.R
 import java.text.SimpleDateFormat
 import java.util.*
+
+private val DiwaniFontFamily = FontFamily(Font(R.font.layla_diwani))
 
 @Composable
 private fun HomeServiceCard(
@@ -213,7 +216,7 @@ fun HomeScreen(
                     ) {
                         Spacer(modifier = Modifier.size(40.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("أقم صلاتك", color = Color(0xFFFFE7A3), fontSize = 19.sp, fontWeight = FontWeight.Bold)
+                            Text("أقم صلاتك", color = Color(0xFFFFE7A3), fontSize = 19.sp, fontWeight = FontWeight.Bold, fontFamily = DiwaniFontFamily)
                             Text(locationName, color = Color.White.copy(alpha = 0.86f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         Box(
@@ -228,14 +231,14 @@ fun HomeScreen(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Text("الصلاة القادمة", color = Color(0xFFFFE7A3), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                    Text("الصلاة القادمة", color = Color(0xFFFFE7A3), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, fontFamily = DiwaniFontFamily)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         nextPrayerArabic,
                         color = Color(0xFFFFD76A),
                         fontSize = 46.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.Serif,
+                        fontFamily = DiwaniFontFamily,
                         textAlign = TextAlign.Center
                     )
                     Text(
