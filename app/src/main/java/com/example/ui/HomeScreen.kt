@@ -138,8 +138,6 @@ fun HomeScreen(
     val locationName by viewModel.locationName.collectAsState()
     val locationConfigured by viewModel.locationConfigured.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
-    var appMenuExpanded by remember { mutableStateOf(false) }
-    var settingsMenuExpanded by remember { mutableStateOf(false) }
 
 
     androidx.compose.runtime.CompositionLocalProvider(
@@ -213,86 +211,19 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.12f))
-                                    .clickable { appMenuExpanded = true }
-                                    .testTag("home_app_menu_button"),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Filled.GridView, contentDescription = "القائمة الرئيسية", tint = Color(0xFFFFE7A3))
-                            }
-                            DropdownMenu(
-                                expanded = appMenuExpanded,
-                                onDismissRequest = { appMenuExpanded = false },
-                                modifier = Modifier
-                                    .widthIn(min = 248.dp, max = 292.dp)
-                                    .heightIn(max = 520.dp)
-                                    .background(MaterialTheme.colorScheme.surface)
-                            ) {
-                                Text(
-                                    text = "الخدمات",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                                )
-                                HorizontalDivider()
-                                val menuItems = listOf(
-                                    Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
-                                    Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
-                                    Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
-                                    Triple("ZAD_ALMUSLIM", "زاد المسلم", Icons.Filled.MenuBook),
-                                    Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
-                                    Triple("QIBLA", "القبلة", Icons.Filled.Explore),
-                                    Triple("CALENDAR", "التقويم الهجري", Icons.Filled.DateRange)
-                                )
-                                menuItems.forEach { (route, title, icon) ->
-                                    DropdownMenuItem(
-                                        text = { Text(title, fontWeight = FontWeight.Medium, maxLines = 2) },
-                                        leadingIcon = { Icon(icon, contentDescription = null, tint = Color(0xFF0D5E34)) },
-                                        onClick = {
-                                            appMenuExpanded = false
-                                            onNavigateToFeature(route)
-                                        },
-                                        modifier = Modifier.testTag("home_menu_item_$route")
-                                    )
-                                }
-                            }
-                        }
+                        Spacer(modifier = Modifier.size(40.dp))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("أقم صلاتك", color = Color(0xFFFFE7A3), fontSize = 19.sp, fontWeight = FontWeight.Bold)
                             Text(locationName, color = Color.White.copy(alpha = 0.86f), fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
-                        Box {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(Color.White.copy(alpha = 0.18f))
-                                    .clickable { settingsMenuExpanded = true }
-                                    .testTag("home_settings_menu_button"),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(Icons.Filled.Menu, contentDescription = "الإعدادات والخصائص", tint = Color(0xFFFFE7A3))
-                            }
-                            DropdownMenu(
-                                expanded = settingsMenuExpanded,
-                                onDismissRequest = { settingsMenuExpanded = false },
-                                modifier = Modifier
-                                    .widthIn(min = 280.dp, max = 340.dp)
-                                    .heightIn(max = 620.dp)
-                                    .background(MaterialTheme.colorScheme.surface)
-                            ) {
-                                SettingsScreen(
-                                    viewModel = viewModel,
-                                    lang = lang,
-                                    modifier = Modifier.width(320.dp).height(600.dp)
-                                )
-                            }
+                        Box(
+                            modifier = Modifier.size(40.dp).clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.18f))
+                                .clickable { onNavigateToFeature("APP_MENU") }
+                                .testTag("home_settings_menu_button"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Menu, contentDescription = "القائمة والإعدادات", tint = Color(0xFFFFE7A3))
                         }
                     }
 

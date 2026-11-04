@@ -185,6 +185,7 @@ fun AqimSalahApp(
                 selectedTab = "HOME"
                 activeDetailScreen = null
             }
+            "APP_MENU" -> { activeDetailScreen = "APP_MENU" }
             "PRAYER_TIMES" -> {
                 selectedTab = "PRAYER_TIMES"
                 activeDetailScreen = null
@@ -342,6 +343,7 @@ fun AqimSalahApp(
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
+                    "APP_MENU" -> SettingsScreen(viewModel = viewModel, lang = lang, onNavigateToFeature = handleFeatureNavigation, onBack = { activeDetailScreen = null })
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "FAVORITES" -> FavoritesScreen(
                         viewModel = viewModel, 

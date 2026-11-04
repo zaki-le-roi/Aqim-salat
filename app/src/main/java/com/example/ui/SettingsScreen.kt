@@ -30,9 +30,10 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
+private fun SettingsCategoryContent(
     viewModel: AppViewModel,
     lang: String,
+    selectedCategory: String,
     modifier: Modifier = Modifier,
     initialDialog: String? = null
 ) {
@@ -114,6 +115,7 @@ fun SettingsScreen(
             )
         }
 
+        if (selectedCategory == "APPEARANCE") {
         // 1. Theme Configuration
         item {
             SettingsItemCard(
@@ -127,6 +129,9 @@ fun SettingsScreen(
 
 
 
+        }
+
+        if (selectedCategory == "FLOATING_ADHKAR") {
         // Floating adhkar overlay (shown over other apps only after explicit permission).
         item {
             Card(
@@ -261,6 +266,9 @@ fun SettingsScreen(
             }
         }
 
+        }
+
+        if (selectedCategory == "ADHAN") {
         // 3. Notifications Manager
         item {
             Card(
@@ -389,6 +397,9 @@ fun SettingsScreen(
             }
         }
 
+        }
+
+        if (selectedCategory == "PRAYER") {
         // 4. Prayer Calculation
         item {
             SettingsItemCard(
@@ -400,6 +411,9 @@ fun SettingsScreen(
             )
         }
 
+        }
+
+        if (selectedCategory == "ADHAN") {
         // Muadhin selector, separate from Quran recitation.
         item {
             SettingsItemCard(
@@ -411,6 +425,9 @@ fun SettingsScreen(
             )
         }
 
+        }
+
+        if (selectedCategory == "PRIVACY") {
         // 8. Privacy & Device Permissions
         item {
             SettingsItemCard(
@@ -422,6 +439,9 @@ fun SettingsScreen(
             )
         }
 
+        }
+
+        if (selectedCategory == "ACCESSIBILITY") {
         // 9. Accessibility
         item {
             SettingsItemCard(
@@ -432,6 +452,8 @@ fun SettingsScreen(
                 onClick = { activeDialog = "ACCESSIBILITY" }
             )
         }
+        }
+
     }
 
     // --- Interactive Dialogue Handlers ---
@@ -740,6 +762,93 @@ fun SettingsItemCard(
                 }
             }
             Icon(Icons.Filled.ChevronRight, contentDescription = title, tint = Color(0xFFD4AF37))
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    viewModel: AppViewModel,
+    lang: String,
+    modifier: Modifier = Modifier,
+    onNavigateToFeature: (String) -> Unit = {},
+    onBack: () -> Unit = {}
+) {
+    var selectedCategory by remember { mutableStateOf<String?>(null) }
+    val categories = listOf(
+        Triple("PRAYER", "مواقيت الصلاة والحساب", Icons.Filled.SettingsInputComponent),
+        Triple("ADHAN", "الأذان والتنبيهات", Icons.Filled.Notifications),
+        Triple("FLOATING_ADHKAR", "الأذكار العائمة", Icons.Filled.AutoAwesome),
+        Triple("APPEARANCE", "المظهر وسمة التطبيق", Icons.Filled.Palette),
+        Triple("ACCESSIBILITY", "سهولة الاستخدام", Icons.Filled.Accessibility),
+        Triple("PRIVACY", "الخصوصية والأذونات", Icons.Filled.Security)
+    )
+    val services = listOf(
+        Triple("PRAYER_TIMES", "مواقيت الصلاة", Icons.Filled.AccessTime),
+        Triple("QURAN", "القرآن الكريم", Icons.Filled.MenuBook),
+        Triple("ADHKAR", "الأذكار", Icons.Filled.AutoAwesome),
+        Triple("TASBIH", "السبحة الإلكترونية", Icons.Filled.AddCircle),
+        Triple("QIBLA", "القبلة", Icons.Filled.Explore),
+        Triple("HISN_AL_MUSLIM", "حصن المسلم", Icons.Filled.Shield),
+        Triple("HADITH", "كتب الأحاديث", Icons.Filled.LibraryBooks),
+        Triple("ZAD_ALMUSLIM", "زاد المسلم", Icons.Filled.MenuBook),
+        Triple("MISHKAT", "مشكاة", Icons.Filled.Info),
+        Triple("CALENDAR", "التقويم الهجري", Icons.Filled.DateRange)
+    )
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(selectedCategory?.let { key -> categories.firstOrNull { it.first == key }?.second } ?: "القائمة والإعدادات", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { if (selectedCategory != null) selectedCategory = null else onBack() }) {
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "رجوع")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        if (selectedCategory == null) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                item { Text("الإعدادات", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) }
+                items(categories) { entry ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { selectedCategory = entry.first }.testTag("menu_category_" + entry.first),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(entry.third, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(14.dp))
+                            Text(entry.second, modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+                            Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+                item { Text("الخدمات", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp)) }
+                items(services) { entry ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { onNavigateToFeature(entry.first) }.testTag("menu_service_" + entry.first),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(entry.third, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
+                            Spacer(Modifier.width(14.dp))
+                            Text(entry.second, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+                            Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        } else {
+            SettingsCategoryContent(viewModel = viewModel, lang = lang, selectedCategory = selectedCategory!!, modifier = Modifier.fillMaxSize().padding(padding))
         }
     }
 }
