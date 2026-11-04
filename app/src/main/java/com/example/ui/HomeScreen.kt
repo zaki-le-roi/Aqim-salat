@@ -542,7 +542,7 @@ fun HomeScreen(
                             painter = painterResource(id = R.drawable.card_1_mishkat),
                             contentDescription = if (lang == "ar") "مشكاة" else "Mishkat",
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.FillBounds
                         )
                     }
                 }
@@ -567,7 +567,7 @@ fun HomeScreen(
                             painter = painterResource(id = R.drawable.card_2_quran),
                             contentDescription = if (lang == "ar") "القرآن الكريم" else "The Holy Quran",
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.FillBounds
                         )
                     }
                 }
@@ -592,7 +592,7 @@ fun HomeScreen(
                             painter = painterResource(id = R.drawable.card_3_zad_almuslim),
                             contentDescription = if (lang == "ar") "زاد المسلم" else "Zad Al-Muslim",
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
+                            contentScale = ContentScale.FillBounds
                         )
                     }
                 }
@@ -622,7 +622,7 @@ fun HomeScreen(
                                 painter = painterResource(id = R.drawable.card_4_sebha),
                                 contentDescription = if (lang == "ar") "السبحة الإلكترونية" else "Digital Tasbih",
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.FillBounds
                             )
                         }
                     }
@@ -645,7 +645,7 @@ fun HomeScreen(
                                 painter = painterResource(id = R.drawable.card_5_azkar),
                                 contentDescription = if (lang == "ar") "الأذكار اليومية" else "Daily Adhkar",
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.FillBounds
                             )
                         }
                     }
@@ -676,7 +676,7 @@ fun HomeScreen(
                                 painter = painterResource(id = R.drawable.card_6_qibla),
                                 contentDescription = if (lang == "ar") "القبلة" else "Qibla",
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.FillBounds
                             )
                         }
                     }
@@ -699,7 +699,7 @@ fun HomeScreen(
                                 painter = painterResource(id = R.drawable.card_7_hisn_almuslim),
                                 contentDescription = if (lang == "ar") "حصن المسلم" else "Hisn Muslim",
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.FillBounds
                             )
                         }
                     }
@@ -722,7 +722,7 @@ fun HomeScreen(
                                 painter = painterResource(id = R.drawable.card_8_hadith_books),
                                 contentDescription = if (lang == "ar") "كتب الحديث" else "Hadith Books",
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit
+                                contentScale = ContentScale.FillBounds
                             )
                         }
                     }
