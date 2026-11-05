@@ -5,180 +5,85 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import com.example.data.AppRepository
 import com.example.data.AppDatabase
+import com.example.data.AppRepository
 import com.example.data.PrayerCalculator
+import com.example.data.PrayerTimeEngine
 import kotlinx.coroutines.flow.first
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object AdhanScheduler {
-    // Alarms are rebuilt after boot, timezone changes, permission changes, and settings updates.
-    private const val REQUEST_REFRESH = 0x7A11
-
-    private val prayers = listOf(
-        "Fajr" to "الفجر",
-        "Dhuhr" to "الظهر",
-        "Asr" to "العصر",
-        "Maghrib" to "المغرب",
-        "Isha" to "العشاء"
-    )
-
-    suspend fun schedule(context: Context) {
-        val appContext = context.applicationContext
-        val repository = AppRepository(AppDatabase.getDatabase(appContext), appContext)
-        val enabled = repository.notificationsEnabled.first()
-        val preAlertEnabled = repository.prePrayerAlertEnabled.first()
-        val preAlertMinutes = repository.prePrayerAlertMinutes.first().coerceIn(10, 15)
-        val autoSilentEnabled = repository.autoSilentEnabled.first()
-        if (!enabled && !preAlertEnabled && !autoSilentEnabled) {
-            cancel(context)
-            return
-        }
-
-        val alarmManager = appContext.getSystemService(AlarmManager::class.java) ?: return
-        val exactAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
-
-        cancel(context)
-        val latitude = repository.appLatitude.first()
-        val longitude = repository.appLongitude.first()
-        val locationConfigured = repository.appLocationConfigured.first()
-        // Do not schedule the initial fallback location. Once the user grants GPS or chooses a manual location, Algiers is valid too.
-        if (!locationConfigured && latitude == 36.7538 && longitude == 3.0588) {
-            cancel(appContext)
-            return
-        }
-        val method = runCatching {
-            PrayerCalculator.CalculationMethod.valueOf(repository.appCalcMethod.first())
-        }.getOrDefault(PrayerCalculator.CalculationMethod.MWL)
-        val madhab = runCatching {
-            PrayerCalculator.Madhab.valueOf(repository.appMadhab.first())
-        }.getOrDefault(PrayerCalculator.Madhab.STANDARD)
-
-        val zone = Calendar.getInstance().timeZone
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { timeZone = zone }
-
-        for (dayOffset in 0..1) {
-            val day = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, dayOffset) }
-            val date = day.time
-            val times = PrayerCalculator.calculateTimes(
-                latitude, longitude, zone.getOffset(date.time) / 3600000.0, date, method, madhab
-            )
-            val values = listOf(
-                "Fajr" to times.fajr,
-                "Dhuhr" to times.dhuhr,
-                "Asr" to times.asr,
-                "Maghrib" to times.maghrib,
-                "Isha" to times.isha
-            )
-            values.forEach { (key, time) ->
-                val parts = time.split(":")
-                if (parts.size != 2) return@forEach
-                val trigger = Calendar.getInstance().apply {
-                    set(Calendar.YEAR, day.get(Calendar.YEAR))
-                    set(Calendar.MONTH, day.get(Calendar.MONTH))
-                    set(Calendar.DAY_OF_MONTH, day.get(Calendar.DAY_OF_MONTH))
-                    set(Calendar.HOUR_OF_DAY, parts[0].toIntOrNull() ?: return@apply)
-                    set(Calendar.MINUTE, parts[1].toIntOrNull() ?: return@apply)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
-                if (trigger <= System.currentTimeMillis()) return@forEach
-
-                val requestCode = (dateFormat.format(date) + key).hashCode()
-                val intent = Intent(appContext, AdhanAlarmReceiver::class.java).apply {
-                    putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY, key)
-                    putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, prayers.first { it.first == key }.second)
-                    putExtra(AdhanAlarmReceiver.EXTRA_DATE, dateFormat.format(date))
-                }
-                val pending = PendingIntent.getBroadcast(
-                    appContext, requestCode, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                if (enabled) {
-                    if (exactAllowed) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
-                    else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pending)
-                } else alarmManager.cancel(pending)
-
-                if (autoSilentEnabled && trigger > System.currentTimeMillis()) {
-                    val silentIntent = Intent(appContext, AdhanAlarmReceiver::class.java).apply {
-                        putExtra(AdhanAlarmReceiver.EXTRA_SILENT_START, true)
-                        putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY, key)
-                        putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, prayers.first { it.first == key }.second)
-                        putExtra(AdhanAlarmReceiver.EXTRA_DATE, dateFormat.format(date))
-                    }
-                    val silentPending = PendingIntent.getBroadcast(
-                        appContext, requestCode xor 0x5A71, silentIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                    )
-                    if (exactAllowed) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, silentPending)
-                    else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, silentPending)
-                }
-
-                if (preAlertEnabled) {
-                    val preTrigger = trigger - preAlertMinutes * 60_000L
-                    if (preTrigger > System.currentTimeMillis()) {
-                        val preIntent = Intent(appContext, AdhanAlarmReceiver::class.java).apply {
-                            putExtra(AdhanAlarmReceiver.EXTRA_PRE_ALERT, true)
-                            putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY, key)
-                            putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME, prayers.first { it.first == key }.second)
-                            putExtra(AdhanAlarmReceiver.EXTRA_DATE, dateFormat.format(date))
-                        }
-                        val prePending = PendingIntent.getBroadcast(appContext, requestCode xor 0x35A7, preIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-                        if (exactAllowed) alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, preTrigger, prePending)
-                        else alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, preTrigger, prePending)
-                    }
-                }
-            }
-        }
-
-        val refresh = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_YEAR, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 5)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        val refreshIntent = Intent(context, AdhanAlarmReceiver::class.java).apply {
-            putExtra(AdhanAlarmReceiver.EXTRA_REFRESH, true)
-        }
-        val refreshPending = PendingIntent.getBroadcast(
-            appContext, REQUEST_REFRESH, refreshIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        if (exactAllowed) {
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, refresh, refreshPending)
-        } else {
-            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, refresh, refreshPending)
-        }
+ private const val REQUEST_REFRESH=0x7A11
+ private val prayers=listOf("Fajr" to "الفجر","Dhuhr" to "الظهر","Asr" to "العصر","Maghrib" to "المغرب","Isha" to "العشاء")
+ private val dateFormat=DateTimeFormatter.ISO_LOCAL_DATE
+ suspend fun schedule(context:Context) {
+  val app=context.applicationContext
+  val repo=AppRepository(AppDatabase.getDatabase(app),app)
+  val enabled=repo.notificationsEnabled.first()
+  val pre=repo.prePrayerAlertEnabled.first()
+  val preMinutes=repo.prePrayerAlertMinutes.first().coerceIn(10,15)
+  val silent=repo.autoSilentEnabled.first()
+  if(!enabled&&!pre&&!silent){cancel(app);return}
+  val manager=app.getSystemService(AlarmManager::class.java)?:return
+  val exact=Build.VERSION.SDK_INT<Build.VERSION_CODES.S||manager.canScheduleExactAlarms()
+  cancel(app)
+  val lat=repo.appLatitude.first(); val lng=repo.appLongitude.first()
+  if(!repo.appLocationConfigured.first()&&lat==36.7538&&lng==3.0588)return
+  val zone=PrayerTimeEngine.zoneIdOrDevice(repo.appTimeZoneId.first())
+  val today=PrayerTimeEngine.localDate(zone)
+  val method=runCatching{PrayerCalculator.CalculationMethod.valueOf(repo.appCalcMethod.first())}.getOrDefault(PrayerCalculator.CalculationMethod.ALGERIA)
+  val madhab=runCatching{PrayerCalculator.Madhab.valueOf(repo.appMadhab.first())}.getOrDefault(PrayerCalculator.Madhab.STANDARD)
+  val now=Instant.now().toEpochMilli()
+  for(offset in 0..2){
+   val date=today.plusDays(offset.toLong())
+   val t=PrayerCalculator.calculateTimes(lat,lng,date,zone,method,madhab)
+   val items=listOf("Fajr" to t.fajrDateTime,"Dhuhr" to t.dhuhrDateTime,"Asr" to t.asrDateTime,"Maghrib" to t.maghribDateTime,"Isha" to t.ishaDateTime)
+   items.forEach{(key,zoned)->
+    val trigger=zoned.toInstant().toEpochMilli()
+    if(trigger<=now)return@forEach
+    val code=(date.format(dateFormat)+key).hashCode()
+    val name=prayers.first{it.first==key}.second
+    val alarmIntent=Intent(app,AdhanAlarmReceiver::class.java).apply{
+     putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY,key);putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME,name);putExtra(AdhanAlarmReceiver.EXTRA_DATE,date.format(dateFormat))
     }
-
-    fun cancel(context: Context) {
-        val appContext = context.applicationContext
-        val alarmManager = appContext.getSystemService(AlarmManager::class.java) ?: return
-        prayers.forEach { (key, _) ->
-            for (dayOffset in 0..1) {
-                val day = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, dayOffset) }
-                val date = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(day.time)
-                val requestCode = (date + key).hashCode()
-                val intent = Intent(appContext, AdhanAlarmReceiver::class.java)
-                val pending = PendingIntent.getBroadcast(
-                    context, requestCode, intent,
-                    PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-                )
-                pending?.let { alarmManager.cancel(it); it.cancel() }
-                val preIntent = Intent(appContext, AdhanAlarmReceiver::class.java).apply { putExtra(AdhanAlarmReceiver.EXTRA_PRE_ALERT, true) }
-                PendingIntent.getBroadcast(appContext, requestCode xor 0x35A7, preIntent, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)?.let { alarmManager.cancel(it); it.cancel() }
-                val silentIntent = Intent(appContext, AdhanAlarmReceiver::class.java).apply { putExtra(AdhanAlarmReceiver.EXTRA_SILENT_START, true) }
-                PendingIntent.getBroadcast(appContext, requestCode xor 0x5A71, silentIntent, PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)?.let { alarmManager.cancel(it); it.cancel() }
-            }
-        }
-        val refreshIntent = Intent(context, AdhanAlarmReceiver::class.java)
-        PendingIntent.getBroadcast(
-            context, REQUEST_REFRESH, refreshIntent,
-            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-        )?.let { alarmManager.cancel(it); it.cancel() }
+    val alarm=PendingIntent.getBroadcast(app,code,alarmIntent,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    if(enabled)setAlarm(manager,exact,trigger,alarm) else manager.cancel(alarm)
+    if(silent){
+     val si=Intent(app,AdhanAlarmReceiver::class.java).apply{putExtra(AdhanAlarmReceiver.EXTRA_SILENT_START,true);putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY,key);putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME,name);putExtra(AdhanAlarmReceiver.EXTRA_DATE,date.format(dateFormat))}
+     setAlarm(manager,exact,trigger,PendingIntent.getBroadcast(app,code xor 0x5A71,si,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
     }
+    if(pre){
+     val at=trigger-preMinutes*60_000L
+     if(at>now){
+      val pi=Intent(app,AdhanAlarmReceiver::class.java).apply{putExtra(AdhanAlarmReceiver.EXTRA_PRE_ALERT,true);putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_KEY,key);putExtra(AdhanAlarmReceiver.EXTRA_PRAYER_NAME,name);putExtra(AdhanAlarmReceiver.EXTRA_DATE,date.format(dateFormat))}
+      setAlarm(manager,exact,at,PendingIntent.getBroadcast(app,code xor 0x35A7,pi,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+     }
+    }
+   }
+  }
+  val refresh=PrayerTimeEngine.atLocalMinute(today.plusDays(1),5,zone).toInstant().toEpochMilli()
+  val ri=Intent(app,AdhanAlarmReceiver::class.java).apply{putExtra(AdhanAlarmReceiver.EXTRA_REFRESH,true)}
+  setAlarm(manager,exact,refresh,PendingIntent.getBroadcast(app,REQUEST_REFRESH,ri,PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+ }
+ private fun setAlarm(m:AlarmManager,exact:Boolean,at:Long,pi:PendingIntent){
+  if(exact)m.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,at,pi) else m.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,at,pi)
+ }
+ fun cancel(context:Context){
+  val app=context.applicationContext; val manager=app.getSystemService(AlarmManager::class.java)?:return
+  // Remove alarms created by both the previous device-local implementation and city-local implementation.
+  val start=LocalDate.now().minusDays(3)
+  for(i in 0..9){val d=start.plusDays(i.toLong()).format(dateFormat);prayers.forEach{(key,_)->
+   val code=(d+key).hashCode()
+   listOf(0,0x35A7,0x5A71).forEach{suffix->
+    val intent=Intent(app,AdhanAlarmReceiver::class.java)
+    if(suffix==0x35A7)intent.putExtra(AdhanAlarmReceiver.EXTRA_PRE_ALERT,true)
+    if(suffix==0x5A71)intent.putExtra(AdhanAlarmReceiver.EXTRA_SILENT_START,true)
+    PendingIntent.getBroadcast(app,code xor suffix,intent,PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)?.let{manager.cancel(it);it.cancel()}
+   }
+  }}
+  val refresh=Intent(app,AdhanAlarmReceiver::class.java)
+  PendingIntent.getBroadcast(app,REQUEST_REFRESH,refresh,PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE)?.let{manager.cancel(it);it.cancel()}
+ }
 }
