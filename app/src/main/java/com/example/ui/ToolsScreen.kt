@@ -646,41 +646,24 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
             val magneticValues = FloatArray(3)
 
             fun updateAzimuth() {
-                val matrixReady = SensorManager.getRotationMatrix(
-                    rotationMatrix,
-                    null,
-                    gravityValues,
-                    magneticValues
-                )
+                val matrixReady = SensorManager.getRotationMatrix(rotationMatrix, null, gravityValues, magneticValues)
                 if (!matrixReady) return
                 SensorManager.getOrientation(rotationMatrix, orientation)
                 val magneticAzimuth = ((Math.toDegrees(orientation[0].toDouble()).toFloat() % 360f) + 360f) % 360f
-                val declination = GeomagneticField(
-                    latitude.toFloat(),
-                    longitude.toFloat(),
-                    0f,
-                    System.currentTimeMillis()
-                ).declination
+                val declination = GeomagneticField(latitude.toFloat(), longitude.toFloat(), 0f, System.currentTimeMillis()).declination
                 deviceAzimuth = ((magneticAzimuth + declination) % 360f + 360f) % 360f
             }
 
             val listener = object : SensorEventListener {
                 override fun onSensorChanged(event: SensorEvent) {
                     if (rotationSensor != null) {
-                        // Keep the existing TYPE_ROTATION_VECTOR calculation as the primary path.
                         if (event.sensor.type != Sensor.TYPE_ROTATION_VECTOR || event.values.size < 3) return
                         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
                         SensorManager.getOrientation(rotationMatrix, orientation)
                         val magneticAzimuth = ((Math.toDegrees(orientation[0].toDouble()).toFloat() % 360f) + 360f) % 360f
-                        val declination = GeomagneticField(
-                            latitude.toFloat(),
-                            longitude.toFloat(),
-                            0f,
-                            System.currentTimeMillis()
-                        ).declination
+                        val declination = GeomagneticField(latitude.toFloat(), longitude.toFloat(), 0f, System.currentTimeMillis()).declination
                         deviceAzimuth = ((magneticAzimuth + declination) % 360f + 360f) % 360f
                     } else {
-                        // Use accelerometer + magnetic field only when rotation vector is unavailable.
                         if (event.values.size < 3) return
                         when (event.sensor.type) {
                             Sensor.TYPE_ACCELEROMETER -> event.values.copyInto(gravityValues)
@@ -707,8 +690,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
     }
 
     val compassRotation = ((qiblaAngle.toFloat() - deviceAzimuth) + 360f) % 360f
-    val validLocation = latitude.isFinite() && longitude.isFinite() &&
-        latitude in -90.0..90.0 && longitude in -180.0..180.0
+    val validLocation = latitude.isFinite() && longitude.isFinite() && latitude in -90.0..90.0 && longitude in -180.0..180.0
     val directionName = when {
         qiblaAngle >= 337.5 || qiblaAngle < 22.5 -> if (lang == "ar") "الشمال" else "North"
         qiblaAngle < 67.5 -> if (lang == "ar") "الشمال الشرقي" else "North-east"
@@ -721,8 +703,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 120.dp),
@@ -730,9 +711,7 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
     ) {
         Text(
             text = if (lang == "ar") "اتجاه القبلة" else "Qibla direction",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -740,139 +719,104 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
                 if (lang == "ar") "حرّك الهاتف ببطء حتى يستقر المؤشر، وابتعد عن المعادن والأجهزة المغناطيسية."
                 else "Move your phone slowly until the indicator settles. Keep away from metal and magnetic devices."
             } else {
-                if (lang == "ar") "هذا الهاتف لا يوفّر مستشعر اتجاه مناسبًا. استخدم زاوية القبلة والخريطة أدناه؛ السهم لن يتبع دوران الهاتف."
-                else "This phone has no suitable orientation sensor. Use the bearing and map below; the arrow will not follow phone rotation."
+                if (lang == "ar") "تظهر البوصلة دائمًا؛ عند غياب مستشعر الاتجاه يبقى المؤشر ثابتًا ولا يتبع حركة الهاتف."
+                else "The compass is always visible; without an orientation sensor, the pointer stays fixed and cannot track the phone."
             },
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
+            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center
         )
+        Spacer(modifier = Modifier.height(18.dp))
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        if (sensorAvailable) {
+        Box(
+            modifier = Modifier.size(280.dp).clip(CircleShape)
+                .background(Brush.radialGradient(listOf(Color(0xFF1C6849), Color(0xFF0B382C), Color(0xFF061F18))))
+                .border(3.dp, Color(0xFFD4AF37), CircleShape)
+                .testTag("qibla_compass_dial"),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(Modifier.fillMaxSize().graphicsLayer { rotationZ = -deviceAzimuth }) {
+                val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+                val radius = size.minDimension * 0.455f
+                drawCircle(Color(0xFFD4AF37).copy(alpha = 0.85f), radius, center, style = Stroke(1.5.dp.toPx()))
+                drawCircle(Color(0xFFD4AF37).copy(alpha = 0.45f), radius * 0.78f, center, style = Stroke(1.dp.toPx()))
+                for (tick in 0 until 72) {
+                    val angle = Math.toRadians(tick * 5.0 - 90.0)
+                    val major = tick % 6 == 0
+                    val inner = radius * if (major) 0.83f else 0.89f
+                    val outer = radius * 0.96f
+                    val from = androidx.compose.ui.geometry.Offset(center.x + kotlin.math.cos(angle).toFloat() * inner, center.y + kotlin.math.sin(angle).toFloat() * inner)
+                    val to = androidx.compose.ui.geometry.Offset(center.x + kotlin.math.cos(angle).toFloat() * outer, center.y + kotlin.math.sin(angle).toFloat() * outer)
+                    drawLine(if (major) Color(0xFFFFD978) else Color(0xFFB99443).copy(alpha = 0.75f), from, to, strokeWidth = if (major) 2.dp.toPx() else 1.dp.toPx())
+                }
+                for (mark in 0 until 8) {
+                    val angle = Math.toRadians(mark * 45.0 - 90.0)
+                    val point = androidx.compose.ui.geometry.Offset(center.x + kotlin.math.cos(angle).toFloat() * radius * 0.70f, center.y + kotlin.math.sin(angle).toFloat() * radius * 0.70f)
+                    drawCircle(Color(0xFFD4AF37), radius = 2.2.dp.toPx(), center = point)
+                }
+            }
+            Box(Modifier.fillMaxSize().graphicsLayer { rotationZ = -deviceAzimuth }) {
+                Text("شمال", Modifier.align(Alignment.TopCenter).padding(top = 25.dp), color = Color(0xFFFFD978), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("شرق", Modifier.align(Alignment.CenterEnd).padding(end = 22.dp), color = Color(0xFFFFD978), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("جنوب", Modifier.align(Alignment.BottomCenter).padding(bottom = 25.dp), color = Color(0xFFFFD978), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("غرب", Modifier.align(Alignment.CenterStart).padding(start = 22.dp), color = Color(0xFFFFD978), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            }
+            Icon(
+                Icons.Filled.Navigation,
+                contentDescription = if (lang == "ar") "مؤشر اتجاه القبلة" else "Qibla direction indicator",
+                tint = Color(0xFFFFD978),
+                modifier = Modifier.size(82.dp).graphicsLayer { rotationZ = compassRotation }
+            )
             Box(
-                modifier = Modifier
-                    .size(250.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(3.dp, Color(0xFFD4AF37), CircleShape)
-                    .testTag("qibla_compass_dial"),
+                Modifier.size(46.dp).clip(CircleShape).background(Color(0xFF071F19))
+                    .border(2.dp, Color(0xFFFFD978), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = compassRotation },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        val radius = size.minDimension / 2
-                        val centerX = size.width / 2
-                        val centerY = size.height / 2
-                        drawContext.transform.rotate(0f, androidx.compose.ui.geometry.Offset(centerX, centerY))
-                        val labels = listOf("N", "E", "S", "W")
-                        for (i in 0..3) {
-                            val angle = Math.toRadians((i * 90.0) - 90.0)
-                            val x = centerX + kotlin.math.cos(angle).toFloat() * radius * 0.38f
-                            val y = centerY + kotlin.math.sin(angle).toFloat() * radius * 0.38f
-                            drawCircle(Color(0xFFD4AF37), radius = 3.dp.toPx(), center = androidx.compose.ui.geometry.Offset(x, y))
-                        }
-                    }
-                    Icon(
-                        imageVector = Icons.Filled.Navigation,
-                        contentDescription = if (lang == "ar") "مؤشر اتجاه القبلة" else "Qibla direction indicator",
-                        tint = Color(0xFFD4AF37),
-                        modifier = Modifier.size(70.dp)
-                    )
-                }
-                Box(
-                    modifier = Modifier.size(48.dp).clip(CircleShape)
-                        .background(Color.Black).border(2.dp, Color(0xFFD4AF37), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Filled.Home, contentDescription = if (lang == "ar") "الكعبة المشرفة" else "Kaaba", tint = Color(0xFFD4AF37))
-                }
+                Icon(Icons.Filled.Home, contentDescription = if (lang == "ar") "الكعبة المشرفة" else "Kaaba", tint = Color(0xFFFFD978), modifier = Modifier.size(23.dp))
             }
-            if (!sensorAccuracyGood) {
-                Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        if (sensorAvailable && !sensorAccuracyGood) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                if (lang == "ar") "تحقّق من استقرار المؤشر قبل الاعتماد عليه." else "Wait for the indicator to stabilize before relying on it.",
+                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0B382C)),
+            shape = RoundedCornerShape(18.dp),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD4AF37).copy(alpha = 0.8f))
+        ) {
+            Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(if (lang == "ar") "اتجاه القبلة بالنسبة إلى الشمال الحقيقي" else "Qibla bearing from true north", fontSize = 13.sp, color = Color(0xFFE8D8A8), textAlign = TextAlign.Center)
+                Text(String.format(Locale.US, "%.1f°", qiblaAngle), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFFD978))
+                Text(directionName, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
                 Text(
-                    text = if (lang == "ar") "تحقّق من استقرار المؤشر قبل الاعتماد عليه." else "Wait for the indicator to stabilize before relying on it.",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
+                    if (sensorAvailable) {
+                        if (lang == "ar") "المؤشر يتبع اتجاه الهاتف." else "The pointer follows the phone's heading."
+                    } else {
+                        if (lang == "ar") "المؤشر ثابت ولا يتبع حركة الهاتف لعدم توفر مستشعر اتجاه." else "The pointer is static because no orientation sensor is available."
+                    },
+                    fontSize = 11.sp, textAlign = TextAlign.Center, color = Color(0xFFE8D8A8)
                 )
-            }
-        } else {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(22.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Filled.Navigation, contentDescription = null, tint = Color(0xFFD4AF37), modifier = Modifier.size(56.dp).rotate(qiblaAngle.toFloat()))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = if (lang == "ar") "اتجاه القبلة بالنسبة إلى الشمال الحقيقي" else "Bearing relative to true north",
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = String.format(Locale.US, "%.1f°", qiblaAngle),
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(directionName, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = if (lang == "ar") "السهم مرجع ثابت بالنسبة إلى الشمال، وليس بوصلة تتبع حركة الهاتف." else "The arrow is referenced to north; it does not track phone rotation.",
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(if (lang == "ar") "المسافة إلى الكعبة المشرفة" else "Distance to the Kaaba", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
-                    text = if (lang == "ar") "المسافة إلى الكعبة المشرفة" else "Distance to the Kaaba",
-                    fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    DisplayNumberFormatter.westernDigits(String.format(Locale.US, if (lang == "ar") "%,.1f كم" else "%,.1f km", distance)),
+                    fontSize = 23.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary
                 )
-                Text(
-                    text = DisplayNumberFormatter.westernDigits(String.format(Locale.US, if (lang == "ar") "%,.1f كم" else "%,.1f km", distance)),
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                if (sensorAvailable) {
-                    Text(
-                        text = DisplayNumberFormatter.westernDigits(String.format(Locale.US, "%.1f° · %s", qiblaAngle, directionName)),
-                        fontSize = 14.sp,
-                        color = Color(0xFFD4AF37),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
             }
         }
-
         Spacer(modifier = Modifier.height(14.dp))
         Button(
             onClick = {
                 val uri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=21.4225%2C39.8262&travelmode=walking")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                runCatching { context.startActivity(intent) }
+                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -881,14 +825,9 @@ fun QiblaTool(viewModel: AppViewModel, lang: String) {
             Text(if (lang == "ar") "فتح الخريطة إلى الكعبة" else "Open map to the Kaaba")
         }
         Text(
-            text = if (lang == "ar") {
-                "تعرض الخريطة طريقًا إلى الكعبة، وقد لا يكون خط السير هو اتجاه القبلة المباشر. إذا تغيّر موقعك، حدّث الموقع من إعدادات التطبيق."
-            } else {
-                "The map shows a route to the Kaaba, which may differ from the direct Qibla bearing. Update your saved location if you have moved."
-            },
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
+            if (lang == "ar") "تعرض الخريطة طريقًا إلى الكعبة، وقد لا يكون خط السير هو اتجاه القبلة المباشر. إذا تغيّر موقعك، حدّث الموقع من إعدادات التطبيق."
+            else "The map shows a route to the Kaaba, which may differ from the direct Qibla bearing. Update your saved location if you have moved.",
+            fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 8.dp)
         )
     }

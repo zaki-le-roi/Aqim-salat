@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.PrayerCalculator
@@ -80,7 +81,6 @@ fun PrayerTimesScreen(
     val hijriDate by viewModel.hijriDateString.collectAsState()
     val locationName by viewModel.locationName.collectAsState()
     val locationConfigured by viewModel.locationConfigured.collectAsState()
-    val isTrackingLocation by viewModel.isTrackingLocation.collectAsState()
     
     val lat by viewModel.latitude.collectAsState()
     val lng by viewModel.longitude.collectAsState()
@@ -600,93 +600,42 @@ fun PrayerTimesScreen(
     }
 
     if (showLocationDialog) {
-        var customCityName by remember { mutableStateOf("") }
+        var citySearchQuery by remember { mutableStateOf("") }
         var customLatitude by remember { mutableStateOf("") }
         var customLongitude by remember { mutableStateOf("") }
         var locationError by remember { mutableStateOf("") }
         var isSearchingCity by remember { mutableStateOf(false) }
-        var citySearchFilter by remember { mutableStateOf("") }
-        val locationScope = rememberCoroutineScope()
-
+        var showManualCoordinates by remember { mutableStateOf(false) }
         var geocodedCityResults by remember { mutableStateOf<List<Triple<String, Double, Double>>>(emptyList()) }
-        val presetCities = remember {
-            val algerianWilayas = listOf(
-                Triple("أدرار",27.8743,-0.2939), Triple("الشلف",36.1653,1.3345), Triple("الأغواط",33.8000,2.8651),
-                Triple("أم البواقي",35.8754,7.1135), Triple("باتنة",35.5559,6.1741), Triple("بجاية",36.7509,5.0567),
-                Triple("بسكرة",34.8504,5.7281), Triple("بشار",31.6167,-2.2167), Triple("البليدة",36.4700,2.8277),
-                Triple("البويرة",36.3749,3.9020), Triple("تمنراست",22.7850,5.5228), Triple("تبسة",35.4042,8.1242),
-                Triple("تلمسان",34.8783,-1.3150), Triple("تيارت",35.3710,1.3170), Triple("تيزي وزو",36.7118,4.0459),
-                Triple("الجزائر العاصمة",36.7538,3.0588), Triple("الجلفة",34.6704,3.2504), Triple("جيجل",36.8206,5.7667),
-                Triple("سطيف",36.1911,5.4137), Triple("سعيدة",34.8303,0.1517), Triple("سكيكدة",36.8667,6.9000),
-                Triple("سيدي بلعباس",35.1899,-0.6309), Triple("عنابة",36.9000,7.7667), Triple("قالمة",36.4621,7.4261),
-                Triple("قسنطينة",36.3650,6.6147), Triple("المدية",36.2674,2.7500), Triple("مستغانم",35.9311,0.0892),
-                Triple("المسيلة",35.7058,4.5419), Triple("معسكر",35.3966,0.1403), Triple("ورقلة",31.9520,5.3330),
-                Triple("وهران",35.6987,-0.6349), Triple("البيض",33.6832,1.0193), Triple("إليزي",26.4833,8.4667),
-                Triple("برج بوعريريج",36.0732,4.7611), Triple("بومرداس",36.7564,3.4772), Triple("الطارف",36.7672,8.3138),
-                Triple("تندوف",27.6711,-8.1474), Triple("تيسمسيلت",35.6072,1.8108), Triple("الوادي",33.3561,6.8632),
-                Triple("خنشلة",35.4358,7.1433), Triple("سوق أهراس",36.2864,7.9511), Triple("تيبازة",36.5897,2.4475),
-                Triple("ميلة",36.4503,6.2644), Triple("عين الدفلى",36.2641,1.9679), Triple("النعامة",33.2667,-0.3167),
-                Triple("عين تموشنت",35.2975,-1.1404), Triple("غرداية",32.4909,3.6735), Triple("غليزان",35.7373,0.5559),
-                Triple("تيميمون",29.2639,0.2306), Triple("برج باجي مختار",21.3270,0.9517), Triple("أولاد جلال",34.4333,5.0667),
-                Triple("بني عباس",30.1333,-2.1667), Triple("عين صالح",27.1975,2.4800), Triple("عين قزام",19.5667,5.7667),
-                Triple("تقرت",33.1000,6.0667), Triple("جانت",24.5541,9.4840), Triple("المغير",33.9500,5.9167),
-                Triple("المنيعة",30.5833,2.8833)
-            )
-            val worldCities = listOf(
-                Triple("مكة المكرمة",21.4225,39.8262), Triple("المدينة المنورة",24.4672,39.6111),
-                Triple("القدس الشريف",31.7683,35.2137), Triple("الرياض",24.7136,46.6753), Triple("جدة",21.5433,39.1728),
-                Triple("القاهرة",30.0444,31.2357), Triple("الإسكندرية",31.2001,29.9187), Triple("تونس",36.8065,10.1815),
-                Triple("صفاقس",34.7406,10.7603), Triple("سوسة",35.8256,10.6084), Triple("الرباط",34.0209,-6.8416),
-                Triple("الدار البيضاء",33.5731,-7.5898), Triple("فاس",34.0181,-5.0078), Triple("مراكش",31.6295,-7.9811),
-                Triple("طنجة",35.7595,-5.8340), Triple("طرابلس",32.8872,13.1913), Triple("بنغازي",32.1167,20.0667),
-                Triple("الخرطوم",15.5007,32.5599), Triple("دمشق",33.5138,36.2765), Triple("حلب",36.2021,37.1343),
-                Triple("بغداد",33.3152,44.3661), Triple("البصرة",30.5085,47.7804), Triple("عمّان",31.9454,35.9284),
-                Triple("بيروت",33.8938,35.5018), Triple("الكويت",29.3759,47.9774), Triple("الدوحة",25.2854,51.5310),
-                Triple("أبوظبي",24.4539,54.3773), Triple("دبي",25.2048,55.2708), Triple("مسقط",23.5880,58.3829),
-                Triple("المنامة",26.2285,50.5860), Triple("إسطنبول",41.0082,28.9784), Triple("أنقرة",39.9334,32.8597),
-                Triple("جاكرتا",-6.2088,106.8456), Triple("كوالالمبور",3.1390,101.6869), Triple("باريس",48.8566,2.3522),
-                Triple("لندن",51.5074,-0.1278), Triple("مدريد",40.4168,-3.7038), Triple("روما",41.9028,12.4964),
-                Triple("برلين",52.5200,13.4050), Triple("نيويورك",40.7128,-74.0060), Triple("تورونتو",43.6532,-79.3832),
-                Triple("لوس أنجلوس",34.0522,-118.2437), Triple("طوكيو",35.6762,139.6503), Triple("سيول",37.5665,126.9780),
-                Triple("دلهي",28.6139,77.2090), Triple("إسلام آباد",33.6844,73.0479), Triple("كراتشي",24.8607,67.0011),
-                Triple("داكار",14.7167,-17.4677), Triple("نيروبي",-1.2921,36.8219), Triple("كيب تاون",-33.9249,18.4241)
-            )
-            val collator = java.text.Collator.getInstance(Locale("ar"))
-            (algerianWilayas + worldCities).distinctBy { it.first }
-                .sortedWith(Comparator { a, b -> collator.compare(a.first, b.first) })
-        }
-        val filteredPresetCities = remember(citySearchFilter, geocodedCityResults, presetCities) {
-            val query = citySearchFilter.trim()
-            val matchingPresets = if (query.isBlank()) presetCities else presetCities.filter {
-                it.first.contains(query, ignoreCase = true)
-            }
-            val collator = java.text.Collator.getInstance(Locale("ar"))
-            (matchingPresets + geocodedCityResults).distinctBy { it.first.lowercase(Locale.ROOT) }
-                .sortedWith(Comparator { a, b -> collator.compare(a.first, b.first) })
-        }
-        LaunchedEffect(citySearchFilter) {
-            val query = citySearchFilter.trim()
+
+        LaunchedEffect(citySearchQuery) {
+            val query = citySearchQuery.trim()
             if (query.isBlank()) {
                 geocodedCityResults = emptyList()
+                isSearchingCity = false
             } else {
-                kotlinx.coroutines.delay(350)
+                isSearchingCity = true
+                kotlinx.coroutines.delay(450)
                 geocodedCityResults = withContext(Dispatchers.IO) {
                     runCatching {
                         if (!Geocoder.isPresent()) emptyList()
                         else {
                             @Suppress("DEPRECATION")
-                            Geocoder(context, Locale("ar")).getFromLocationName(query, 15).orEmpty().mapNotNull { address ->
-                                if (!address.hasLatitude() || !address.hasLongitude()) null
-                                else {
-                                    val place = address.locality ?: address.subAdminArea ?: address.adminArea ?: query
-                                    val country = address.countryName.orEmpty()
-                                    val name = listOf(place, country).filter { it.isNotBlank() }.distinct().joinToString("، ")
-                                    Triple(name.ifBlank { query }, address.latitude, address.longitude)
-                                }
-                            }
+                            Geocoder(context, Locale("ar")).getFromLocationName(query, 8).orEmpty()
+                                .mapNotNull { address ->
+                                    if (!address.hasLatitude() || !address.hasLongitude()) null
+                                    else {
+                                        val place = address.locality ?: address.subAdminArea ?: address.adminArea ?: query
+                                        val country = address.countryName.orEmpty()
+                                        val name = listOf(place, country).filter { it.isNotBlank() }
+                                            .distinct().joinToString("، ")
+                                        Triple(name.ifBlank { query }, address.latitude, address.longitude)
+                                    }
+                                }.distinctBy { "${it.first}:${it.second}:${it.third}" }
                         }
                     }.getOrDefault(emptyList())
                 }
+                isSearchingCity = false
             }
         }
 
@@ -695,271 +644,237 @@ fun PrayerTimesScreen(
             containerColor = Color(0xFFFAF8F5),
             title = {
                 Text(
-                    text = if (lang == "ar") "تحديد المدينة أو الموقع" else "Select City or Location",
+                    text = if (lang == "ar") "تحديد الموقع" else "Choose location",
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             text = {
                 LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 540.dp)
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 500.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Quick City Selection section
                     item {
                         Text(
-                            text = "اختيار مباشر من المدن الشائعة (بدون GPS):",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            text = if (lang == "ar")
+                                "ابحث عن أي مدينة أو اختر موقع الهاتف الحالي."
+                            else "Search for any city or use your phone's current location.",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+                    item {
                         OutlinedTextField(
-                            value = citySearchFilter,
-                            onValueChange = { citySearchFilter = it },
-                            placeholder = { Text("ابحث في قائمة المدن…", fontSize = 12.sp) },
+                            value = citySearchQuery,
+                            onValueChange = {
+                                citySearchQuery = it
+                                locationError = ""
+                            },
                             modifier = Modifier.fillMaxWidth().testTag("filter_preset_cities_input"),
                             singleLine = true,
-                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                            placeholder = {
+                                Text(if (lang == "ar") "اسم المدينة أو الدولة…" else "City or country…")
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(19.dp))
+                            },
                             trailingIcon = {
-                                if (citySearchFilter.isNotEmpty()) {
-                                    IconButton(onClick = { citySearchFilter = "" }) {
-                                        Icon(Icons.Filled.Clear, contentDescription = null, modifier = Modifier.size(16.dp))
+                                if (citySearchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { citySearchQuery = "" }) {
+                                        Icon(Icons.Filled.Clear, contentDescription = if (lang == "ar") "مسح" else "Clear")
                                     }
                                 }
                             }
                         )
                     }
-
-                    // Scrollable manual list; worldwide Geocoder matches are added while typing.
-                    item {
-                        Text(
-                            text = if (lang == "ar") "ولايات الجزائر ومدن العالم" else "Algerian wilayas and cities worldwide",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F4C3A),
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 90.dp, max = 230.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            items(filteredPresetCities, key = { it.first }) { city ->
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = if (locationName == city.first) Color(0xFF0F4C3A) else Color.White,
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE8DDC8)),
-                                    modifier = Modifier.fillMaxWidth().clickable {
-                                        viewModel.setManualCity(city.first, city.second, city.third)
-                                        showLocationDialog = false
-                                    }.testTag("city_chip_${city.first}")
-                                ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.LocationCity,
-                                            contentDescription = null,
-                                            tint = if (locationName == city.first) Color.White else Color(0xFF0F4C3A),
-                                            modifier = Modifier.size(17.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(9.dp))
-                                        Text(
-                                            text = city.first,
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Medium,
-                                            color = if (locationName == city.first) Color.White else Color(0xFF25251F),
-                                            maxLines = 1
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Divider
-                    item {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                    }
-
-                    // GPS auto-detection button
                     item {
                         Button(
                             onClick = {
-                                val hasFine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                val hasCoarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                                val hasFine = ContextCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                                val hasCoarse = ContextCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_COARSE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
                                 if (hasFine || hasCoarse) {
                                     viewModel.startLocationTracking()
+                                    showLocationDialog = false
                                 } else {
+                                    showLocationDialog = false
                                     locationPermissionLauncher.launch(
-                                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                        arrayOf(
+                                            Manifest.permission.ACCESS_FINE_LOCATION,
+                                            Manifest.permission.ACCESS_COARSE_LOCATION
+                                        )
                                     )
                                 }
                             },
                             modifier = Modifier.fillMaxWidth().testTag("gps_auto_detect_button"),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4AF37))
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF115E3F))
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Filled.MyLocation, contentDescription = if (lang == "ar") "الموقع الجغرافي" else "GPS", tint = Color.White)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = if (lang == "ar") "تحديد تلقائي عبر GPS" else "Auto Detect (GPS)",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
+                            Icon(Icons.Filled.MyLocation, contentDescription = null, tint = Color.White)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                if (lang == "ar") "استخدام موقعي الحالي (GPS)" else "Use current location (GPS)",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    if (isSearchingCity) {
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = Color(0xFF115E3F)
                                 )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(if (lang == "ar") "جارٍ البحث عن المدينة…" else "Searching cities…", fontSize = 12.sp)
+                            }
+                        }
+                    }
+                    if (citySearchQuery.isNotBlank() && !isSearchingCity && geocodedCityResults.isEmpty()) {
+                        item {
+                            Text(
+                                if (lang == "ar") "لم نعثر على نتائج. جرّب كتابة اسم المدينة مع الدولة."
+                                else "No results. Try the city name together with its country.",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                    items(
+                        geocodedCityResults,
+                        key = { "${it.first}:${it.second}:${it.third}" }
+                    ) { city ->
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (locationName == city.first) Color(0xFFE8F0E9) else Color.White,
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (locationName == city.first) Color(0xFF115E3F) else Color(0xFFE8DDC8)
+                            ),
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                viewModel.setManualCity(city.first, city.second, city.third)
+                                showLocationDialog = false
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 13.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.LocationCity,
+                                    contentDescription = null,
+                                    tint = Color(0xFF115E3F),
+                                    modifier = Modifier.size(19.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        city.first,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF25251F),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        "${"%.4f".format(Locale.US, city.second)}, ${"%.4f".format(Locale.US, city.third)}",
+                                        fontSize = 10.sp,
+                                        color = Color.Gray
+                                    )
+                                }
+                                Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = Color(0xFFB08A2E))
                             }
                         }
                     }
                     item {
-                        Text(
-                            text = if (isTrackingLocation) "جارٍ استقبال إحداثيات GPS من الهاتف…" else "استخدام GPS اختياري؛ يحتفظ التطبيق بموقعك المحفوظ ولا يطلب تفعيل GPS في كل مرة.",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f),
-                            fontSize = 11.sp,
-                            lineHeight = 16.sp
-                        )
-                    }
-                    item {
-                        OutlinedButton(
-                            onClick = {
-                                context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                            },
+                        HorizontalDivider(color = Color(0xFFE8DDC8))
+                        TextButton(
+                            onClick = { showManualCoordinates = !showManualCoordinates },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Filled.Settings, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("فتح إعدادات الموقع بالهاتف", fontSize = 12.sp)
+                            Text(
+                                if (showManualCoordinates)
+                                    (if (lang == "ar") "إخفاء الإحداثيات اليدوية" else "Hide manual coordinates")
+                                else
+                                    (if (lang == "ar") "إدخال الإحداثيات يدويًا" else "Enter coordinates manually"),
+                                color = Color(0xFF115E3F),
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
-
-                    // City search uses the device geocoder instead of a fixed list of city coordinates.
-                    item {
-                        Text(
-                            text = "ابحث عن أي مدينة لتحديد إحداثياتها الحقيقية",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.72f)
-                        )
-                    }
-
-                    // Custom Coordinates section divider
-                    item {
-                        Text(
-                            text = if (lang == "ar") "إحداثيات مخصصة" else if (lang == "tr") "Özel Koordinatlar" else "Custom Coordinates",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
-
-                    // City name input and real geocoder lookup
-                    item {
-                        OutlinedTextField(
-                            value = customCityName,
-                            onValueChange = { customCityName = it; locationError = "" },
-                            label = { Text("اسم المدينة أو المنطقة") },
-                            modifier = Modifier.fillMaxWidth().testTag("custom_city_input"),
-                            singleLine = true
-                        )
-                    }
-                    item {
-                        Button(
-                            onClick = {
-                                val query = customCityName.trim()
-                                if (query.isBlank()) {
-                                    locationError = "اكتب اسم المدينة أولًا"
-                                } else {
-                                    isSearchingCity = true
-                                    locationError = ""
-                                    locationScope.launch {
-                                        @Suppress("DEPRECATION")
-                                        fun lookupCity(): List<android.location.Address> {
-                                            if (!Geocoder.isPresent()) return emptyList()
-                                            return Geocoder(context, Locale("ar")).getFromLocationName(query, 1).orEmpty()
-                                        }
-                                        val matches = withContext(Dispatchers.IO) {
-                                            runCatching { lookupCity() }.getOrDefault(emptyList())
-                                        }
-                                        val address = matches.firstOrNull()
-                                        if (address != null && address.hasLatitude() && address.hasLongitude()) {
-                                            customLatitude = address.latitude.toString()
-                                            customLongitude = address.longitude.toString()
-                                            customCityName = listOfNotNull(
-                                                address.locality ?: address.subAdminArea ?: address.adminArea,
-                                                address.countryName
-                                            ).joinToString("، ").ifBlank { query }
-                                            locationError = "تم العثور على إحداثيات المدينة. اضغط حفظ لتطبيقها."
-                                        } else {
-                                            locationError = "تعذر العثور على المدينة. تحقق من الإنترنت أو أدخل الإحداثيات يدويًا."
-                                        }
-                                        isSearchingCity = false
-                                    }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !isSearchingCity
-                        ) {
-                            Text(if (isSearchingCity) "جارٍ البحث عن المدينة…" else "البحث عن المدينة وإحضار إحداثياتها")
-                        }
-                    }
-
-                    // Custom Latitude Input
-                    item {
-                        OutlinedTextField(
-                            value = customLatitude,
-                            onValueChange = { customLatitude = it },
-                            label = { Text(if (lang == "ar") "خط العرض (Latitude)" else "Latitude") },
-                            placeholder = { Text(if (lang == "ar") "مثال: 36.75" else "e.g. 36.75") },
-                            modifier = Modifier.fillMaxWidth().testTag("custom_lat_input"),
-                            singleLine = true
-                        )
-                    }
-
-                    // Custom Longitude Input
-                    item {
-                        OutlinedTextField(
-                            value = customLongitude,
-                            onValueChange = { customLongitude = it },
-                            label = { Text(if (lang == "ar") "خط الطول (Longitude)" else "Longitude") },
-                            placeholder = { Text(if (lang == "ar") "مثال: 3.05" else "e.g. 3.05") },
-                            modifier = Modifier.fillMaxWidth().testTag("custom_lng_input"),
-                            singleLine = true
-                        )
-                    }
-
-                    if (locationError.isNotEmpty()) {
+                    if (showManualCoordinates) {
                         item {
-                            Text(locationError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            OutlinedTextField(
+                                value = citySearchQuery,
+                                onValueChange = { citySearchQuery = it; locationError = "" },
+                                label = { Text(if (lang == "ar") "اسم المدينة أو الموقع" else "City or place name") },
+                                modifier = Modifier.fillMaxWidth().testTag("custom_city_input"),
+                                singleLine = true
+                            )
+                        }
+                        item {
+                            OutlinedTextField(
+                                value = customLatitude,
+                                onValueChange = { customLatitude = it; locationError = "" },
+                                label = { Text(if (lang == "ar") "خط العرض" else "Latitude") },
+                                placeholder = { Text("36.75") },
+                                modifier = Modifier.fillMaxWidth().testTag("custom_lat_input"),
+                                singleLine = true
+                            )
+                        }
+                        item {
+                            OutlinedTextField(
+                                value = customLongitude,
+                                onValueChange = { customLongitude = it; locationError = "" },
+                                label = { Text(if (lang == "ar") "خط الطول" else "Longitude") },
+                                placeholder = { Text("3.05") },
+                                modifier = Modifier.fillMaxWidth().testTag("custom_lng_input"),
+                                singleLine = true
+                            )
+                        }
+                        item {
+                            Button(
+                                onClick = {
+                                    val name = citySearchQuery.trim()
+                                    val lat = customLatitude.toDoubleOrNull()
+                                    val lng = customLongitude.toDoubleOrNull()
+                                    locationError = when {
+                                        name.isBlank() -> if (lang == "ar") "أدخل اسم الموقع." else "Enter a place name."
+                                        lat == null || lat !in -90.0..90.0 -> if (lang == "ar") "خط العرض غير صحيح." else "Invalid latitude."
+                                        lng == null || lng !in -180.0..180.0 -> if (lang == "ar") "خط الطول غير صحيح." else "Invalid longitude."
+                                        else -> ""
+                                    }
+                                    if (locationError.isEmpty()) {
+                                        viewModel.setManualCity(name, lat!!, lng!!)
+                                        showLocationDialog = false
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF115E3F))
+                            ) {
+                                Text(if (lang == "ar") "حفظ الموقع" else "Save location", color = Color.White)
+                            }
+                        }
+                        if (locationError.isNotEmpty()) {
+                            item {
+                                Text(locationError, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                            }
                         }
                     }
                 }
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val latVal = customLatitude.toDoubleOrNull()
-                        val lngVal = customLongitude.toDoubleOrNull()
-                        val nameVal = customCityName.trim()
-
-                        if (nameVal.isEmpty()) {
-                            locationError = if (lang == "ar") "يرجى إدخال اسم المدينة" else "Please enter city name"
-                        } else if (latVal == null || latVal < -90.0 || latVal > 90.0) {
-                            locationError = if (lang == "ar") "يرجى إدخال خط عرض صحيح (-90 إلى 90)" else "Please enter valid latitude (-90 to 90)"
-                        } else if (lngVal == null || lngVal < -180.0 || lngVal > 180.0) {
-                            locationError = if (lang == "ar") "يرجى إدخال خط طول صحيح (-180 إلى 180)" else "Please enter valid longitude (-180 to 180)"
-                        } else {
-                            viewModel.setManualCity(nameVal, latVal, lngVal)
-                            showLocationDialog = false
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.testTag("save_custom_location_button")
-                ) {
-                    Text(if (lang == "ar") "حفظ" else "Save")
-                }
-            },
+            confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { showLocationDialog = false }) {
-                    Text(if (lang == "ar") "إلغاء" else "Cancel")
+                    Text(if (lang == "ar") "إغلاق" else "Close")
                 }
             }
         )

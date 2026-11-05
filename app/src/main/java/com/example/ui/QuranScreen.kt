@@ -808,9 +808,9 @@ fun SurahReader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .heightIn(min = 60.dp)
                 .background(Color(0xFF0B382C))
-                .padding(horizontal = 2.dp),
+                .padding(horizontal = 2.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -843,7 +843,10 @@ fun SurahReader(
                     text = "الصفحة $currentPage / 604  •  الجزء $juzNumber",
                     color = Color(0xFFE3C47D),
                     fontSize = 10.sp,
-                    maxLines = 1
+                    lineHeight = 14.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    softWrap = true
                 )
             }
             IconButton(
