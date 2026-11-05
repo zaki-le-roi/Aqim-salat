@@ -38,11 +38,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.PrayerCalculator
+import com.example.data.PrayerTimeEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import java.time.LocalDate
+import java.time.ZoneId
 
 data class QazaItem(
     val key: String,
@@ -81,6 +84,7 @@ fun PrayerTimesScreen(
     
     val lat by viewModel.latitude.collectAsState()
     val lng by viewModel.longitude.collectAsState()
+    val selectedTimeZoneId by viewModel.timeZoneId.collectAsState()
     val calcMethodStr by viewModel.calcMethod.collectAsState()
     val madhabStr by viewModel.madhab.collectAsState()
 
@@ -297,69 +301,31 @@ fun PrayerTimesScreen(
                             }
                         }
 
-                        // Generate 30 days of times based on current calculations
-                        val calendar = Calendar.getInstance()
-                        val sdfDay = SimpleDateFormat("dd MMM", Locale.getDefault())
-                        val calculationMethod = try {
-                            PrayerCalculator.CalculationMethod.valueOf(calcMethodStr)
-                        } catch (e: Exception) {
-                            PrayerCalculator.CalculationMethod.MWL
-                        }
-                        val calculationMadhab = try {
-                            PrayerCalculator.Madhab.valueOf(madhabStr)
-                        } catch (e: Exception) {
-                            PrayerCalculator.Madhab.STANDARD
-                        }
-                        
-                        // Find timezone offset
-                        val tzOffset = calendar.timeZone.getOffset(System.currentTimeMillis()) / 3600000.0
-
+                        val zone = PrayerTimeEngine.zoneIdOrDevice(selectedTimeZoneId)
+                        val startDate = PrayerTimeEngine.localDate(zone)
+                        val dayFormatter = java.time.format.DateTimeFormatter.ofPattern("dd MMM", Locale.getDefault())
+                        val calculationMethod = runCatching { PrayerCalculator.CalculationMethod.valueOf(calcMethodStr) }
+                            .getOrDefault(PrayerCalculator.CalculationMethod.MWL)
+                        val calculationMadhab = runCatching { PrayerCalculator.Madhab.valueOf(madhabStr) }
+                            .getOrDefault(PrayerCalculator.Madhab.STANDARD)
                         for (i in 0..29) {
-                            val targetDate = calendar.time
-                            val dayStr = sdfDay.format(targetDate)
-
-                            // Compute actual times for that specific day.
-                            // If calculation fails, show an unavailable value rather than fabricated times.
-                            val t = try {
-                                PrayerCalculator.calculateTimes(
-                                    latitude = lat,
-                                    longitude = lng,
-                                    timezoneOffset = tzOffset,
-                                    date = targetDate,
-                                    method = calculationMethod,
-                                    madhab = calculationMadhab
-                                )
-                            } catch (_: Exception) {
-                                null
-                            }
-                            
-                            val dayTimes = listOf(
-                                dayStr,
-                                t?.fajr ?: "--:--",
-                                t?.dhuhr ?: "--:--",
-                                t?.asr ?: "--:--",
-                                t?.maghrib ?: "--:--",
-                                t?.isha ?: "--:--"
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
+                            val targetDate = startDate.plusDays(i.toLong())
+                            val offset = zone.rules.getOffset(targetDate.atTime(12, 0).atZone(zone).toInstant())
+                            val dayStr = targetDate.format(dayFormatter) + "\nUTC" + offset.id.replace("Z", "+00:00")
+                            val t = runCatching {
+                                PrayerCalculator.calculateTimes(lat, lng, targetDate, zone, calculationMethod, calculationMadhab)
+                            }.getOrNull()
+                            val dayTimes = listOf(dayStr, t?.fajr ?: "--:--", t?.dhuhr ?: "--:--",
+                                t?.asr ?: "--:--", t?.maghrib ?: "--:--", t?.isha ?: "--:--")
+                            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly) {
                                 dayTimes.forEachIndexed { index, timeVal ->
-                                    Text(
-                                        text = timeVal,
-                                        fontSize = 11.sp,
+                                    Text(text = timeVal, fontSize = 11.sp,
                                         fontWeight = if (index == 0) FontWeight.Bold else FontWeight.Normal,
                                         color = if (index == 0) Color(0xFFD4AF37) else MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.weight(1f),
-                                        textAlign = TextAlign.Center
-                                    )
+                                        modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                                 }
                             }
-                            calendar.add(Calendar.DAY_OF_YEAR, 1)
                         }
                     }
                 }

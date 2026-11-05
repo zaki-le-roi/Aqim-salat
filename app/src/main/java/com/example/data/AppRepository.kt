@@ -11,6 +11,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import java.time.ZoneId
 
 // Datastore extension
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "aqim_salah_preferences")
@@ -78,6 +80,8 @@ class AppRepository(
         val KEY_LONGITUDE = doublePreferencesKey("app_longitude")
         val KEY_LOCATION_NAME = stringPreferencesKey("app_location_name")
         val KEY_LOCATION_CONFIGURED = booleanPreferencesKey("app_location_configured")
+        val KEY_LOCATION_TIME_ZONE_ID = stringPreferencesKey("app_location_time_zone_id")
+        val KEY_LOCATION_USES_DEVICE_ZONE = booleanPreferencesKey("app_location_uses_device_zone")
         val KEY_ATHAN_FAJR_VOICE = stringPreferencesKey("app_athan_fajr_voice")
         val KEY_ATHAN_OTHER_VOICE = stringPreferencesKey("app_athan_other_voice")
         val KEY_SNOOZE_MINUTES = intPreferencesKey("app_snooze_minutes")
@@ -124,6 +128,10 @@ class AppRepository(
 
     val appLocationName: Flow<String> = context.dataStore.data.map { pref ->
         pref[KEY_LOCATION_NAME] ?: "الجزائر العاصمة"
+    }
+    val appLocationUsesDeviceZone: Flow<Boolean> = context.dataStore.data.map { it[KEY_LOCATION_USES_DEVICE_ZONE] ?: false }
+    val appTimeZoneId: Flow<String> = context.dataStore.data.map { pref ->
+        if (pref[KEY_LOCATION_USES_DEVICE_ZONE] == true) ZoneId.systemDefault().id else pref[KEY_LOCATION_TIME_ZONE_ID].orEmpty()
     }
 
     val appAthanFajrVoice: Flow<String> = context.dataStore.data.map { pref ->
@@ -232,13 +240,21 @@ class AppRepository(
         context.dataStore.edit { pref -> pref[KEY_CALC_METHOD] = method }
     }
 
-    suspend fun setLocation(name: String, lat: Double, lng: Double) {
+    suspend fun setLocation(name: String, lat: Double, lng: Double, timeZoneId: String? = null, usesDeviceZone: Boolean = false) {
         context.dataStore.edit { pref ->
             pref[KEY_LOCATION_NAME] = name
             pref[KEY_LOCATION_CONFIGURED] = true
             pref[KEY_LATITUDE] = lat
             pref[KEY_LONGITUDE] = lng
+            pref[KEY_LOCATION_USES_DEVICE_ZONE] = usesDeviceZone
+            if (usesDeviceZone) pref[KEY_LOCATION_TIME_ZONE_ID] = ZoneId.systemDefault().id
+            else if (!timeZoneId.isNullOrBlank()) pref[KEY_LOCATION_TIME_ZONE_ID] = ZoneId.of(timeZoneId).id
+            else pref.remove(KEY_LOCATION_TIME_ZONE_ID)
         }
+    }
+    suspend fun saveTimeZoneId(id: String) {
+        val valid = ZoneId.of(id).id
+        context.dataStore.edit { pref -> if (pref[KEY_LOCATION_USES_DEVICE_ZONE] != true) pref[KEY_LOCATION_TIME_ZONE_ID] = valid }
     }
 
     suspend fun setAthanFajrVoice(voice: String) {

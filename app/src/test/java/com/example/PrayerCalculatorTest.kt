@@ -49,15 +49,12 @@ class PrayerCalculatorTest {
         )
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun rejectsInvalidTimezoneOffset() {
-        PrayerCalculator.calculateTimes(
-            latitude = 36.7538,
-            longitude = 3.0588,
-            timezoneOffset = 25.0,
-            date = algiersDate(),
-            method = PrayerCalculator.CalculationMethod.ALGERIA
-        )
+    @Test
+    fun legacyOffsetOverloadStillProducesValidTimes() {
+        val times = PrayerCalculator.calculateTimes(36.7538, 3.0588, 1.0, algiersDate(),
+            PrayerCalculator.CalculationMethod.ALGERIA, PrayerCalculator.Madhab.STANDARD,
+            TimeZone.getTimeZone("Africa/Algiers"))
+        assertTrue(times.isha.matches(Regex("\\d{2}:\\d{2}")))
     }
 
     @Test

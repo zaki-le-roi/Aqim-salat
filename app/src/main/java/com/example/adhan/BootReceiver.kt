@@ -6,6 +6,7 @@ import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.data.TimeZoneResolver
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -13,6 +14,7 @@ class BootReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 AdhanAlarmReceiver.restoreRingerModeIfNeeded(context.applicationContext)
+                runCatching { TimeZoneResolver.refreshSavedCity(context.applicationContext) }
                 AdhanScheduler.schedule(context.applicationContext)
                 runCatching { com.example.widget.PrayerTimesWidgetProvider.requestUpdate(context.applicationContext) }
             } finally { pending.finish() }

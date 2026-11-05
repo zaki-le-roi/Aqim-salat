@@ -1,8 +1,10 @@
 package com.example.data
 
-import java.util.Calendar
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.Instant
 import java.util.Date
-import java.util.TimeZone
 import java.util.Locale
 import kotlin.math.*
 
@@ -37,7 +39,16 @@ object PrayerCalculator {
         val imsak: String,
         val sunset: String,
         val midnight: String,
-        val lastThird: String
+        val lastThird: String,
+        val fajrDateTime: ZonedDateTime,
+        val sunriseDateTime: ZonedDateTime,
+        val dhuhrDateTime: ZonedDateTime,
+        val asrDateTime: ZonedDateTime,
+        val maghribDateTime: ZonedDateTime,
+        val ishaDateTime: ZonedDateTime,
+        val imsakDateTime: ZonedDateTime,
+        val midnightDateTime: ZonedDateTime,
+        val lastThirdDateTime: ZonedDateTime
     )
 
     private fun dtr(d: Double): Double = d * PI / 180.0
@@ -73,21 +84,17 @@ object PrayerCalculator {
     fun calculateTimes(
         latitude: Double,
         longitude: Double,
-        timezoneOffset: Double, // in hours
-        date: Date,
+        date: LocalDate,
+        zoneId: ZoneId,
         method: CalculationMethod = CalculationMethod.MWL,
-        madhab: Madhab = Madhab.STANDARD,
-        timeZone: TimeZone = TimeZone.getDefault()
+        madhab: Madhab = Madhab.STANDARD
     ): PrayerTimes {
         require(latitude.isFinite() && latitude in -90.0..90.0) { "Latitude must be between -90 and 90 degrees." }
         require(longitude.isFinite() && longitude in -180.0..180.0) { "Longitude must be between -180 and 180 degrees." }
-        require(timezoneOffset.isFinite() && timezoneOffset in -14.0..14.0) { "Timezone offset is outside the supported range." }
-
-        val cal = Calendar.getInstance(timeZone).apply { time = date }
-        val year = cal.get(Calendar.YEAR)
-        val month = cal.get(Calendar.MONTH) + 1
-        val day = cal.get(Calendar.DAY_OF_MONTH)
-
+        val year = date.year
+        val month = date.monthValue
+        val day = date.dayOfMonth
+        val timezoneOffset = PrayerTimeEngine.offsetHours(date, zoneId)
         val jd = getJulianDate(year, month, day)
 
         // Solar Declination & Equation of Time
@@ -152,37 +159,51 @@ object PrayerCalculator {
         val midnightHour = sunsetHour + (nightDuration / 2.0)
         val lastThirdHour = sunsetHour + (nightDuration * 2.0 / 3.0)
 
-        // Format
-        fun formatTime(hour: Double): String {
-            val h = fixHour(hour)
-            val totalMinutes = kotlin.math.round(h * 60.0).toInt()
-            val formattedHour = (totalMinutes / 60) % 24
-            val mins = totalMinutes % 60
-            return String.format(Locale.US, "%02d:%02d", formattedHour, mins)
-        }
 
+        fun zoned(hour: Double): ZonedDateTime =
+            PrayerTimeEngine.atLocalMinute(date, kotlin.math.round(hour * 60.0).toLong(), zoneId)
+        val fajrAt=zoned(fajrHour)
+        val sunriseAt=zoned(sunriseHour)
+        val dhuhrAt=zoned(midDay)
+        val asrAt=zoned(asrHour)
+        val maghribAt=zoned(sunsetHour)
+        val ishaAt=zoned(ishaHour)
+        val imsakAt=zoned(fajrHour-10.0/60.0)
+        val midnightAt=zoned(midnightHour)
+        val lastThirdAt=zoned(lastThirdHour)
         return PrayerTimes(
-            fajr = formatTime(fajrHour),
-            sunrise = formatTime(sunriseHour),
-            dhuhr = formatTime(midDay),
-            asr = formatTime(asrHour),
-            maghrib = formatTime(sunsetHour), // Maghrib starts exactly at sunset
-            isha = formatTime(ishaHour),
-            imsak = formatTime(fajrHour - 10.0 / 60.0), // Imsak is 10 minutes before Fajr
-            sunset = formatTime(sunsetHour),
-            midnight = formatTime(midnightHour),
-            lastThird = formatTime(lastThirdHour)
+            fajr=PrayerTimeEngine.format(fajrAt), sunrise=PrayerTimeEngine.format(sunriseAt),
+            dhuhr=PrayerTimeEngine.format(dhuhrAt), asr=PrayerTimeEngine.format(asrAt),
+            maghrib=PrayerTimeEngine.format(maghribAt), isha=PrayerTimeEngine.format(ishaAt),
+            imsak=PrayerTimeEngine.format(imsakAt), sunset=PrayerTimeEngine.format(maghribAt),
+            midnight=PrayerTimeEngine.format(midnightAt), lastThird=PrayerTimeEngine.format(lastThirdAt),
+            fajrDateTime=fajrAt, sunriseDateTime=sunriseAt, dhuhrDateTime=dhuhrAt,
+            asrDateTime=asrAt, maghribDateTime=maghribAt, ishaDateTime=ishaAt,
+            imsakDateTime=imsakAt, midnightDateTime=midnightAt, lastThirdDateTime=lastThirdAt
         )
+    }
+
+    /** Compatibility adapter for older code paths; application prayer calculations use the city ZoneId. */
+    fun calculateTimes(
+        latitude: Double, longitude: Double, timezoneOffset: Double, date: Date,
+        method: CalculationMethod = CalculationMethod.MWL,
+        madhab: Madhab = Madhab.STANDARD,
+        timeZone: java.util.TimeZone = java.util.TimeZone.getTimeZone(ZoneId.systemDefault())
+    ): PrayerTimes {
+        val zone=runCatching { ZoneId.of(timeZone.id) }.getOrDefault(ZoneId.systemDefault())
+        return calculateTimes(latitude,longitude,Instant.ofEpochMilli(date.time).atZone(zone).toLocalDate(),zone,method,madhab)
     }
 
     private fun acot(x: Double): Double = atan(1.0 / x)
 
     // Moon phase calculation: returns a value from 0.0 (New Moon) to 1.0 (back to New Moon), 0.5 is Full Moon
-    fun calculateMoonPhase(date: Date): Double {
-        val cal = Calendar.getInstance().apply { time = date }
-        val year = cal.get(Calendar.YEAR)
-        val month = cal.get(Calendar.MONTH) + 1
-        val day = cal.get(Calendar.DAY_OF_MONTH)
+    fun calculateMoonPhase(date: Date): Double =
+        calculateMoonPhase(Instant.ofEpochMilli(date.time).atZone(ZoneId.systemDefault()).toLocalDate())
+
+    fun calculateMoonPhase(local: LocalDate): Double {
+        val year=local.year
+        val month=local.monthValue
+        val day=local.dayOfMonth
 
         val jd = getJulianDate(year, month, day)
         // Known reference: New moon on Jan 6, 2000 (JD 2451549.5)
@@ -241,16 +262,15 @@ object PrayerCalculator {
     // Hijri date mathematical calculation using the tabular Islamic calendar (Umm Al-Qura approximate or standard 30-year cycle)
     data class HijriDate(val year: Int, val month: Int, val day: Int, val monthName: String)
 
-    fun getHijriDate(date: Date, lang: String): HijriDate {
-        // Algeria's locally observed calendar can be one day ahead of the tabular calculation.
-        // Apply the one-day Algeria correction consistently to the displayed date and events.
-        val cal = Calendar.getInstance().apply {
-            time = date
-            add(Calendar.DAY_OF_MONTH, 1)
-        }
-        val year = cal.get(Calendar.YEAR)
-        val month = cal.get(Calendar.MONTH) + 1
-        val day = cal.get(Calendar.DAY_OF_MONTH)
+    fun getHijriDate(date: Date, lang: String): HijriDate =
+        getHijriDate(Instant.ofEpochMilli(date.time).atZone(ZoneId.systemDefault()).toLocalDate(),lang)
+
+    fun getHijriDate(localDate: LocalDate, lang: String): HijriDate {
+        // Preserve the existing one-day Algeria adjustment using the selected city's civil date.
+        val local=localDate.plusDays(1)
+        val year=local.year
+        val month=local.monthValue
+        val day=local.dayOfMonth
 
         // Convert Julian day to the tabular Islamic calendar. The previous formula
         // was one 30-year cycle too high and could show years such as 1478 instead of 1448.

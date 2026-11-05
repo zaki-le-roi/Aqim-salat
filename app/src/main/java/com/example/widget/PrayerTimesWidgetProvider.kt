@@ -12,12 +12,13 @@ import com.example.R
 import com.example.data.AppDatabase
 import com.example.data.AppRepository
 import com.example.data.PrayerCalculator
+import com.example.data.PrayerTimeEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.Calendar
+import java.time.Instant
 import java.util.Locale
 
 /** Home-screen widget showing today's prayer times from the same calculation settings as the app. */
@@ -43,14 +44,15 @@ class PrayerTimesWidgetProvider : AppWidgetProvider() {
                     PrayerCalculator.Madhab.valueOf(repository.appMadhab.first())
                 }.getOrDefault(PrayerCalculator.Madhab.STANDARD)
 
-                val now = Calendar.getInstance()
+                val zone = PrayerTimeEngine.zoneIdOrDevice(repository.appTimeZoneId.first())
+                val localDate = PrayerTimeEngine.localDate(zone, Instant.now())
                 val times = if (locationConfigured) {
                     runCatching {
                         PrayerCalculator.calculateTimes(
                             latitude = latitude,
                             longitude = longitude,
-                            timezoneOffset = now.timeZone.getOffset(now.timeInMillis) / 3_600_000.0,
-                            date = now.time,
+                            date = localDate,
+                            zoneId = zone,
                             method = method,
                             madhab = madhab
                         )

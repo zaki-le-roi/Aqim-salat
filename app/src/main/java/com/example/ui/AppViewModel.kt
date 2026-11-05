@@ -8,6 +8,11 @@ import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.net.Uri
+import android.net.ConnectivityManager
+import android.net.Network
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import androidx.core.content.ContextCompat
 import android.os.Build
 import android.os.Vibrator
 import android.os.VibrationEffect
@@ -24,6 +29,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import java.time.Instant
+import java.time.ZoneId
+import java.time.Duration
 import kotlin.math.*
 
 // For high-fidelity location services and real geocoder addresses
@@ -61,7 +69,8 @@ private data class PrayerCalculationSettings(
     val longitude: Double,
     val madhab: String,
     val method: String,
-    val language: String
+    val language: String,
+    val timeZoneId: String
 )
 
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -103,6 +112,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val longitude: StateFlow<Double> = repo.appLongitude.stateIn(viewModelScope, SharingStarted.Eagerly, 3.0588)
     val locationConfigured: StateFlow<Boolean> = repo.appLocationConfigured.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val locationName: StateFlow<String> = repo.appLocationName.stateIn(viewModelScope, SharingStarted.Eagerly, "لم يتم تحديد الموقع بعد")
+    val timeZoneId: StateFlow<String> = repo.appTimeZoneId.stateIn(viewModelScope, SharingStarted.Eagerly, ZoneId.systemDefault().id)
     val athanFajrVoice: StateFlow<String> = repo.appAthanFajrVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Fajr Medina")
     val athanOtherVoice: StateFlow<String> = repo.appAthanOtherVoice.stateIn(viewModelScope, SharingStarted.Eagerly, "Makkah")
     val snoozeMinutes: StateFlow<Int> = repo.appSnoozeMinutes.stateIn(viewModelScope, SharingStarted.Eagerly, 5)
@@ -197,11 +207,50 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _isTrackingLocation = MutableStateFlow(false)
     val isTrackingLocation: StateFlow<Boolean> = _isTrackingLocation.asStateFlow()
 
+    private val timezoneChangeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_TIMEZONE_CHANGED) {
+                viewModelScope.launch {
+                    if (repo.appLocationUsesDeviceZone.first()) {
+                        repo.setLocation(locationName.value, latitude.value, longitude.value,
+                            timeZoneId = ZoneId.systemDefault().id, usesDeviceZone = true)
+                    }
+                }
+            }
+        }
+    }
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            viewModelScope.launch(Dispatchers.IO) {
+                if (!repo.appLocationUsesDeviceZone.first() && repo.appTimeZoneId.first().isBlank()) {
+                    TimeZoneResolver.resolve(repo.appLatitude.first(), repo.appLongitude.first())?.let {
+                        repo.saveTimeZoneId(it)
+                        runCatching { AdhanScheduler.schedule(context) }
+                        runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
+                    }
+                }
+            }
+        }
+    }
+
     init {
+        runCatching {
+            ContextCompat.registerReceiver(context, timezoneChangeReceiver,
+                IntentFilter(Intent.ACTION_TIMEZONE_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
+        }
+        runCatching { context.getSystemService(ConnectivityManager::class.java)?.registerDefaultNetworkCallback(networkCallback) }
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!repo.appLocationUsesDeviceZone.first() && repo.appTimeZoneId.first().isBlank()) {
+                TimeZoneResolver.resolve(repo.appLatitude.first(), repo.appLongitude.first())?.let { repo.saveTimeZoneId(it) }
+            }
+        }
         // Collect coordinates and options to trigger prayer calculations dynamically
         viewModelScope.launch {
-            val calculationSettings = combine(latitude, longitude, madhab, calcMethod, language) { lat, lng, m, c, lang ->
-                PrayerCalculationSettings(lat, lng, m, c, lang)
+            val baseSettings = combine(latitude, longitude, madhab, calcMethod, language) { lat, lng, m, c, lang ->
+                PrayerCalculationSettings(lat, lng, m, c, lang, ZoneId.systemDefault().id)
+            }
+            val calculationSettings = combine(baseSettings, timeZoneId) { settings, zone ->
+                settings.copy(timeZoneId = zone)
             }
             combine(calculationSettings, locationConfigured) { settings, configured ->
                 settings to configured
@@ -212,7 +261,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     settings.madhab,
                     settings.method,
                     settings.language,
-                    configured
+                    configured,
+                    settings.timeZoneId
                 )
             }
         }
@@ -336,7 +386,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         ) return
 
         viewModelScope.launch {
-            repo.setLocation(name.trim(), lat, lng)
+            val zone = TimeZoneResolver.resolve(lat, lng)
+            repo.setLocation(name.trim(), lat, lng, timeZoneId = zone, usesDeviceZone = false)
             runCatching { AdhanScheduler.schedule(getApplication()) }
             runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
         }
@@ -359,11 +410,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val oldLng = longitude.value
             val dist = calculateDist(oldLat, oldLng, lat, lng)
             // Even if GPS matches the default coordinates, mark it as confirmed on first fix.
-            if (dist <= 0.05 && locationConfigured.value) return@launch
+            if (dist <= 0.05 && locationConfigured.value && repo.appLocationUsesDeviceZone.first()) return@launch
 
             // Persist coordinates immediately so prayer times, Qibla and mosque distance never
             // wait for reverse-geocoding to finish.
-            repo.setLocation("My Location", lat, lng)
+            repo.setLocation("My Location", lat, lng, timeZoneId = ZoneId.systemDefault().id, usesDeviceZone = true)
             try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
             try { PrayerTimesWidgetProvider.requestUpdate(context) } catch (_: Exception) { }
             fetchRealNearbyMosques(lat, lng)
@@ -385,7 +436,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     .ifBlank { "My Location" }
 
                 viewModelScope.launch {
-                    repo.setLocation(addressName, lat, lng)
+                    repo.setLocation(addressName, lat, lng, timeZoneId = ZoneId.systemDefault().id, usesDeviceZone = true)
                     if (isAlgeria) repo.setCalcMethod("ALGERIA")
                     try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
                 }
@@ -507,12 +558,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         madhabStr: String,
         methodStr: String,
         lang: String,
-        isLocationConfigured: Boolean
+        isLocationConfigured: Boolean,
+        timeZoneId: String
     ) {
-        val date = Date()
-        val calendar = Calendar.getInstance()
-        val zone = calendar.timeZone
-        val offsetHours = zone.getOffset(date.time) / 3600000.0
+        val zone = PrayerTimeEngine.zoneIdOrDevice(timeZoneId)
+        val now = Instant.now()
+        val localDate = PrayerTimeEngine.localDate(zone, now)
+        val date = Date.from(now)
 
         val calcMethod = runCatching {
             PrayerCalculator.CalculationMethod.valueOf(methodStr)
@@ -524,8 +576,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val times = PrayerCalculator.calculateTimes(
             latitude = lat,
             longitude = lng,
-            timezoneOffset = offsetHours,
-            date = date,
+            date = localDate,
+            zoneId = zone,
             method = calcMethod,
             madhab = madhab
         )
@@ -536,12 +588,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         calculateQibla(lat, lng)
 
         // Calculate Moon Phase
-        val phase = PrayerCalculator.calculateMoonPhase(date)
+        val phase = PrayerCalculator.calculateMoonPhase(localDate)
         _moonPhase.value = phase
         _moonPhaseName.value = PrayerCalculator.getMoonPhaseName(phase, lang)
 
         // Calculate Hijri Date
-        val hijri = PrayerCalculator.getHijriDate(date, lang)
+        val hijri = PrayerCalculator.getHijriDate(localDate, lang)
         _hijriDateString.value = "${hijri.day} ${hijri.monthName} ${hijri.year} هـ"
     }
 
@@ -572,65 +624,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun updateCountdown() {
         val times = _prayerTimes.value ?: return
-        val now = Calendar.getInstance()
-        val currentHour = now.get(Calendar.HOUR_OF_DAY)
-        val currentMin = now.get(Calendar.MINUTE)
-        val currentSec = now.get(Calendar.SECOND)
-
-        val totalNowSecs = currentHour * 3600 + currentMin * 60 + currentSec
-
-        // Convert times to seconds
-        fun toSecs(t: String): Int {
-            val parts = t.split(":")
-            if (parts.size < 2) return 0
-            return parts[0].toInt() * 3600 + parts[1].toInt() * 60
+        val zone = PrayerTimeEngine.zoneIdOrDevice(timeZoneId.value)
+        val now = Instant.now()
+        val localDate = PrayerTimeEngine.localDate(zone, now)
+        // Rebuild today's prayer instants when the city's civil date rolls over.
+        if (times.dhuhrDateTime.toLocalDate() != localDate) {
+            calculateAllTimes(latitude.value, longitude.value, madhab.value, calcMethod.value,
+                language.value, locationConfigured.value, timeZoneId.value)
+            return
         }
-
-        val fajrSec = toSecs(times.fajr)
-        val sunriseSec = toSecs(times.sunrise)
-        val dhuhrSec = toSecs(times.dhuhr)
-        val asrSec = toSecs(times.asr)
-        val maghribSec = toSecs(times.maghrib)
-        val ishaSec = toSecs(times.isha)
-
-        // Sunrise is a displayed astronomical event, not a prayer. It must never become
-        // the "next prayer" or the "current prayer".
-        val prayers = listOf(
-            "Fajr" to fajrSec,
-            "Dhuhr" to dhuhrSec,
-            "Asr" to asrSec,
-            "Maghrib" to maghribSec,
-            "Isha" to ishaSec
-        )
-
-        // Find next prayer
-        var nextName = "Fajr"
-        var nextSec = fajrSec + 24 * 3600
-        var currentName = "Isha"
-
-        for (i in prayers.indices) {
-            val (name, sec) = prayers[i]
-            if (totalNowSecs < sec) {
-                nextName = name
-                nextSec = sec
-                currentName = if (i == 0) "Isha" else prayers[i - 1].first
-                break
-            }
+        val prayers = listOf("Fajr" to times.fajrDateTime, "Dhuhr" to times.dhuhrDateTime,
+            "Asr" to times.asrDateTime, "Maghrib" to times.maghribDateTime, "Isha" to times.ishaDateTime)
+        val next = prayers.firstOrNull { it.second.toInstant().isAfter(now) } ?: run {
+            val tomorrow = PrayerCalculator.calculateTimes(latitude.value, longitude.value, localDate.plusDays(1), zone,
+                runCatching { PrayerCalculator.CalculationMethod.valueOf(calcMethod.value) }.getOrDefault(PrayerCalculator.CalculationMethod.ALGERIA),
+                runCatching { PrayerCalculator.Madhab.valueOf(madhab.value) }.getOrDefault(PrayerCalculator.Madhab.STANDARD))
+            "Fajr" to tomorrow.fajrDateTime
         }
-
-        _nextPrayerName.value = nextName
-        _currentPrayerName.value = currentName
-
-        // Format times for display
-        val nextHourStr = String.format(Locale.US, "%02d:%02d", (nextSec % 86400) / 3600, ((nextSec % 86400) % 3600) / 60)
-        _nextPrayerTime.value = nextHourStr
-
-        // Countdown math
-        val diffSecs = nextSec - totalNowSecs
-        val h = diffSecs / 3600
-        val m = (diffSecs % 3600) / 60
-        val s = diffSecs % 60
-        _countdownText.value = String.format(Locale.US, "%02d:%02d:%02d", h, m, s)
+        _nextPrayerName.value = next.first
+        _currentPrayerName.value = prayers.lastOrNull { !it.second.toInstant().isAfter(now) }?.first ?: "Isha"
+        _nextPrayerTime.value = PrayerTimeEngine.format(next.second)
+        val seconds = Duration.between(now, next.second.toInstant()).seconds.coerceAtLeast(0)
+        _countdownText.value = String.format(Locale.US, "%02d:%02d:%02d", seconds/3600, (seconds%3600)/60, seconds%60)
     }
 
     private fun loadTodayLogs() {
@@ -886,7 +901,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setManualCity(city: String, lat: Double, lng: Double) {
         viewModelScope.launch {
-            repo.setLocation(city, lat, lng)
+            val zone = TimeZoneResolver.resolve(lat, lng)
+            repo.setLocation(city, lat, lng, timeZoneId = zone, usesDeviceZone = false)
             AdhanScheduler.schedule(getApplication())
             runCatching { PrayerTimesWidgetProvider.requestUpdate(context) }
             triggerHapticFeedback()
@@ -1081,9 +1097,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     override fun onCleared() {
-        super.onCleared()
+        runCatching { context.unregisterReceiver(timezoneChangeReceiver) }
+        runCatching { context.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(networkCallback) }
         stopLocationTracking()
         stopAthan()
+        super.onCleared()
     }
 
     private fun loadFajrRecords() {
