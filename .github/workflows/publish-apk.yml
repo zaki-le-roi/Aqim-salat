@@ -127,7 +127,7 @@ jobs:
           unzip -t Aqim-Salat.apk >/dev/null
           APKANALYZER="$(find "$ANDROID_HOME" -type f -name apkanalyzer 2>/dev/null | sort -V | tail -n 1)"
           test -n "$APKANALYZER"
-          test "$("$APKANALYZER" manifest application-id Aqim-Salat.apk)" = "com.example"
+          test "$("$APKANALYZER" manifest application-id Aqim-Salat.apk)" = "com.zakaria.djenba.aqim.salat"
           test "$("$APKANALYZER" manifest version-name Aqim-Salat.apk)" = "$RELEASE_VERSION"
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           test -n "$APKSIGNER"
