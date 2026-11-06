@@ -47,6 +47,7 @@
                 android:resource="@xml/prayer_times_widget_info" />
         </receiver>
         <receiver android:name=".adhan.AdhanAlarmReceiver" android:exported="false" />
+        <receiver android:name=".FridayReminderReceiver" android:exported="false" />
         <service
             android:name=".AdhkarOverlayService"
             android:exported="false"

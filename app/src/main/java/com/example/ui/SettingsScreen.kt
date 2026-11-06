@@ -784,10 +784,15 @@ fun SettingsScreen(
     lang: String,
     modifier: Modifier = Modifier,
     onNavigateToFeature: (String) -> Unit = {},
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    onCheckForUpdate: () -> Unit = {}
 ) {
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     val categories = listOf(
+        Triple("FRIDAY", "الجمعة", Icons.Filled.Event),
+        Triple("WEATHER", "الطقس", Icons.Filled.Cloud),
+        Triple("ISLAMIC_EVENTS", "رمضان والأعياد", Icons.Filled.CalendarMonth),
+        Triple("APP_UPDATE", "التحديث", Icons.Filled.SystemUpdate),
         Triple("PRAYER", "مواقيت الصلاة والحساب", Icons.Filled.SettingsInputComponent),
         Triple("ADHAN", "الأذان والتنبيهات", Icons.Filled.Notifications),
         Triple("FLOATING_ADHKAR", "الأذكار العائمة", Icons.Filled.AutoAwesome),
@@ -858,7 +863,13 @@ fun SettingsScreen(
                 }
             }
         } else {
-            SettingsCategoryContent(viewModel = viewModel, lang = lang, selectedCategory = selectedCategory!!, modifier = Modifier.fillMaxSize().padding(padding))
+            when (selectedCategory) {
+                "FRIDAY" -> Box(Modifier.fillMaxSize().padding(padding)) { FridayFeatureScreen(viewModel = viewModel, lang = lang) }
+                "WEATHER" -> Box(Modifier.fillMaxSize().padding(padding)) { WeatherFeatureScreen(viewModel = viewModel) }
+                "ISLAMIC_EVENTS" -> Box(Modifier.fillMaxSize().padding(padding)) { IslamicEventsFeatureScreen(viewModel = viewModel) }
+                "APP_UPDATE" -> Box(Modifier.fillMaxSize().padding(padding)) { AppUpdateFeatureScreen(onCheckForUpdate = onCheckForUpdate) }
+                else -> SettingsCategoryContent(viewModel = viewModel, lang = lang, selectedCategory = selectedCategory!!, modifier = Modifier.fillMaxSize().padding(padding))
+            }
         }
     }
 }

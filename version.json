@@ -1,6 +1,6 @@
 {
-  "versionCode": 1004108,
-  "versionName": "1.4.108",
+  "versionCode": 1004109,
+  "versionName": "1.4.109",
   "downloadUrl": "https://github.com/zaki-le-roi/Aqim-salat/releases/latest/download/Aqim-Salat.apk",
-  "releaseNotes": "تحسين بطاقات الموقع والتقويم بالتصميم الأخضر والذهبي، وضبط أبعاد بطاقات الخدمات."
+  "releaseNotes": "إضافة أقسام الجمعة والطقس ورمضان والأعياد، وتحسين صفحة التحديثات."
 }

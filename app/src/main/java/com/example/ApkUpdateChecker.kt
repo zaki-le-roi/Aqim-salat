@@ -80,7 +80,7 @@ class ApkUpdateChecker(private val activity: Activity) {
         }
     }
 
-    fun checkForUpdate() {
+    fun checkForUpdate(manual: Boolean = false) {
         registerDownloadReceiver()
         scope.launch {
             var connection: HttpURLConnection? = null
@@ -116,8 +116,11 @@ class ApkUpdateChecker(private val activity: Activity) {
                 // Compare with the installed app version as well as its numeric code.
                 // Older builds may have a stale versionCode but the same visible version name.
                 // Compare both version fields: some previously installed builds had a stale code.
-                if (latestCode <= BuildConfig.VERSION_CODE || compareVersions(latestName, BuildConfig.VERSION_NAME) <= 0) return@launch
-                if (preferences.getString(KEY_DISMISSED_VERSION, null) == latestName) return@launch
+                if (latestCode <= BuildConfig.VERSION_CODE || compareVersions(latestName, BuildConfig.VERSION_NAME) <= 0) {
+                    if (manual) withContext(Dispatchers.Main) { showToast("أنت تستخدم أحدث إصدار متاح: " + BuildConfig.VERSION_NAME) }
+                    return@launch
+                }
+                if (!manual && preferences.getString(KEY_DISMISSED_VERSION, null) == latestName) return@launch
 
                 withContext(Dispatchers.Main) {
                     if (activity.isFinishing || activity.isDestroyed) return@withContext
@@ -125,6 +128,7 @@ class ApkUpdateChecker(private val activity: Activity) {
                 }
             } catch (_: Exception) {
                 // Offline or invalid metadata: keep normal app use uninterrupted.
+                if (manual) withContext(Dispatchers.Main) { showToast("تعذر التحقق من التحديث. تحقق من اتصال الإنترنت وحاول مجددًا.") }
             } finally {
                 connection?.disconnect()
             }

@@ -144,7 +144,7 @@ class MainActivity : ComponentActivity() {
                     LocalLayoutDirection provides layoutDirection,
                     LocalDensity provides scaledDensity
                 ) {
-                    AqimSalahApp(viewModel = appViewModel, lang = activeLanguage)
+                    AqimSalahApp(viewModel = appViewModel, lang = activeLanguage, onCheckForUpdate = { apkUpdateChecker?.checkForUpdate(manual = true) })
                 }
             }
         }
@@ -176,7 +176,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AqimSalahApp(
     viewModel: AppViewModel,
-    lang: String
+    lang: String,
+    onCheckForUpdate: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf("HOME") }
     var isQuranReaderOpen by remember { mutableStateOf(false) }
@@ -351,7 +352,7 @@ fun AqimSalahApp(
             if (activeDetailScreen != null) {
                 // Overlay detail views with pristine back navigation support
                 when (activeDetailScreen) {
-                    "APP_MENU" -> SettingsScreen(viewModel = viewModel, lang = lang, onNavigateToFeature = handleFeatureNavigation, onBack = { activeDetailScreen = null })
+                    "APP_MENU" -> SettingsScreen(viewModel = viewModel, lang = lang, onNavigateToFeature = handleFeatureNavigation, onBack = { activeDetailScreen = null }, onCheckForUpdate = onCheckForUpdate)
                     "CALENDAR" -> CalendarScreen(viewModel = viewModel, lang = lang, onBack = { activeDetailScreen = null })
                     "FAVORITES" -> FavoritesScreen(
                         viewModel = viewModel, 

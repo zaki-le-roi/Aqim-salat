@@ -16,6 +16,7 @@ class BootReceiver : BroadcastReceiver() {
                 AdhanAlarmReceiver.restoreRingerModeIfNeeded(context.applicationContext)
                 runCatching { TimeZoneResolver.refreshSavedCity(context.applicationContext) }
                 AdhanScheduler.schedule(context.applicationContext)
+                runCatching { com.example.FridayReminderScheduler.scheduleNext(context.applicationContext) }
                 runCatching { com.example.widget.PrayerTimesWidgetProvider.requestUpdate(context.applicationContext) }
             } finally { pending.finish() }
         }
