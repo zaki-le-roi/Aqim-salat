@@ -267,12 +267,12 @@ fun AqimSalahApp(
                         val tabs = listOf(
                             Triple("HOME", if (lang == "ar") "الرئيسية" else "Home", Icons.Filled.Home),
                             Triple("QURAN", if (lang == "ar") "القرآن" else "Quran", Icons.Filled.MenuBook),
-                            Triple("PRAYER_TIMES", if (lang == "ar") "المواقيت والقبلة" else "Prayer & Qibla", Icons.Filled.Explore),
+                            Triple("PRAYER_TIMES", if (lang == "ar") "المواقيت" else "Prayer Times", Icons.Filled.Explore),
                             Triple("ADHKAR", if (lang == "ar") "الأذكار" else "Adhkar", Icons.Filled.Spa),
                         )
 
                         tabs.forEach { (route, label, icon) ->
-                            val isSelected = selectedTab == route || (route == "PRAYER_TIMES" && selectedTab == "QIBLA")
+                            val isSelected = selectedTab == route
                             NavigationBarItem(
                                 selected = isSelected,
                                 onClick = {
