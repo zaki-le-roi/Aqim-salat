@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings as AndroidSettings
 import androidx.core.content.ContextCompat
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -788,6 +789,7 @@ fun SettingsScreen(
     onCheckForUpdate: () -> Unit = {}
 ) {
     var selectedCategory by remember { mutableStateOf<String?>(null) }
+    BackHandler(enabled = selectedCategory != null) { selectedCategory = null }
     val categories = listOf(
         Triple("FRIDAY", "الجمعة", Icons.Filled.Event),
         Triple("WEATHER", "الطقس", Icons.Filled.Cloud),
@@ -829,38 +831,10 @@ fun SettingsScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding).background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                item { Text("الإعدادات", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold) }
-                items(categories) { entry ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().clickable { selectedCategory = entry.first }.testTag("menu_category_" + entry.first),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(entry.third, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                            Spacer(Modifier.width(14.dp))
-                            Text(entry.second, modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
-                            Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
-                item { Text("الخدمات", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 12.dp)) }
-                items(services) { entry ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().clickable { onNavigateToFeature(entry.first) }.testTag("menu_service_" + entry.first),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(entry.third, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-                            Spacer(Modifier.width(14.dp))
-                            Text(entry.second, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
-                            Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
+                item { SettingsMenuGroup(title = "الإعدادات", entries = categories, tagPrefix = "menu_category", onSelect = { selectedCategory = it }) }
+                item { SettingsMenuGroup(title = "الخدمات", entries = services, tagPrefix = "menu_service", onSelect = onNavigateToFeature) }
             }
         } else {
             when (selectedCategory) {
@@ -869,6 +843,25 @@ fun SettingsScreen(
                 "ISLAMIC_EVENTS" -> Box(Modifier.fillMaxSize().padding(padding)) { IslamicEventsFeatureScreen(viewModel = viewModel) }
                 "APP_UPDATE" -> Box(Modifier.fillMaxSize().padding(padding)) { AppUpdateFeatureScreen(onCheckForUpdate = onCheckForUpdate) }
                 else -> SettingsCategoryContent(viewModel = viewModel, lang = lang, selectedCategory = selectedCategory!!, modifier = Modifier.fillMaxSize().padding(padding))
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun SettingsMenuGroup(title: String, entries: List<Triple<String, String, ImageVector>>, tagPrefix: String, onSelect: (String) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 6.dp, top = 4.dp, bottom = 8.dp))
+            entries.forEachIndexed { index, entry ->
+                Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).clickable { onSelect(entry.first) }.testTag(tagPrefix + "_" + entry.first).padding(horizontal = 10.dp, vertical = 13.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(entry.third, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(23.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Text(entry.second, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+                    Icon(Icons.Filled.ChevronLeft, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (index < entries.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
             }
         }
     }

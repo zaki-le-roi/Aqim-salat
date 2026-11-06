@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.BuildConfig
 import com.example.FridayReminderScheduler
+import com.example.IslamicCalendar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -28,8 +29,6 @@ import java.net.URL
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import java.time.temporal.ChronoField
-import java.time.chrono.HijrahDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -169,63 +168,164 @@ fun WeatherFeatureScreen(viewModel: AppViewModel) {
     }
 }
 
-private fun nextHijriDate(start: LocalDate, month: Int, day: Int): LocalDate =
-    (0L..400L).map { start.plusDays(it) }.firstOrNull {
-        val h = HijrahDate.from(it); h.get(ChronoField.MONTH_OF_YEAR) == month && h.get(ChronoField.DAY_OF_MONTH) == day
-    } ?: start.plusDays(400)
-
 @Composable
 fun IslamicEventsFeatureScreen(viewModel: AppViewModel) {
     val context = LocalContext.current
     val zoneId by viewModel.timeZoneId.collectAsState()
     val zone = remember(zoneId) { runCatching { ZoneId.of(zoneId) }.getOrDefault(ZoneId.systemDefault()) }
-    var adjustment by remember { mutableIntStateOf(context.getSharedPreferences("islamic_calendar", Context.MODE_PRIVATE).getInt("adjustment", 0)) }
+    val prefs = remember { context.getSharedPreferences("islamic_calendar", Context.MODE_PRIVATE) }
+    var adjustment by remember { mutableIntStateOf(prefs.getInt("adjustment", 0).coerceIn(-2, 2)) }
     val today = java.time.ZonedDateTime.now(zone).toLocalDate().plusDays(adjustment.toLong())
-    val hijri = remember(today) { HijrahDate.from(today) }
-    val seasonalMessage = when {
-        hijri.get(ChronoField.MONTH_OF_YEAR) == 9 -> "نحن في شهر رمضان المبارك"
-        hijri.get(ChronoField.MONTH_OF_YEAR) == 10 && hijri.get(ChronoField.DAY_OF_MONTH) <= 3 -> "أيام عيد الفطر المبارك"
-        hijri.get(ChronoField.MONTH_OF_YEAR) == 12 && hijri.get(ChronoField.DAY_OF_MONTH) in 8..13 -> "أيام الحج وعيد الأضحى"
-        else -> "تابع المناسبات الإسلامية القادمة"
+    val hijri = remember(today) { IslamicCalendar.hijriDate(today) }
+    val hijriYear = hijri.get(java.time.temporal.ChronoField.YEAR_OF_ERA)
+    val hijriMonth = hijri.get(java.time.temporal.ChronoField.MONTH_OF_YEAR)
+    val hijriDay = hijri.get(java.time.temporal.ChronoField.DAY_OF_MONTH)
+    val isRamadan = hijriMonth == 9
+    val ramadanYear = if (hijriMonth > 9) hijriYear + 1 else hijriYear
+    val ramadanLength = remember(ramadanYear) { IslamicCalendar.ramadanLength(ramadanYear) }
+    val fastKey = "fasted_days_$ramadanYear"
+    var fastedDays by remember(ramadanYear) {
+        mutableStateOf(prefs.getStringSet(fastKey, emptySet())?.toSet() ?: emptySet())
     }
-    val ramadan = remember(today) { nextHijriDate(today, 9, 1) }
-    val fitr = remember(today) { nextHijriDate(today, 10, 1) }
-    val arafah = remember(today) { nextHijriDate(today, 12, 9) }
-    val adha = remember(today) { nextHijriDate(today, 12, 10) }
+    val juzKey = "quran_juz_$ramadanYear"
+    var completedJuz by remember(ramadanYear) { mutableIntStateOf(prefs.getInt(juzKey, 0).coerceIn(0, 30)) }
+    val events = remember(today) { IslamicCalendar.upcomingEvents(today) }
+    val monthName = IslamicCalendar.monthNames[hijriMonth - 1]
+    val seasonTitle: String
+    val seasonBody: String
+    when {
+        hijriMonth == 9 -> {
+            seasonTitle = "موسم رمضان"
+            seasonBody = "أيام الصيام والقيام وتلاوة القرآن. حافظ على السحور، وتعجيل الفطر، والصلوات، والصدقة، واجعل لك وردًا يوميًا من القرآن."
+        }
+        hijriMonth == 10 && hijriDay <= 3 -> {
+            seasonTitle = "عيد الفطر المبارك"
+            seasonBody = "من أعمال العيد: التكبير، وصلاة العيد، وإظهار الفرح المباح، وصلة الرحم. تذكّر إخراج زكاة الفطر قبل صلاة العيد."
+        }
+        hijriMonth == 12 && hijriDay <= 13 -> {
+            seasonTitle = "العشر من ذي الحجة وعيد الأضحى"
+            seasonBody = "أكثر من التكبير والذكر والعمل الصالح. يوم عرفة لغير الحاج يوم صيام عظيم، ثم يأتي عيد الأضحى وأيام التشريق."
+        }
+        hijriMonth == 1 && hijriDay <= 10 -> {
+            seasonTitle = "المحرم وعاشوراء"
+            seasonBody = "شهر الله المحرم من الأشهر الحرم، ويُستحب صيام عاشوراء مع يوم قبله أو بعده."
+        }
+        else -> {
+            seasonTitle = "المناسبات الإسلامية"
+            seasonBody = "تابع المناسبات القادمة واستعد لها بالعبادة والعمل الصالح، مع مراعاة إعلان رؤية الهلال في بلدك."
+        }
+    }
+
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { FeatureIntroCard(Icons.Filled.CalendarMonth, "رمضان والأعياد", seasonalMessage) }
+        item { FeatureIntroCard(Icons.Filled.CalendarMonth, "رمضان والأعياد", "قسم دائم للمناسبات والتقويم والمتابعة الموسمية") }
         item {
             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("التاريخ الهجري التقريبي", color = featureGold, fontWeight = FontWeight.Bold)
-                    Text(hijri.get(ChronoField.DAY_OF_MONTH).toString() + " " + listOf("محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة")[hijri.get(ChronoField.MONTH_OF_YEAR) - 1] + " " + hijri.get(ChronoField.YEAR_OF_ERA).toString() + " هـ", fontSize = 21.sp, fontWeight = FontWeight.Bold)
-                    Text("ضبط التاريخ: " + adjustment + " يوم")
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Text("التقويم الهجري", color = featureGold, fontWeight = FontWeight.Bold)
+                    Text("$hijriDay $monthName $hijriYear هـ", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text(today.format(DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale("ar"))), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Text("ضبط التاريخ")
+                        Text(if (adjustment > 0) "+$adjustment يوم" else "$adjustment يوم", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                    }
                     Slider(value = adjustment.toFloat(), onValueChange = {
                         adjustment = it.toInt()
-                        context.getSharedPreferences("islamic_calendar", Context.MODE_PRIVATE).edit().putInt("adjustment", adjustment).apply()
+                        prefs.edit().putInt("adjustment", adjustment).apply()
                     }, valueRange = -2f..2f, steps = 3)
-                    Text("يمكن ضبط التاريخ من يومين قبلًا أو بعدًا ليتوافق مع إعلان بلدك ورؤية الهلال.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Text("تقويم أم القرى الحسابي", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        TextButton(onClick = {
+                            adjustment = 0
+                            prefs.edit().putInt("adjustment", 0).apply()
+                        }, enabled = adjustment != 0) { Text("إعادة الضبط") }
+                    }
+                    Text("يمكن تقديم التاريخ أو تأخيره يومين لمطابقة إعلان بلدك ورؤية الهلال. يبقى التاريخ المعروض حسابيًا وليس إعلانًا رسميًا.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp)
                 }
             }
         }
-        item { EventDateCard("رمضان القادم", ramadan, today) }
-        item { EventDateCard("عيد الفطر", fitr, today) }
-        item { EventDateCard("يوم عرفة", arafah, today) }
-        item { EventDateCard("عيد الأضحى", adha, today) }
-        item {
-            FeatureInfoCard("رمضان", "أحكام الصيام ومبطلاته، دعاء الإفطار، قيام الليل، العشر الأواخر، تحري ليلة القدر، زكاة الفطر، ومتابعة ختم القرآن.")
-            FeatureInfoCard("عيد الفطر", "صلاة العيد، التكبير، الفطر قبل الصلاة، وزكاة الفطر وأحكامها.")
-            FeatureInfoCard("عيد الأضحى", "صلاة العيد، الأضحية، أيام التشريق، والتكبير المطلق والمقيد.")
-            FeatureInfoCard("مناسبات أخرى", "العشر الأوائل من ذي الحجة، يوم عرفة، وعاشوراء.")
+        item { Text("المناسبات القادمة", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary) }
+        items(events.size) { index ->
+            val event = events[index]
+            val remaining = ChronoUnit.DAYS.between(today, event.gregorianDate)
+            EventDateCard(event.title, event.gregorianDate, remaining, event.hijriLabel, event.note)
         }
-        item { Text("التواريخ حسابية وقد تختلف عن الإعلان الرسمي ورؤية الهلال في بلدك بيوم أو يومين.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        item {
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(seasonTitle, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                    Text(seasonBody, fontSize = 13.sp, lineHeight = 21.sp)
+                    when {
+                        isRamadan -> Text("اليوم $hijriDay من رمضان — تقبّل الله صيامكم وقيامكم.", color = featureGold, fontWeight = FontWeight.SemiBold)
+                        hijriMonth == 10 && hijriDay <= 3 -> Text("تقبّل الله الطاعات وكل عام وأنتم بخير.", color = featureGold, fontWeight = FontWeight.SemiBold)
+                        hijriMonth == 12 && hijriDay in 8..13 -> Text("أيام الحج والعيد؛ أكثر من الذكر والتكبير.", color = featureGold, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
+        item {
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("متابعة الصيام", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                    Text("سجّل الأيام التي صمتها في رمضان $ramadanYear هـ. عدد الأيام المسجلة: ${fastedDays.size} من $ramadanLength.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    (1..ramadanLength).toList().chunked(6).forEach { rowDays ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            rowDays.forEach { day ->
+                                val key = day.toString()
+                                val checked = key in fastedDays
+                                FilterChip(
+                                    selected = checked,
+                                    onClick = {
+                                        val updated = if (checked) fastedDays - key else fastedDays + key
+                                        fastedDays = updated
+                                        prefs.edit().putStringSet(fastKey, updated).apply()
+                                    },
+                                    enabled = isRamadan && day <= hijriDay,
+                                    label = { Text(day.toString(), fontSize = 11.sp) },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            repeat(6 - rowDays.size) { Spacer(Modifier.weight(1f)) }
+                        }
+                    }
+                    if (!isRamadan) Text("تفعيل تسجيل أيام الصيام متاح خلال شهر رمضان، ويمكنك الاطلاع على سجل رمضان السابق عند دخول الشهر.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    Text("متابعة ختم القرآن", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
+                    Text("الأجزاء المكتملة في خطة رمضان $ramadanYear هـ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("$completedJuz من 30 جزءًا", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = featureGold)
+                    LinearProgressIndicator(progress = { completedJuz / 30f }, modifier = Modifier.fillMaxWidth().height(8.dp), color = featureGold)
+                    Slider(value = completedJuz.toFloat(), onValueChange = {
+                        completedJuz = it.toInt()
+                        prefs.edit().putInt(juzKey, completedJuz).apply()
+                    }, valueRange = 0f..30f, steps = 29)
+                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        TextButton(onClick = {
+                            completedJuz = 0
+                            prefs.edit().putInt(juzKey, 0).apply()
+                        }, enabled = completedJuz > 0) { Text("تصفير المتابعة") }
+                        Text("الهدف: ختمة واحدة", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+        item { Text("ملاحظة: التواريخ الهجرية المحسوبة قد تختلف عن إعلان بلدك بيوم أو يومين، خصوصًا بدايات رمضان والعيدين. اعتمد الإعلان الرسمي للصيام والعيد.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 18.sp) }
     }
 }
 
 @Composable
-private fun EventDateCard(title: String, date: LocalDate, today: LocalDate) {
-    val days = ChronoUnit.DAYS.between(today, date)
-    FeatureInfoCard(title, if (days == 0L) "اليوم" else "متبقي " + days + " يومًا • " + date.format(DateTimeFormatter.ofPattern("EEEE d MMMM", Locale("ar"))))
+private fun EventDateCard(title: String, date: LocalDate, remaining: Long, hijriLabel: String, note: String) {
+    Card(shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+        Column(Modifier.fillMaxWidth().padding(15.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(title, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(hijriLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if (remaining == 0L) "اليوم" else "متبقي $remaining يومًا • " + date.format(DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale("ar"))), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(note, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
 }
 
 @Composable
