@@ -216,13 +216,9 @@ fun AqimSalahApp(
                 activeDetailScreen = "TOOLS"
                 initialToolParam = null
             }
-            "TASBIH", "NAMES", "KHATMAH", "HISN_AL_MUSLIM" -> {
+            "TASBIH", "HISN_AL_MUSLIM" -> {
                 activeDetailScreen = "TOOLS"
                 initialToolParam = routeKey
-            }
-            "MOSQUES", "MOSQUE_LOCATOR" -> {
-                activeDetailScreen = "TOOLS"
-                initialToolParam = "MOSQUES"
             }
             "CALENDAR", "FAVORITES", "SEARCH", "QURAN_AUDIO", "HADITH", "SEERAH",
             "SCHOLARS_LIBRARY", "ZAD_ALMUSLIM", "MISHKAT" -> {
@@ -394,9 +390,6 @@ fun AqimSalahApp(
                                             text = when (initialToolParam) {
                                                 "TASBIH" -> Translations.get("tasbih", lang)
                                                 "ADHKAR" -> Translations.get("adhkar", lang)
-                                                "NAMES" -> Translations.get("names_of_allah", lang)
-                                                "MOSQUES" -> if (lang == "ar") "المساجد القريبة" else "Nearby Mosques"
-                                                "KHATMAH" -> if (lang == "ar") "خاتمة القرآن" else "Ramadan Khatmah"
                                                 "HISN_AL_MUSLIM" -> if (lang == "ar") "حصن المسلم" else "Hisn Al Muslim"
                                                 else -> if (lang == "ar") "الخدمات الإسلامية" else "Islamic Services"
                                             },
@@ -415,9 +408,6 @@ fun AqimSalahApp(
                                 when (initialToolParam) {
                                     "TASBIH" -> TasbihTool(viewModel, lang)
                                     "ADHKAR" -> AdhkarTool(viewModel, lang)
-                                    "NAMES" -> NamesOfAllahTool(viewModel, lang)
-                                    "MOSQUES" -> MosquesTool(viewModel, lang)
-                                    "KHATMAH" -> KhatmahTool(viewModel, lang)
                                     "HISN_AL_MUSLIM" -> HisnAlMuslimTool(viewModel, lang)
                                     else -> ToolsScreen(viewModel = viewModel, lang = lang)
                                 }

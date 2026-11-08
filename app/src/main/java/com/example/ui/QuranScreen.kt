@@ -55,41 +55,19 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.data.QuranApiClient
 import com.example.data.QuranData
+import com.example.data.QuranAyah
 import com.example.data.QuranOfflineData
 import com.example.data.QuranPageMap
 import com.example.data.QuranFontLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.Locale
-
-private const val QURAN_CACHE_PREFS = "quran_surah_cache"
 
 private val ArabicFontFamily = FontFamily.Serif
 
-private fun loadCachedSurah(context: android.content.Context, surahId: Int, lang: String): List<QuranApiClient.ApiAyah>? {
-    val raw = context.getSharedPreferences(QURAN_CACHE_PREFS, android.content.Context.MODE_PRIVATE)
-        .getString("${surahId}_${lang}", null) ?: return null
-    return runCatching {
-        val array = JSONArray(raw)
-        List(array.length()) { index ->
-            val item = array.getJSONObject(index)
-            QuranApiClient.ApiAyah(item.getInt("numberInSurah"), item.getString("arabicText"), item.optString("translationText"), item.optString("audioUrl"))
-        }
-    }.getOrNull()?.takeIf { it.isNotEmpty() }
-}
 
-private fun saveCachedSurah(context: android.content.Context, surahId: Int, lang: String, verses: List<QuranApiClient.ApiAyah>) {
-    runCatching {
-        val array = JSONArray()
-        verses.forEach { verse -> array.put(JSONObject().apply { put("numberInSurah", verse.numberInSurah); put("arabicText", verse.arabicText); put("translationText", verse.translationText); put("audioUrl", verse.audioUrl) }) }
-        context.getSharedPreferences(QURAN_CACHE_PREFS, android.content.Context.MODE_PRIVATE).edit().putString("${surahId}_${lang}", array.toString()).apply()
-    }
-}
 // 114 Surah Start Pages in Standard 604-page Madinah Mushaf
 val SURAH_START_PAGES = intArrayOf(
     1, 2, 50, 77, 106, 128, 151, 177, 187, 208, 221, 235, 249, 255, 262, 267, 282, 293, 305, 312,
@@ -231,14 +209,13 @@ fun QuranScreen(
             val trimmed = searchQuery.trim()
             list = list.filter {
                 it.name.contains(trimmed) || 
-                it.id.toString() == trimmed || 
-                it.englishName.contains(trimmed, ignoreCase = true)
+                it.id.toString() == trimmed
             }
         }
         
         when (selectedTab) {
-            "MECCAN" -> list.filter { it.revelationType.equals("Meccan", ignoreCase = true) }
-            "MEDINAN" -> list.filter { it.revelationType.equals("Medinan", ignoreCase = true) }
+            "MECCAN" -> list.filter { it.revelationType == "مكية" }
+            "MEDINAN" -> list.filter { it.revelationType == "مدنية" }
             "BOOKMARKS" -> list.filter { it.id in bookmarkedSurahIds }
             else -> list
         }
@@ -499,7 +476,7 @@ fun QuranScreen(
                                                             title = bm.title,
                                                             subtitle = bm.subtitle,
                                                             arabicText = bm.arabicText,
-                                                            translationText = bm.translationText
+                                                            translationText = if (bm.type == "QURAN") "" else bm.translationText
                                                         )
                                                     }
                                                 ) {
@@ -517,7 +494,7 @@ fun QuranScreen(
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
                                             }
-                                            if (bm.translationText.isNotBlank()) {
+                                            if (bm.type != "QURAN" && bm.translationText.isNotBlank()) {
                                                 Spacer(modifier = Modifier.height(4.dp))
                                                 Text(
                                                     text = bm.translationText,
@@ -548,7 +525,7 @@ fun QuranScreen(
                             }
                         } else {
                             items(filteredSurahs, key = { it.id }) { surah ->
-                                val isMeccan = surah.revelationType.equals("Meccan", ignoreCase = true)
+                                val isMeccan = surah.revelationType == "مكية"
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -745,7 +722,7 @@ fun SurahReader(
     var pageInput by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<Triple<Int, Int, String>>>(emptyList()) }
-    var offlineSurahs by remember { mutableStateOf<Map<Int, List<QuranApiClient.ApiAyah>>>(emptyMap()) }
+    var offlineSurahs by remember { mutableStateOf<Map<Int, List<QuranAyah>>>(emptyMap()) }
     val pagerState = rememberPagerState(
         initialPage = (currentPage - 1).coerceIn(0, 603),
         pageCount = { 604 }
@@ -1280,7 +1257,7 @@ fun SurahHeaderBlock(surah: QuranData.Surah, lang: String, goldColor: Color, txt
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = if (lang == "en") if (surah.revelationType.equals("Meccan", ignoreCase = true)) "Meccan" else "Medinan" else if (surah.revelationType.equals("Meccan", ignoreCase = true)) "مكية" else "مدنية",
+                    text = if (surah.revelationType == "مكية") "مكية" else "مدنية",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = goldColor
@@ -1299,12 +1276,12 @@ fun SurahHeaderBlock(surah: QuranData.Surah, lang: String, goldColor: Color, txt
 
 @Composable
 fun TextFlowContainer(
-    verses: List<QuranApiClient.ApiAyah>,
+    verses: List<QuranAyah>,
     txtColor: Color,
     goldColor: Color,
     fontSize: androidx.compose.ui.unit.TextUnit = 24.sp,
     fontFamily: FontFamily = FontFamily.Serif,
-    onVerseClick: (QuranApiClient.ApiAyah) -> Unit
+    onVerseClick: (QuranAyah) -> Unit
 ) {
     val annotatedString = remember(verses) {
         buildAnnotatedString {

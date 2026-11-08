@@ -36,7 +36,6 @@ fun FavoritesScreen(
 ) {
     val context = LocalContext.current
     val bookmarks by viewModel.bookmarks.collectAsState()
-    val favoriteMosques by viewModel.favoriteMosques.collectAsState()
 
     var selectedTab by remember { mutableStateOf("QURAN") }
 
@@ -74,7 +73,7 @@ fun FavoritesScreen(
             selectedTabIndex = when (selectedTab) {
                 "QURAN" -> 0
                 "HADITH" -> 1
-                else -> 2
+                else -> 1
             },
             containerColor = Color.Transparent,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
@@ -101,18 +100,7 @@ fun FavoritesScreen(
                     )
                 }
             )
-            Tab(
-                selected = selectedTab == "MOSQUES",
-                onClick = { selectedTab = "MOSQUES" },
-                text = {
-                    Text(
-                        text = if (lang == "ar") "المساجد" else "Mosques (${favoriteMosques.size})",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
-                    )
-                }
-            )
-        }
+            }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -235,88 +223,7 @@ fun FavoritesScreen(
                         }
                     }
                 }
-                "MOSQUES" -> {
-                    if (favoriteMosques.isEmpty()) {
-                        EmptyStatePlaceholder(
-                            icon = Icons.Filled.StarBorder,
-                            text = if (lang == "ar") "لا توجد مساجد محفوظة في المفضلة بعد." else "No favorited mosques found yet."
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(bottom = 100.dp)
-                        ) {
-                            items(favoriteMosques, key = { it.id }) { m ->
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(16.dp),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                                ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = m.name,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 16.sp,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                            IconButton(
-                                                onClick = { viewModel.deleteFavoriteMosque(m.id) },
-                                                modifier = Modifier.size(32.dp)
-                                            ) {
-                                                Icon(Icons.Filled.Delete, contentDescription = "إزالة", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
-                                            }
-                                        }
-
-                                        Text(
-                                            text = m.address,
-                                            fontSize = 12.sp,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-
-                                        Spacer(modifier = Modifier.height(12.dp))
-
-                                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                            Button(
-                                                onClick = {
-                                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=${m.latitude},${m.longitude}&mode=d"))
-                                                    try { context.startActivity(intent) } catch (e: Exception) {}
-                                                },
-                                                shape = RoundedCornerShape(8.dp),
-                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                            ) {
-                                                Icon(Icons.Filled.DirectionsCar, contentDescription = "القيادة", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(if (lang == "ar") "سيارة" else "Drive", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
-                                            }
-
-                                            Button(
-                                                onClick = {
-                                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=${m.latitude},${m.longitude}&mode=w"))
-                                                    try { context.startActivity(intent) } catch (e: Exception) {}
-                                                },
-                                                shape = RoundedCornerShape(8.dp),
-                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                            ) {
-                                                Icon(Icons.Filled.DirectionsWalk, contentDescription = "المشي", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(if (lang == "ar") "مشياً" else "Walk", color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
-                                            }
-                                        }
-                                    }
-                                }
                             }
-                        }
-                    }
-                }
-            }
         }
     }
 }

@@ -22,19 +22,12 @@ class AppRepository(
     private val context: Context
 ) {
     // DAOs
-    private val prayerDao = db.prayerDao()
     private val tasbihDao = db.tasbihDao()
     private val bookmarkDao = db.bookmarkDao()
     private val quranHistoryDao = db.quranHistoryDao()
-    private val mosqueDao = db.mosqueDao()
-    private val khatmahDao = db.khatmahDao()
     private val quranNoteDao = db.quranNoteDao()
 
     // --- Prayer Logs ---
-    fun getLogsForDate(date: String): Flow<List<PrayerLog>> = prayerDao.getLogsForDate(date)
-    fun getAllLogs(): Flow<List<PrayerLog>> = prayerDao.getAllLogs()
-    suspend fun insertPrayerLog(log: PrayerLog) = prayerDao.insertLog(log)
-    suspend fun deletePrayerLog(date: String, prayerName: String) = prayerDao.deleteLog(date, prayerName)
 
     // --- Tasbih Counters ---
     val allTasbihCounters: Flow<List<TasbihCounter>> = tasbihDao.getAllCounters()
@@ -53,17 +46,7 @@ class AppRepository(
     val quranHistory: Flow<List<QuranHistory>> = quranHistoryDao.getHistory()
     suspend fun insertQuranHistory(history: QuranHistory) = quranHistoryDao.insertHistory(history)
 
-    // --- Favorite Mosques ---
-    val favoriteMosques: Flow<List<FavoriteMosque>> = mosqueDao.getAllFavorites()
-    suspend fun insertFavoriteMosque(mosque: FavoriteMosque) = mosqueDao.insertFavorite(mosque)
-    suspend fun deleteFavoriteMosque(id: Long) = mosqueDao.deleteFavoriteById(id)
-    fun isFavoriteMosque(id: Long): Flow<Boolean> = mosqueDao.isFavorite(id)
 
-    // --- Khatmahs ---
-    val allKhatmahs: Flow<List<Khatmah>> = khatmahDao.getAllKhatmahs()
-    suspend fun insertKhatmah(khatmah: Khatmah) = khatmahDao.insertKhatmah(khatmah)
-    suspend fun updateKhatmah(khatmah: Khatmah) = khatmahDao.updateKhatmah(khatmah)
-    suspend fun deleteKhatmah(khatmah: Khatmah) = khatmahDao.deleteKhatmah(khatmah)
 
     // --- Quran Notes ---
     fun getNotesForAyah(surahId: Int, ayahId: Int): Flow<List<QuranNote>> = quranNoteDao.getNotesForAyah(surahId, ayahId)
@@ -73,7 +56,6 @@ class AppRepository(
 
     // --- Preferences Keys ---
     companion object {
-        val KEY_LANGUAGE = stringPreferencesKey("app_language")
         val KEY_MADHAB = stringPreferencesKey("app_madhab")
         val KEY_CALC_METHOD = stringPreferencesKey("app_calc_method")
         val KEY_LATITUDE = doublePreferencesKey("app_latitude")
@@ -91,17 +73,10 @@ class AppRepository(
         val KEY_AUTO_SILENT_ENABLED = booleanPreferencesKey("auto_silent_enabled")
         val KEY_THEME_MODE = stringPreferencesKey("app_theme_mode")
         val KEY_WALLPAPER = stringPreferencesKey("app_wallpaper")
-        val KEY_PREF_MOSQUE_ID = stringPreferencesKey("app_pref_mosque_id")
-        val KEY_PREF_MOSQUE_NAME = stringPreferencesKey("app_pref_mosque_name")
-        val KEY_PREF_MOSQUE_LAT = doublePreferencesKey("app_pref_mosque_lat")
-        val KEY_PREF_MOSQUE_LNG = doublePreferencesKey("app_pref_mosque_lng")
-        val KEY_PREF_MOSQUE_ADDR = stringPreferencesKey("app_pref_mosque_addr")
-        val KEY_PREF_MOSQUE_REMIND = booleanPreferencesKey("app_pref_mosque_remind")
     }
 
     // --- Preference Observables ---
     // التطبيق معتمد باللغة العربية فقط؛ لا نسمح لتفضيل قديم بتحويل الواجهة إلى الإنجليزية.
-    val appLanguage: Flow<String> = context.dataStore.data.map { "ar" }
 
     val appMadhab: Flow<String> = context.dataStore.data.map { pref ->
         pref[KEY_MADHAB] ?: "STANDARD"
@@ -181,29 +156,11 @@ class AppRepository(
         pref[KEY_WALLPAPER] ?: "DEFAULT"
     }
 
-    val prefMosqueId: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_PREF_MOSQUE_ID] ?: ""
-    }
 
-    val prefMosqueName: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_PREF_MOSQUE_NAME] ?: ""
-    }
 
-    val prefMosqueLat: Flow<Double> = context.dataStore.data.map { pref ->
-        pref[KEY_PREF_MOSQUE_LAT] ?: 0.0
-    }
 
-    val prefMosqueLng: Flow<Double> = context.dataStore.data.map { pref ->
-        pref[KEY_PREF_MOSQUE_LNG] ?: 0.0
-    }
 
-    val prefMosqueAddr: Flow<String> = context.dataStore.data.map { pref ->
-        pref[KEY_PREF_MOSQUE_ADDR] ?: ""
-    }
 
-    val prefMosqueRemind: Flow<Boolean> = context.dataStore.data.map { pref ->
-        pref[KEY_PREF_MOSQUE_REMIND] ?: true
-    }
 
     // --- Preference Writers ---
     suspend fun setThemeMode(mode: String) {
@@ -214,23 +171,8 @@ class AppRepository(
         context.dataStore.edit { pref -> pref[KEY_WALLPAPER] = wallpaper }
     }
 
-    suspend fun setPreferredMosque(id: String, name: String, lat: Double, lng: Double, addr: String) {
-        context.dataStore.edit { pref ->
-            pref[KEY_PREF_MOSQUE_ID] = id
-            pref[KEY_PREF_MOSQUE_NAME] = name
-            pref[KEY_PREF_MOSQUE_LAT] = lat
-            pref[KEY_PREF_MOSQUE_LNG] = lng
-            pref[KEY_PREF_MOSQUE_ADDR] = addr
-        }
-    }
 
-    suspend fun setPreferredMosqueRemind(enabled: Boolean) {
-        context.dataStore.edit { pref -> pref[KEY_PREF_MOSQUE_REMIND] = enabled }
-    }
 
-    suspend fun setLanguage(lang: String) {
-        context.dataStore.edit { pref -> pref[KEY_LANGUAGE] = "ar" }
-    }
 
     suspend fun setMadhab(madhab: String) {
         context.dataStore.edit { pref -> pref[KEY_MADHAB] = madhab }

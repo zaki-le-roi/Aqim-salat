@@ -42,7 +42,6 @@ fun SearchScreen(
         else {
             QuranData.surahs.filter {
                 it.name.contains(query, ignoreCase = true) ||
-                        it.englishName.contains(query, ignoreCase = true) ||
                         it.id.toString() == query
             }
         }
@@ -219,8 +218,7 @@ fun SearchScreen(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Column {
-                                                Text(s.englishName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                                Text(if (lang == "ar") "السورة ${s.id} • ${s.totalAyahs} آية" else "Surah ${s.id} • ${s.totalAyahs} Ayahs", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
+                                                Text("السورة ${s.id} • ${s.totalAyahs} آية", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
                                             }
                                             Text(s.name, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFD4AF37))
                                         }

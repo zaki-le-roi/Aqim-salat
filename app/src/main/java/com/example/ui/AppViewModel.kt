@@ -43,33 +43,13 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.Priority
 import android.location.Geocoder
 
-data class WeeklyPrayerSummary(
-    val dateString: String,
-    val dayNameAr: String,
-    val onTimeCount: Int,
-    val lateCount: Int,
-    val missedCount: Int
-) {
-    val completedCount: Int get() = onTimeCount + lateCount
-}
 
-data class LocalMosque(
-    val id: Long,
-    val nameAr: String,
-    val nameEn: String,
-    val lat: Double,
-    val lng: Double,
-    val addressAr: String,
-    val addressEn: String,
-    val distanceKm: Double = 0.0
-)
 
 private data class PrayerCalculationSettings(
     val latitude: Double,
     val longitude: Double,
     val madhab: String,
     val method: String,
-    val language: String,
     val timeZoneId: String
 )
 
@@ -105,7 +85,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val defaultMuadhin: StateFlow<String> = _defaultMuadhin.asStateFlow()
 
     // --- State Observables ---
-    val language: StateFlow<String> = repo.appLanguage.stateIn(viewModelScope, SharingStarted.Eagerly, "ar")
     val madhab: StateFlow<String> = repo.appMadhab.stateIn(viewModelScope, SharingStarted.Eagerly, "STANDARD")
     val calcMethod: StateFlow<String> = repo.appCalcMethod.stateIn(viewModelScope, SharingStarted.Eagerly, "ALGERIA")
     val latitude: StateFlow<Double> = repo.appLatitude.stateIn(viewModelScope, SharingStarted.Eagerly, 36.7538)
@@ -122,19 +101,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val autoSilentEnabled: StateFlow<Boolean> = repo.autoSilentEnabled.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val themeMode: StateFlow<String> = repo.appThemeMode.stateIn(viewModelScope, SharingStarted.Eagerly, "AUTO")
     val wallpaper: StateFlow<String> = repo.appWallpaper.stateIn(viewModelScope, SharingStarted.Eagerly, "DEFAULT")
-    val prefMosqueId: StateFlow<String> = repo.prefMosqueId.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val prefMosqueName: StateFlow<String> = repo.prefMosqueName.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val prefMosqueLat: StateFlow<Double> = repo.prefMosqueLat.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
-    val prefMosqueLng: StateFlow<Double> = repo.prefMosqueLng.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
-    val prefMosqueAddr: StateFlow<String> = repo.prefMosqueAddr.stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val prefMosqueRemind: StateFlow<Boolean> = repo.prefMosqueRemind.stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     // --- Database Observables ---
     val tasbihCounters: StateFlow<List<TasbihCounter>> = repo.allTasbihCounters.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val bookmarks: StateFlow<List<Bookmark>> = repo.allBookmarks.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val quranHistory: StateFlow<List<QuranHistory>> = repo.quranHistory.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val favoriteMosques: StateFlow<List<FavoriteMosque>> = repo.favoriteMosques.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-    val allKhatmahs: StateFlow<List<Khatmah>> = repo.allKhatmahs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val allQuranNotes: StateFlow<List<QuranNote>> = repo.allQuranNotes.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // --- Dynamic Astronomical Calculations State ---
@@ -163,11 +134,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val hijriDateString: StateFlow<String> = _hijriDateString.asStateFlow()
 
     // --- Prayer tracking state ---
-    private val _fajrRecords = MutableStateFlow<List<FajrDayRecord>>(emptyList())
-    val fajrRecords: StateFlow<List<FajrDayRecord>> = _fajrRecords.asStateFlow()
 
     // --- Daily Content Rotation (Authentic) ---
-    val dailyVerse = QuranData.localAyahs[1]!![1] // Default Al-Fatihah
     val dailyHadith = HadithData.hadiths[0] // Intention hadith
     val dailyDua = AdhkarData.adhkar[0] // Morning adhkar as daily dua
 
@@ -184,25 +152,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val distanceToKaaba: StateFlow<Double> = _distanceToKaaba.asStateFlow()
 
     // --- Prayer Logging State ---
-    private val _loggedPrayers = MutableStateFlow<Map<String, String>>(emptyMap())
-    val loggedPrayers: StateFlow<Map<String, String>> = _loggedPrayers.asStateFlow()
 
-    private val _weeklyPrayerSummary = MutableStateFlow<List<WeeklyPrayerSummary>>(emptyList())
-    val weeklyPrayerSummary: StateFlow<List<WeeklyPrayerSummary>> = _weeklyPrayerSummary.asStateFlow()
 
     // --- Ramadan Tracking State ---
-    private val _ramadanDaysRemaining = MutableStateFlow(0)
-    val ramadanDaysRemaining: StateFlow<Int> = _ramadanDaysRemaining.asStateFlow()
 
-    private val _isFastingToday = MutableStateFlow(false)
-    val isFastingToday: StateFlow<Boolean> = _isFastingToday.asStateFlow()
 
     // --- Real-time Location Tracking & Nearby Mosques ---
     private var locationCallback: LocationCallback? = null
     
-    private val _nearbyRealMosques = MutableStateFlow<List<LocalMosque>>(emptyList())
-    val nearbyRealMosques: StateFlow<List<LocalMosque>> = _nearbyRealMosques.asStateFlow()
-    val nearestRealMosque: StateFlow<LocalMosque?> = nearbyRealMosques.map { it.firstOrNull() }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     
     private val _isTrackingLocation = MutableStateFlow(false)
     val isTrackingLocation: StateFlow<Boolean> = _isTrackingLocation.asStateFlow()
@@ -246,8 +203,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
         // Collect coordinates and options to trigger prayer calculations dynamically
         viewModelScope.launch {
-            val baseSettings = combine(latitude, longitude, madhab, calcMethod, language) { lat, lng, m, c, lang ->
-                PrayerCalculationSettings(lat, lng, m, c, lang, ZoneId.systemDefault().id)
+            val baseSettings = combine(latitude, longitude, madhab, calcMethod) { lat, lng, m, c ->
+                PrayerCalculationSettings(lat, lng, m, c, ZoneId.systemDefault().id)
             }
             val calculationSettings = combine(baseSettings, timeZoneId) { settings, zone ->
                 settings.copy(timeZoneId = zone)
@@ -260,7 +217,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     settings.longitude,
                     settings.madhab,
                     settings.method,
-                    settings.language,
                     configured,
                     settings.timeZoneId
                 )
@@ -274,14 +230,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 delay(1000)
             }
         }
-
-        // Initialize Today's Prayer logs
-        loadTodayLogs()
-        loadWeeklyPrayerSummary()
-        calculateRamadanCountdown()
-        val fastingKey = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-        _isFastingToday.value = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE).getBoolean(fastingKey, false)
-        loadFajrRecords()
 
         // Prepopulate standard prophetic tasbih counters if database is empty
         viewModelScope.launch(Dispatchers.IO) {
@@ -417,7 +365,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repo.setLocation("My Location", lat, lng, timeZoneId = ZoneId.systemDefault().id, usesDeviceZone = true)
             try { AdhanScheduler.schedule(getApplication()) } catch (_: Exception) { }
             try { PrayerTimesWidgetProvider.requestUpdate(context) } catch (_: Exception) { }
-            fetchRealNearbyMosques(lat, lng)
 
             val geocoder = runCatching {
                 Geocoder(getApplication<Application>().applicationContext, Locale.getDefault())
@@ -457,114 +404,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun openMosqueNavigation(mosque: LocalMosque) {
-        val uri = Uri.parse("geo:${mosque.lat},${mosque.lng}?q=${Uri.encode(mosque.nameAr)}")
-        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri).apply {
-            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        runCatching { context.startActivity(intent) }
-    }
 
-    fun fetchRealNearbyMosques(lat: Double, lng: Double) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val queryStr = """
-                    [out:json][timeout:20];
-                    (
-                      nwr["amenity"="place_of_worship"]["religion"="muslim"](around:12000,$lat,$lng);
-                      nwr["building"="mosque"](around:10000,$lat,$lng);
-                    );
-                    out center tags;
-                """.trimIndent()
-                val encodedQuery = java.net.URLEncoder.encode(queryStr, "UTF-8")
-                val endpoints = listOf(
-                    "https://overpass-api.de/api/interpreter?data=",
-                    "https://overpass.kumi.systems/api/interpreter?data="
-                )
-                var response: String? = null
-                for (endpoint in endpoints) {
-                    try {
-                        val conn = (java.net.URL(endpoint + encodedQuery).openConnection() as java.net.HttpURLConnection).apply {
-                            connectTimeout = 8000
-                            readTimeout = 20000
-                            requestMethod = "GET"
-                            setRequestProperty("User-Agent", "Aqim-Salat/1.2 Android")
-                        }
-                        if (conn.responseCode == 200) {
-                            response = conn.inputStream.bufferedReader().use { it.readText() }
-                            conn.disconnect()
-                            if (!response.isNullOrBlank()) break
-                        } else {
-                            conn.disconnect()
-                        }
-                    } catch (_: Exception) {
-                        // Try the next public Overpass instance.
-                    }
-                }
-
-                if (!response.isNullOrBlank()) {
-                    val elements = org.json.JSONObject(response).optJSONArray("elements") ?: org.json.JSONArray()
-                    val unique = LinkedHashMap<String, LocalMosque>()
-
-                    for (i in 0 until elements.length()) {
-                        val el = elements.getJSONObject(i)
-                        val id = el.optLong("id", 0L)
-                        if (id == 0L) continue
-
-                        val center = el.optJSONObject("center")
-                        val mLat = if (el.has("lat")) el.getDouble("lat") else center?.optDouble("lat", Double.NaN) ?: Double.NaN
-                        val mLng = if (el.has("lon")) el.getDouble("lon") else center?.optDouble("lon", Double.NaN) ?: Double.NaN
-                        if (mLat.isNaN() || mLng.isNaN()) continue
-
-                        val tags = el.optJSONObject("tags")
-                        val name = tags?.optString("name", "")?.trim().orEmpty()
-                        val nameAr = tags?.optString("name:ar", "")?.trim().orEmpty().ifBlank {
-                            if (name.isNotBlank()) name else "مسجد"
-                        }
-                        val nameEn = tags?.optString("name:en", "")?.trim().orEmpty().ifBlank {
-                            if (name.isNotBlank()) name else "Mosque"
-                        }
-
-                        val street = tags?.optString("addr:street", "")?.trim().orEmpty()
-                        val city = tags?.optString("addr:city", "")?.trim().orEmpty()
-                        val suburb = tags?.optString("addr:suburb", "")?.trim().orEmpty()
-                        val district = listOf(suburb, city).filter { it.isNotBlank() }.joinToString("، ")
-                        val addressAr = listOf(street, district).filter { it.isNotBlank() }.joinToString("، ")
-                            .ifBlank { "مسجد قريب من موقعك" }
-                        val addressEn = listOf(street, district).filter { it.isNotBlank() }.joinToString(", ")
-                            .ifBlank { "Mosque near your location" }
-
-                        val key = "$mLat,$mLng"
-                        unique[key] = LocalMosque(id, nameAr, nameEn, mLat, mLng, addressAr, addressEn)
-                    }
-
-                    _nearbyRealMosques.value = unique.values
-                        .map { mosque -> mosque.copy(distanceKm = calculateDist(lat, lng, mosque.lat, mosque.lng)) }
-                        .sortedBy { it.distanceKm }
-                        .take(100)
-                } else {
-                    _nearbyRealMosques.value = emptyList()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _nearbyRealMosques.value = emptyList()
-            }
-        }
-    }
 
     private fun calculateAllTimes(
         lat: Double,
         lng: Double,
         madhabStr: String,
         methodStr: String,
-        lang: String,
         isLocationConfigured: Boolean,
         timeZoneId: String
     ) {
         val zone = PrayerTimeEngine.zoneIdOrDevice(timeZoneId)
         val now = Instant.now()
         val localDate = PrayerTimeEngine.localDate(zone, now)
-        val date = Date.from(now)
 
         val calcMethod = runCatching {
             PrayerCalculator.CalculationMethod.valueOf(methodStr)
@@ -590,10 +442,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         // Calculate Moon Phase
         val phase = PrayerCalculator.calculateMoonPhase(localDate)
         _moonPhase.value = phase
-        _moonPhaseName.value = PrayerCalculator.getMoonPhaseName(phase, lang)
+        _moonPhaseName.value = PrayerCalculator.getMoonPhaseName(phase, "ar")
 
         // Calculate Hijri Date
-        val hijri = PrayerCalculator.getHijriDate(localDate, lang)
+        val hijri = PrayerCalculator.getHijriDate(localDate, "ar")
         _hijriDateString.value = "${hijri.day} ${hijri.monthName} ${hijri.year} هـ"
     }
 
@@ -630,7 +482,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         // Rebuild today's prayer instants when the city's civil date rolls over.
         if (times.dhuhrDateTime.toLocalDate() != localDate) {
             calculateAllTimes(latitude.value, longitude.value, madhab.value, calcMethod.value,
-                language.value, locationConfigured.value, timeZoneId.value)
+                locationConfigured.value, timeZoneId.value)
             return
         }
         val prayers = listOf("Fajr" to times.fajrDateTime, "Dhuhr" to times.dhuhrDateTime,
@@ -648,105 +500,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _countdownText.value = String.format(Locale.US, "%02d:%02d:%02d", seconds/3600, (seconds%3600)/60, seconds%60)
     }
 
-    private fun loadTodayLogs() {
-        viewModelScope.launch {
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val todayStr = sdf.format(Date())
-            repo.getLogsForDate(todayStr).collect { logs ->
-                val logMap = logs.associate { it.prayerName to it.status }
-                _loggedPrayers.value = logMap
-            }
-        }
-    }
 
-    private fun loadWeeklyPrayerSummary() {
-        viewModelScope.launch {
-            repo.getAllLogs().collect { logs ->
-                val logsByDate = logs.groupBy { it.date }
-                val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val dayNameFormat = SimpleDateFormat("EEEE", Locale("ar"))
-                val today = Calendar.getInstance()
-                _weeklyPrayerSummary.value = (6 downTo 0).map { offset ->
-                    val day = Calendar.getInstance().apply {
-                        timeInMillis = today.timeInMillis
-                        add(Calendar.DAY_OF_YEAR, -offset)
-                    }
-                    val date = dayFormat.format(day.time)
-                    val dayLogs = logsByDate[date].orEmpty().associateBy { it.prayerName }
-                    val prayerNames = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
-                    var onTime = 0
-                    var late = 0
-                    var missed = 0
-                    prayerNames.forEach { prayer ->
-                        when (dayLogs[prayer]?.status) {
-                            "PRAYED_ON_TIME", "CONGREGATION" -> onTime++
-                            "PRAYED_LATE" -> late++
-                            "MISSED" -> missed++
-                        }
-                    }
-                    WeeklyPrayerSummary(
-                        dateString = date,
-                        dayNameAr = dayNameFormat.format(day.time),
-                        onTimeCount = onTime,
-                        lateCount = late,
-                        missedCount = missed
-                    )
-                }
-            }
-        }
-    }
 
-    private fun calculateRamadanCountdown() {
-        // Find days remaining until Ramadan
-        // The tabular tabular calendar calculates the Hijri year.
-        // Ramadan starts on 1st Ramadan. Let's make an robust calendar difference calculation!
-        val now = Date()
-        val hDate = PrayerCalculator.getHijriDate(now, "en")
-        
-        // Approximate tabular day distance calculation:
-        val currentYear = hDate.year
-        // Tabular Ramadan is Month 9.
-        // If current month is Ramadan (9), and we are on day X, next Ramadan is next year month 9.
-        // Each Hijri month averages 29.53 days.
-        val monthsRemaining = if (hDate.month <= 9) {
-            9 - hDate.month
-        } else {
-            12 - hDate.month + 9
-        }
-        val daysApprox = (monthsRemaining * 29.53).toInt() - hDate.day + 1
-        _ramadanDaysRemaining.value = if (daysApprox < 0) 354 + daysApprox else daysApprox
-    }
 
     // --- Action Handlers ---
 
     // Toggle Prayer Status
-    fun togglePrayerStatus(prayerName: String, currentStatus: String) {
-        viewModelScope.launch {
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val todayStr = sdf.format(Date())
-            
-            val nextStatus = when (currentStatus) {
-                "NOT_YET" -> "PRAYED_ON_TIME"
-                "PRAYED_ON_TIME" -> "PRAYED_LATE"
-                "PRAYED_LATE" -> "MISSED"
-                else -> "NOT_YET"
-            }
-
-            if (nextStatus == "NOT_YET") {
-                repo.deletePrayerLog(todayStr, prayerName)
-            } else {
-                repo.insertPrayerLog(
-                    PrayerLog(
-                        date = todayStr,
-                        prayerName = prayerName,
-                        status = nextStatus
-                    )
-                )
-            }
-            // Trigger haptic if supported
-            triggerHapticFeedback()
-        }
-    }
 
     // Tasbih Actions
     fun createTasbih(name: String, goal: Int) {
@@ -868,9 +627,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return true
     }
 
-    fun setAppLanguage(lang: String) {
-        viewModelScope.launch { repo.setLanguage(lang) }
-    }
 
     fun setCalculationMethod(method: String) {
         viewModelScope.launch { repo.setCalcMethod(method); AdhanScheduler.schedule(getApplication()); runCatching { PrayerTimesWidgetProvider.requestUpdate(context) } }
@@ -909,25 +665,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private val qazaPrefs by lazy { context.getSharedPreferences("qaza_prayers", Context.MODE_PRIVATE) }
 
-    fun getQazaCount(key: String): Int = qazaPrefs.getInt(key, 0)
 
-    fun changeQazaCount(key: String, delta: Int) {
-        val current = getQazaCount(key)
-        val updated = (current + delta).coerceAtLeast(0)
-        qazaPrefs.edit().putInt(key, updated).apply()
-        triggerHapticFeedback()
-    }
 
-    fun toggleFastingToday() {
-        val key = "fasting_" + SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-        val prefs = context.getSharedPreferences("daily_worship", Context.MODE_PRIVATE)
-        val value = !prefs.getBoolean(key, false)
-        prefs.edit().putBoolean(key, value).apply()
-        _isFastingToday.value = value
-        triggerHapticFeedback()
-    }
 
     // --- Media Player: Athan Recitations ---
     fun playAthan() {
@@ -1031,53 +771,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // --- Preferred Mosque Writers ---
-    fun setPreferredMosque(id: String, name: String, lat: Double, lng: Double, addr: String) {
-        viewModelScope.launch {
-            repo.setPreferredMosque(id, name, lat, lng, addr)
-        }
-    }
 
-    fun setPreferredMosqueRemind(enabled: Boolean) {
-        viewModelScope.launch {
-            repo.setPreferredMosqueRemind(enabled)
-        }
-    }
 
     // --- Favorite Mosques Writers ---
-    fun insertFavoriteMosque(mosque: FavoriteMosque) {
-        viewModelScope.launch {
-            repo.insertFavoriteMosque(mosque)
-        }
-    }
 
-    fun deleteFavoriteMosque(id: Long) {
-        viewModelScope.launch {
-            repo.deleteFavoriteMosque(id)
-        }
-    }
 
-    fun isFavoriteMosque(id: Long): Flow<Boolean> {
-        return repo.isFavoriteMosque(id)
-    }
 
-    // --- Khatmahs Writers ---
-    fun insertKhatmah(khatmah: Khatmah) {
-        viewModelScope.launch {
-            repo.insertKhatmah(khatmah)
-        }
-    }
 
-    fun updateKhatmah(khatmah: Khatmah) {
-        viewModelScope.launch {
-            repo.updateKhatmah(khatmah)
-        }
-    }
 
-    fun deleteKhatmah(khatmah: Khatmah) {
-        viewModelScope.launch {
-            repo.deleteKhatmah(khatmah)
-        }
-    }
 
     // --- Quran Notes Writers ---
     fun getNotesForAyah(surahId: Int, ayahId: Int): Flow<List<QuranNote>> {
@@ -1104,58 +805,5 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         super.onCleared()
     }
 
-    private fun loadFajrRecords() {
-        viewModelScope.launch {
-            repo.getAllLogs().collect { logs ->
-                val byDate = logs.filter { it.prayerName == "Fajr" }.associateBy { it.date }
-                val dayFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                val displayFormat = SimpleDateFormat("dd-MM", Locale.US)
-                val calendar = Calendar.getInstance()
-                val records = (6 downTo 0).map { offset ->
-                    val day = Calendar.getInstance().apply {
-                        timeInMillis = calendar.timeInMillis
-                        add(Calendar.DAY_OF_YEAR, -offset)
-                    }
-                    val date = dayFormat.format(day.time)
-                    val status = when (byDate[date]?.status) {
-                        "PRAYED_ON_TIME" -> "INDIVIDUAL"
-                        "PRAYED_LATE" -> "INDIVIDUAL"
-                        "MISSED" -> "MISSED"
-                        else -> "NOT_SET"
-                    }
-                    FajrDayRecord(
-                        dayNameAr = SimpleDateFormat("EEEE", Locale("ar")).format(day.time),
-                        dayNameEn = SimpleDateFormat("EEEE", Locale.ENGLISH).format(day.time),
-                        dateString = displayFormat.format(day.time),
-                        status = status
-                    )
-                }
-                _fajrRecords.value = records
-            }
-        }
-    }
 
-    fun updateFajrRecord(dateString: String, status: String) {
-        _fajrRecords.value = _fajrRecords.value.map { record ->
-            if (record.dateString == dateString) record.copy(status = status) else record
-        }
-        viewModelScope.launch {
-            if (status == "NOT_SET") {
-                repo.deletePrayerLog(dateString, "Fajr")
-            } else {
-                repo.insertPrayerLog(
-                    PrayerLog(
-                        date = dateString,
-                        prayerName = "Fajr",
-                        status = when (status) {
-                            "CONGREGATION" -> "CONGREGATION"
-                            "INDIVIDUAL" -> "PRAYED_ON_TIME"
-                            "MISSED" -> "MISSED"
-                            else -> status
-                        }
-                    )
-                )
-            }
-        }
-    }
 }

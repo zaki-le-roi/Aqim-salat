@@ -11,9 +11,9 @@ import java.util.Locale
 object QuranOfflineData {
     private const val PART_COUNT = 15
 
-    private val surahCache = java.util.concurrent.ConcurrentHashMap<Int, List<QuranApiClient.ApiAyah>>()
+    private val surahCache = java.util.concurrent.ConcurrentHashMap<Int, List<QuranAyah>>()
 
-    fun loadSurah(context: Context, surahId: Int): List<QuranApiClient.ApiAyah>? {
+    fun loadSurah(context: Context, surahId: Int): List<QuranAyah>? {
         if (surahId !in 1..114) return null
         surahCache[surahId]?.let { return it }
 
@@ -35,17 +35,16 @@ object QuranOfflineData {
                 val sId = surah.getInt("id")
                 val verses = surah.getJSONArray("verses")
                 val audioPrefix = String.format(Locale.US, "%03d", sId)
-                val ayahs = ArrayList<QuranApiClient.ApiAyah>(verses.length())
+                val ayahs = ArrayList<QuranAyah>(verses.length())
                 for (j in 0 until verses.length()) {
                     val verse = verses.getJSONObject(j)
                     val ayahNumber = verse.getInt("id")
                     val audioUrl = "https://everyayah.com/data/Alafasy_128kbps/" +
                         audioPrefix + String.format(Locale.US, "%03d", ayahNumber) + ".mp3"
                     ayahs.add(
-                        QuranApiClient.ApiAyah(
+                        QuranAyah(
                             numberInSurah = ayahNumber,
                             arabicText = verse.getString("text"),
-                            translationText = "",
                             audioUrl = audioUrl
                         )
                     )

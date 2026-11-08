@@ -127,7 +127,7 @@ fun QuranAudioScreen(
             player.prepareAsync()
             Toast.makeText(context,
                 if (lang == "ar") "جارٍ تحميل: " + surahs[index].name + " • " + selectedReciter.second
-                else "Loading: " + surahs[index].englishName + " by " + selectedReciter.first,
+                else "جارٍ تحميل: " + surahs[index].name + " • " + selectedReciter.second,
                 Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             releasePlayer()
@@ -245,7 +245,7 @@ fun QuranAudioScreen(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = activeSurah.englishName + " • " + activeSurah.revelationType.uppercase(),
+                    text = activeSurah.revelationType,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary

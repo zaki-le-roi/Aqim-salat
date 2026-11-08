@@ -48,12 +48,6 @@ import java.util.*
 import java.time.LocalDate
 import java.time.ZoneId
 
-data class QazaItem(
-    val key: String,
-    val name: String,
-    val count: Int,
-    val onPlus: () -> Unit
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,16 +82,9 @@ fun PrayerTimesScreen(
     val calcMethodStr by viewModel.calcMethod.collectAsState()
     val madhabStr by viewModel.madhab.collectAsState()
 
-    var showQazaTracker by remember { mutableStateOf(false) }
     var showMonthlyTimes by remember { mutableStateOf(false) }
     var showLocationDialog by remember { mutableStateOf(false) }
 
-    // Qaza counts are persisted by AppViewModel so they survive screen recreation.
-    var qazaFajr by remember { mutableIntStateOf(viewModel.getQazaCount("Fajr")) }
-    var qazaDhuhr by remember { mutableIntStateOf(viewModel.getQazaCount("Dhuhr")) }
-    var qazaAsr by remember { mutableIntStateOf(viewModel.getQazaCount("Asr")) }
-    var qazaMaghrib by remember { mutableIntStateOf(viewModel.getQazaCount("Maghrib")) }
-    var qazaIsha by remember { mutableIntStateOf(viewModel.getQazaCount("Isha")) }
 
     // Local theme colors to prevent @Composable Canvas compile failures
     val baseOnSurfaceColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
@@ -133,16 +120,8 @@ fun PrayerTimesScreen(
                 }
 
                 Row {
-                    IconButton(
-                        onClick = { showQazaTracker = !showQazaTracker; showMonthlyTimes = false },
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(if (showQazaTracker) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
-                    ) {
-                        Icon(Icons.Filled.EventRepeat, contentDescription = if (lang == "ar") "سجل القضاء" else "Qaza Tracker", tint = Color(0xFFD4AF37))
-                    }
-                    IconButton(
-                        onClick = { showMonthlyTimes = !showMonthlyTimes; showQazaTracker = false },
+                                        IconButton(
+                        onClick = { showMonthlyTimes = !showMonthlyTimes },
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(if (showMonthlyTimes) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else Color.Transparent)
@@ -153,97 +132,7 @@ fun PrayerTimesScreen(
             }
         }
 
-        if (showQazaTracker) {
-            // --- Qaza (Missed) Prayer Tracker Ledger ---
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = if (lang == "ar") "سجل قضاء الصلوات الفائتة" else if (lang == "tr") "Kaza Namazı Çetelesi" else "Qaza Missed Prayers Ledger",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Icon(Icons.Filled.History, contentDescription = if (lang == "ar") "القضاء" else "Qaza", tint = Color(0xFFD4AF37))
-                        }
-                        Text(
-                            text = if (lang == "ar") "تتبع صلواتك الفائتة التي تعتزم قضاءها واجعل ذمتك تبرأ تدريجياً." else "Keep track of outstanding makeup prayers to systematically complete them.",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        val qazas = listOf(
-                            QazaItem("Fajr", Translations.get("fajr", lang), qazaFajr, { qazaFajr = (qazaFajr + 1) }),
-                            QazaItem("Dhuhr", Translations.get("dhuhr", lang), qazaDhuhr, { qazaDhuhr = (qazaDhuhr + 1) }),
-                            QazaItem("Asr", Translations.get("asr", lang), qazaAsr, { qazaAsr = (qazaAsr + 1) }),
-                            QazaItem("Maghrib", Translations.get("maghrib", lang), qazaMaghrib, { qazaMaghrib = (qazaMaghrib + 1) }),
-                            QazaItem("Isha", Translations.get("isha", lang), qazaIsha, { qazaIsha = (qazaIsha + 1) })
-                        )
-
-                        qazas.forEach { qaza ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f))
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(qaza.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(
-                                        onClick = {
-                                            when (qaza.key) {
-                                                "Fajr" -> { if (qazaFajr > 0) qazaFajr--; viewModel.changeQazaCount("Fajr", -1) }
-                                                "Dhuhr" -> { if (qazaDhuhr > 0) qazaDhuhr--; viewModel.changeQazaCount("Dhuhr", -1) }
-                                                "Asr" -> { if (qazaAsr > 0) qazaAsr--; viewModel.changeQazaCount("Asr", -1) }
-                                                "Maghrib" -> { if (qazaMaghrib > 0) qazaMaghrib--; viewModel.changeQazaCount("Maghrib", -1) }
-                                                "Isha" -> { if (qazaIsha > 0) qazaIsha--; viewModel.changeQazaCount("Isha", -1) }
-                                            }
-                                        },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(Icons.Filled.Remove, contentDescription = if (lang == "ar") "إنقاص" else "Minus", tint = MaterialTheme.colorScheme.primary)
-                                    }
-
-                                    Text(
-                                        text = qaza.count.toString(),
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 12.dp)
-                                    )
-
-                                    IconButton(
-                                        onClick = {
-                                            qaza.onPlus()
-                                            viewModel.changeQazaCount(qaza.key, 1)
-                                        },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(Icons.Filled.Add, contentDescription = if (lang == "ar") "إضافة" else "Plus", tint = Color(0xFFD4AF37))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (showMonthlyTimes) {
+        if (showMonthlyTimes) {
             // --- Monthly Prayer Times Calendar Grid ---
             item {
                 Card(

@@ -17,14 +17,6 @@ import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
 
 // Entities
-@androidx.room.Entity(tableName = "prayer_logs")
-data class PrayerLog(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val date: String, // YYYY-MM-DD
-    val prayerName: String, // Fajr, Shuruq, Dhuhr, Asr, Maghrib, Isha
-    val status: String, // PRAYED_ON_TIME, PRAYED_LATE, MISSED, NOT_YET
-    val timestamp: Long = System.currentTimeMillis()
-)
 
 @androidx.room.Entity(tableName = "tasbih_counters")
 data class TasbihCounter(
@@ -58,23 +50,6 @@ data class QuranHistory(
 )
 
 // DAOs
-@Dao
-interface PrayerDao {
-    @Query("SELECT * FROM prayer_logs WHERE date = :date")
-    fun getLogsForDate(date: String): Flow<List<PrayerLog>>
-
-    @Query("SELECT * FROM prayer_logs ORDER BY date DESC, timestamp DESC")
-    fun getAllLogs(): Flow<List<PrayerLog>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertLog(log: PrayerLog)
-
-    @Update
-    suspend fun updateLog(log: PrayerLog)
-
-    @Query("DELETE FROM prayer_logs WHERE date = :date AND prayerName = :prayerName")
-    suspend fun deleteLog(date: String, prayerName: String)
-}
 
 @Dao
 interface TasbihDao {
@@ -118,30 +93,7 @@ interface QuranHistoryDao {
     suspend fun insertHistory(history: QuranHistory)
 }
 
-@androidx.room.Entity(tableName = "favorite_mosques")
-data class FavoriteMosque(
-    @androidx.room.PrimaryKey val id: Long,
-    val name: String,
-    val latitude: Double,
-    val longitude: Double,
-    val address: String,
-    val timestamp: Long = System.currentTimeMillis()
-)
 
-@androidx.room.Entity(tableName = "khatmahs")
-data class Khatmah(
-    @androidx.room.PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val name: String,
-    val targetDays: Int = 30,
-    val currentProgressPages: Int = 0,
-    val totalPages: Int = 604,
-    val type: String = "INDIVIDUAL", // INDIVIDUAL, FAMILY, FRIENDS
-    val code: String = "",
-    val membersList: String = "",
-    val streak: Int = 0,
-    val lastReadTime: Long = System.currentTimeMillis(),
-    val reminderEnabled: Boolean = true
-)
 
 @androidx.room.Entity(tableName = "quran_notes")
 data class QuranNote(
@@ -153,35 +105,7 @@ data class QuranNote(
 )
 
 // DAOs
-@Dao
-interface MosqueDao {
-    @Query("SELECT * FROM favorite_mosques ORDER BY timestamp DESC")
-    fun getAllFavorites(): Flow<List<FavoriteMosque>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertFavorite(mosque: FavoriteMosque)
-
-    @Query("DELETE FROM favorite_mosques WHERE id = :id")
-    suspend fun deleteFavoriteById(id: Long)
-
-    @Query("SELECT EXISTS(SELECT 1 FROM favorite_mosques WHERE id = :id)")
-    fun isFavorite(id: Long): Flow<Boolean>
-}
-
-@Dao
-interface KhatmahDao {
-    @Query("SELECT * FROM khatmahs ORDER BY lastReadTime DESC")
-    fun getAllKhatmahs(): Flow<List<Khatmah>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertKhatmah(khatmah: Khatmah)
-
-    @Update
-    suspend fun updateKhatmah(khatmah: Khatmah)
-
-    @Delete
-    suspend fun deleteKhatmah(khatmah: Khatmah)
-}
 
 @Dao
 interface QuranNoteDao {
@@ -201,24 +125,18 @@ interface QuranNoteDao {
 // Database Room Class
 @Database(
     entities = [
-        PrayerLog::class,
         TasbihCounter::class,
         Bookmark::class,
         QuranHistory::class,
-        FavoriteMosque::class,
-        Khatmah::class,
         QuranNote::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun prayerDao(): PrayerDao
     abstract fun tasbihDao(): TasbihDao
     abstract fun bookmarkDao(): BookmarkDao
     abstract fun quranHistoryDao(): QuranHistoryDao
-    abstract fun mosqueDao(): MosqueDao
-    abstract fun khatmahDao(): KhatmahDao
     abstract fun quranNoteDao(): QuranNoteDao
 
     companion object {
@@ -250,6 +168,14 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS prayer_logs")
+                db.execSQL("DROP TABLE IF EXISTS favorite_mosques")
+                db.execSQL("DROP TABLE IF EXISTS khatmahs")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -259,7 +185,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "aqim_salah_db"
-                ).addMigrations(MIGRATION_4_5, MIGRATION_5_6).build()
+                ).addMigrations(MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build()
                 INSTANCE = instance
                 instance
             }
